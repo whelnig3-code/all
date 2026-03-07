@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "JM Agent Team (Socket.IO 통합)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["start-server.js"],
+      "port": 3000
+    }
+  ]
+}

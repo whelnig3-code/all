@@ -1,0 +1,4 @@
+_translate.py
+_generate_qr.py
+*.pyc
+__pycache__/

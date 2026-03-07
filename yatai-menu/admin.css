@@ -1,0 +1,306 @@
+/* ============================================
+   YATAI Admin - Menu Management Styles
+   Only visible in admin mode (body.admin-mode)
+   ============================================ */
+
+/* --- Admin controls on menu items (hidden by default) --- */
+.admin-controls {
+  display: none;
+}
+
+body.admin-mode .admin-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.admin-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.admin-btn:active {
+  opacity: 0.7;
+}
+
+.admin-btn-toggle {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.admin-btn-toggle.inactive {
+  background: #95a5a6;
+}
+
+.admin-btn-edit {
+  background: #3498db;
+  color: #fff;
+}
+
+.admin-btn-delete {
+  background: #e74c3c;
+  color: #fff;
+}
+
+/* --- Inactive item styling --- */
+body.admin-mode .menu-item.item-inactive {
+  opacity: 0.4;
+  position: relative;
+}
+
+body.admin-mode .menu-item.item-inactive::after {
+  content: 'HIDDEN';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* --- Add item button (per category, hidden by default) --- */
+.admin-add-btn {
+  display: none;
+}
+
+body.admin-mode .admin-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+body.admin-mode .admin-add-btn:hover,
+body.admin-mode .admin-add-btn:active {
+  border-color: #e8a735;
+  color: #e8a735;
+}
+
+/* --- Publish Bar (fixed bottom) --- */
+.admin-publish-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #2c3e50;
+  padding: 12px 20px;
+  z-index: 200;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.publish-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.publish-bar-status {
+  color: #ecf0f1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.admin-publish-bar.has-changes .publish-bar-status {
+  color: #e8a735;
+}
+
+.publish-bar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.koen-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #bdc3c7;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.koen-toggle input {
+  accent-color: #e8a735;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.btn-discard {
+  background: #7f8c8d;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-publish {
+  background: #e8a735;
+  color: #1a1a1a;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn-exit-admin {
+  background: #95a5a6;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* --- Modal overlay --- */
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-modal.visible {
+  display: flex;
+}
+
+.admin-modal-content {
+  background: #2c3e50;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 420px;
+  color: #ecf0f1;
+}
+
+.admin-modal-content h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #e8a735;
+}
+
+/* --- PIN modal --- */
+.pin-modal input {
+  width: 100%;
+  padding: 14px;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 12px;
+  border: 2px solid #34495e;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #ecf0f1;
+  margin-bottom: 16px;
+}
+
+.pin-modal input:focus {
+  outline: none;
+  border-color: #e8a735;
+}
+
+.pin-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.pin-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+/* --- Edit modal --- */
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #95a5a6;
+}
+
+.edit-form input,
+.edit-form select {
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #34495e;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #ecf0f1;
+}
+
+.edit-form input:focus,
+.edit-form select:focus {
+  outline: none;
+  border-color: #e8a735;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* --- Shared button styles --- */
+.btn-cancel {
+  background: #7f8c8d;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  background: #e8a735;
+  color: #1a1a1a;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 700;
+}

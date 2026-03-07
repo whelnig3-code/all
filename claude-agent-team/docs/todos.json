@@ -1,0 +1,37 @@
+[
+  {
+    "id": "b88e19cb-386f-4afc-bf5f-09f658367a34",
+    "text": "[JM 대시보드] 완료된 도구 실행 로그 대화에서 숨기기",
+    "done": true,
+    "priority": "medium",
+    "createdAt": 1772321957458
+  },
+  {
+    "id": "e69000c7-dde9-4e7d-8b68-60256e8726d7",
+    "text": "[스마트스토어 P3] 블로그 게시 API 연동 워커 구현",
+    "done": false,
+    "priority": "medium",
+    "createdAt": 1772321957449
+  },
+  {
+    "id": "b22672b6-c601-471f-98e6-d86770eed9ef",
+    "text": "[스마트스토어 P4] talktalk.job.ts 신규 작성 (TalkTalkClient 연결)",
+    "done": false,
+    "priority": "medium",
+    "createdAt": 1772321957440
+  },
+  {
+    "id": "ce4c524f-33a2-4e5c-94c3-5d6de6d9fc4e",
+    "text": "[스마트스토어 P4] worker/index.ts에 refundWorker 등록",
+    "done": true,
+    "priority": "high",
+    "createdAt": 1772321957430
+  },
+  {
+    "id": "6649bba8-1f2f-47b0-bfa0-7f54fc2e4d0b",
+    "text": "[스마트스토어 P3/4] refund.job.ts import 경로 수정 (../lib/prisma → @smartstore/db)",
+    "done": true,
+    "priority": "high",
+    "createdAt": 1772321957422
+  }
+]

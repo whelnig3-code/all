@@ -1,0 +1,357 @@
+/* ── CSS 변수: 다크 테마 (기본) ───────────────────────────────────────── */
+:root {
+  --bg:         #111318;
+  --card:       #181C23;
+  --card-hover: #1F2430;
+  --border:     #252B36;
+  --text1:      #E6EDF3;
+  --text2:      #9CA3AF;
+  --text3:      #6B7280;
+  --accent:     #4C8DFF;
+  --active:     #22C55E;
+  --pending:    #F59E0B;
+  --error:      #EF4444;
+
+  /* 마크다운/코드 전용 */
+  --md-text:       #E5E7EB;
+  --md-heading:    #F9FAFB;
+  --md-code-bg:    rgba(255, 255, 255, 0.08);
+  --md-code-color: #93C5FD;
+  --md-pre-bg:     rgba(0, 0, 0, 0.4);
+  --md-pre-border: rgba(255, 255, 255, 0.08);
+  --md-pre-code:   #E5E7EB;
+  --md-blockquote: rgba(139, 92, 246, 0.5);
+  --md-link:       #60A5FA;
+  --md-hr:         rgba(255, 255, 255, 0.08);
+  --md-zebra:      rgba(255, 255, 255, 0.012);
+  --md-row-hover:  #1F2430;
+  --md-td-color:   #E6EDF3;
+  --md-th-bg:      #181C23;
+  --md-th-color:   #9CA3AF;
+
+  /* 스크롤바 */
+  --scrollbar-track: rgba(255, 255, 255, 0.03);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --scrollbar-hover: rgba(255, 255, 255, 0.2);
+}
+
+/* ── CSS 변수: 라이트 테마 ────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:         #F8FAFC;
+  --card:       #FFFFFF;
+  --card-hover: #F1F5F9;
+  --border:     #E2E8F0;
+  --text1:      #1E293B;
+  --text2:      #64748B;
+  --text3:      #94A3B8;
+  --accent:     #2563EB;
+  --active:     #16A34A;
+  --pending:    #D97706;
+  --error:      #DC2626;
+
+  --md-text:       #374151;
+  --md-heading:    #111827;
+  --md-code-bg:    rgba(0, 0, 0, 0.06);
+  --md-code-color: #1D4ED8;
+  --md-pre-bg:     #F1F5F9;
+  --md-pre-border: #E2E8F0;
+  --md-pre-code:   #334155;
+  --md-blockquote: rgba(139, 92, 246, 0.4);
+  --md-link:       #2563EB;
+  --md-hr:         #E2E8F0;
+  --md-zebra:      rgba(0, 0, 0, 0.02);
+  --md-row-hover:  #F1F5F9;
+  --md-td-color:   #1E293B;
+  --md-th-bg:      #F8FAFC;
+  --md-th-color:   #64748B;
+
+  --scrollbar-track: rgba(0, 0, 0, 0.03);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-hover: rgba(0, 0, 0, 0.25);
+}
+
+/* ── 리셋 ─────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+/* 스켈레톤 로딩 애니메이션 */
+@keyframes skeleton-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
+
+/* 글로우 애니메이션 */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 6px var(--active), 0 0 0 2px rgba(34, 197, 94, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 12px var(--active), 0 0 0 4px rgba(34, 197, 94, 0.3);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 에러 토스트 진입 애니메이션 (opacity + translateY, blur 없음) */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.toast-enter {
+  animation: toast-in 150ms ease forwards;
+}
+
+/* 에이전트 칩 활성 글로우 */
+.agent-chip-active {
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+/* ── 마크다운 스타일 ──────────────────────────────────────────────────── */
+.markdown-body {
+  line-height: 1.6;
+  color: var(--md-text);
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  color: var(--md-heading);
+  margin: 1em 0 0.5em;
+  font-weight: 600;
+}
+
+.markdown-body h1 { font-size: 1.4em; }
+.markdown-body h2 { font-size: 1.2em; }
+.markdown-body h3 { font-size: 1.05em; }
+
+.markdown-body p {
+  margin: 0.5em 0;
+}
+
+.markdown-body code {
+  background: var(--md-code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 0.85em;
+  color: var(--md-code-color);
+}
+
+.markdown-body pre {
+  background: var(--md-pre-bg);
+  border: 1px solid var(--md-pre-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  margin: 0.75em 0;
+}
+
+.markdown-body pre code {
+  background: none;
+  padding: 0;
+  color: var(--md-pre-code);
+  font-size: 0.88em;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.markdown-body li {
+  margin: 0.25em 0;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--md-blockquote);
+  padding-left: 12px;
+  color: var(--text2);
+  margin: 0.75em 0;
+}
+
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: 0.9em;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  text-align: left;
+  color: var(--md-td-color);
+}
+
+.markdown-body th {
+  background: var(--md-th-bg);
+  color: var(--md-th-color);
+  font-weight: 600;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.markdown-body tr:last-child td {
+  border-bottom: none;
+}
+
+/* zebra: 매우 약하게 */
+.markdown-body tr:nth-child(even) td {
+  background: var(--md-zebra);
+}
+
+/* row hover */
+.markdown-body tr:hover td {
+  background: var(--md-row-hover);
+  transition: background 0.1s;
+}
+
+.markdown-body a {
+  color: var(--md-link);
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--md-hr);
+  margin: 1em 0;
+}
+
+/* 채팅 스트리밍 커서 */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.streaming-cursor::after {
+  content: "▋";
+  animation: cursor-blink 0.8s ease-in-out infinite;
+  color: #8B5CF6;
+  margin-left: 2px;
+  font-size: 0.9em;
+}
+
+/* 삭제 버튼 hover 시 표시 */
+.delete-btn {
+  opacity: 0 !important;
+  transition: opacity 0.15s;
+}
+div:hover > .delete-btn,
+div:hover .delete-btn {
+  opacity: 1 !important;
+}
+
+/* 마크다운 렌더링 — 첫 번째 p 태그 margin 제거 */
+.markdown-body > p:first-child {
+  margin-top: 0;
+}
+.markdown-body > p:last-child {
+  margin-bottom: 0;
+}
+
+/* 코드 블록 언어 표시 */
+.markdown-body pre {
+  position: relative;
+}
+
+/* 반응형 — 16:9 large (1920x1080+) 최적화 */
+@media (min-width: 1920px) {
+  html, body {
+    font-size: 15px;
+  }
+  /* 테이블 가독성 강화 */
+  .markdown-body table {
+    font-size: 15px;
+  }
+  /* KPI 카드 숫자 확대 */
+  .kpi-value {
+    font-size: 24px !important;
+  }
+  /* KPI 레이블 +1px */
+  .kpi-label {
+    font-size: 11px !important;
+  }
+}
+
+/* 반응형 — 울트라와이드 (21:9) 최적화 */
+@media (min-width: 2200px) {
+  html, body {
+    font-size: 16px;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .markdown-body {
+    font-size: 1em;
+    line-height: 1.7;
+  }
+  .markdown-body h1 { font-size: 1.5em; }
+  .markdown-body h2 { font-size: 1.3em; }
+  .markdown-body h3 { font-size: 1.1em; }
+}
+
+/* 입력창 focus 스타일 */
+textarea:focus {
+  outline: none;
+}

@@ -1,0 +1,64 @@
+"use client";
+
+import { memo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { ChatMessage as ChatMessageType, FileAttachment } from "@/types";
+import { AGENTS_CONFIG } from "@/config/agents";
+
+interface ChatMessageProps {
+  message: ChatMessageType;
+}
+
+// 코드 블록 접기 기준: 줄 수가 이 값을 초과하면 기본 접힘 상태
+const CODE_COLLAPSE_THRESHOLD = 20;
+
+// ──────────────────────────────────────────
+// 코드 블록 컴포넌트: 언어 배지 + 복사 버튼 + collapsible (20줄 초과 시)
+// ──────────────────────────────────────────
+function CodeBlock({ lang, children }: { lang: string; children: string }) {
+  const [copied, setCopied] = useState(false);
+  // 줄 수 계산: 임계값 초과 시 기본 접힘
+  const lineCount = children.split("\n").length;
+  const isLong = lineCount > CODE_COLLAPSE_THRESHOLD;
+  const [collapsed, setCollapsed] = useState(isLong);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(children).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div
+      className="code-block-wrap"
+      style={{
+        background: "#0D1117",
+        borderRadius: 8,
+        margin: "8px 0",
+        border: "1px solid rgba(255,255,255,0.08)",
+        overflow: "hidden",
+      }}
+    >
+      {/* ── 코드 블록 헤더: 언어 배지 + 접기/펼치기 + 복사 ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "6px 12px",
+          borderBottom: collapsed ? "none" : "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(255,255,255,0.03)",
+        }}
+      >
+        {/* 언어 배지 */}
+        <span
+          style={{
+            fontSize: 10,
+            color: "#6B7280",
+            fontWeight: 600,
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

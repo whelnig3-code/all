@@ -1,0 +1,214 @@
+import Anthropic from "@anthropic-ai/sdk";
+
+// Claude API 실행 옵션 (멀티턴 + Tool Use 지원)
+export interface ClaudeCodeOptions {
+  prompt: string;
+  systemPrompt?: string;
+  conversationHistory?: Array<{
+    role: "user" | "assistant";
+    content: string;
+  }>;
+  tools?: Anthropic.Tool[];
+  timeout?: number;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+  onStream?: (chunk: string) => void;
+  onToolUse?: (toolName: string, toolInput: Record<string, unknown>) => Promise<string>;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 실행 모드 결정
+//
+//  "sdk"  → Claude Code SDK 사용 (Pro/Max 구독, API 과금 없음)
+//           조건: CLAUDE_CODE_MODE=sdk  OR  API 키 미설정
+//
+//  "api"  → Anthropic API 직접 호출 (토큰 과금)
+//           조건: ANTHROPIC_API_KEY 설정 AND CLAUDE_CODE_MODE≠sdk
+// ─────────────────────────────────────────────────────────────────────────────
+function getExecutionMode(): "sdk" | "api" {
+  // 명시적으로 SDK 모드 지정
+  if (process.env.CLAUDE_CODE_MODE === "sdk") return "sdk";
+  // API 키가 있으면 API 모드
+  if (process.env.ANTHROPIC_API_KEY) return "api";
+  // 기본: SDK 시도 (claude login 필요)
+  return "sdk";
+}
+
+// Anthropic 클라이언트 (싱글턴, API 모드 전용)
+let client: Anthropic | null = null;
+
+function getClient(): Anthropic | null {
+  if (client) return client;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+  client = new Anthropic({ apiKey });
+  return client;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 메인 진입점: 실행 모드에 따라 SDK 또는 API로 분기
+// ─────────────────────────────────────────────────────────────────────────────
+export async function executeClaudeCode(options: ClaudeCodeOptions): Promise<string> {
+  const mode = getExecutionMode();
+
+  if (mode === "sdk") {
+    // ── SDK 모드: Claude Code 구독 사용 ──────────────────────────────────────
+    const { executeViaSDK } = await import("./claude-code-sdk");
+    return executeViaSDK(options);
+  }
+
+  // ── API 모드: Anthropic API 직접 호출 (기존 로직) ────────────────────────
+  return executeViaAPI(options);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API 모드 실행 (기존 로직 유지)
+// ─────────────────────────────────────────────────────────────────────────────
+async function executeViaAPI(options: ClaudeCodeOptions): Promise<string> {
+  const {
+    prompt,
+    systemPrompt,
+    conversationHistory = [],
+    tools,
+    // 기본값 600,000ms(10분): 호출부에서 모델별 동적 타임아웃을 주입하므로
+    // 이 값은 호출부가 timeout을 생략했을 때만 적용되는 안전 폴백입니다.
+    timeout = 600_000,
+    model = "claude-sonnet-4-20250514",
+    maxTokens = 4096,
+    temperature,
+    onStream,
+    onToolUse,
+  } = options;
+
+  const anthropic = getClient();
+  if (!anthropic) {
+    throw new Error("ANTHROPIC_API_KEY가 설정되지 않았습니다. .env.local에 키를 추가하세요.");
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const messages: Anthropic.MessageParam[] = [
+      ...conversationHistory.map((h) => ({
+        role: h.role as "user" | "assistant",
+        content: h.content,
+      })),
+      { role: "user" as const, content: prompt },
+    ];
+
+    let fullResponse = "";
+    let iteration = 0;
+    const maxIterations = 10;
+
+    while (iteration < maxIterations) {
+      iteration++;
+
+      if (tools && tools.length > 0 && onToolUse) {
+        const response = await anthropic.messages.create({
+          model,
+          max_tokens: maxTokens,
+          ...(temperature !== undefined ? { temperature } : {}),
+          system: systemPrompt || "당신은 JM Agent Team의 AI 에이전트입니다. 한국어로 응답하세요.",
+          messages,
+          tools,
+        }, { signal: controller.signal });
+
+        let hasToolUse = false;
+        // 이번 응답의 모든 tool_result를 하나의 배열로 수집
+        // (각 tool_use마다 assistant를 반복 추가하는 버그 방지)
+        const toolResultBlocks: Anthropic.ToolResultBlockParam[] = [];
+
+        for (const block of response.content) {
+          if (block.type === "text") {
+            fullResponse += block.text;
+            if (onStream) onStream(block.text);
+          } else if (block.type === "tool_use") {
+            hasToolUse = true;
+            try {
+              const result = await onToolUse(block.name, block.input as Record<string, unknown>);
+              // tool_result 블록만 수집 (assistant 메시지는 아래서 1회만 추가)
+              toolResultBlocks.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                content: result,
+              });
+            } catch (err) {
+              toolResultBlocks.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                content: `오류: ${err instanceof Error ? err.message : "도구 실행 실패"}`,
+                is_error: true,
+              });
+            }
+          }
+        }
+
+        if (hasToolUse) {
+          // Anthropic API 대화 형식 준수:
+          //   assistant: [tool_use_1, tool_use_2, ...]  ← 1회만 추가
+          //   user:      [tool_result_1, tool_result_2, ...]  ← 1개의 user 메시지에 모든 결과
+          messages.push({ role: "assistant", content: response.content });
+          messages.push({ role: "user", content: toolResultBlocks });
+          continue;
+        }
+        break;
+      } else {
+        const stream = anthropic.messages.stream({
+          model,
+          max_tokens: maxTokens,
+          ...(temperature !== undefined ? { temperature } : {}),
+          system: systemPrompt || "당신은 JM Agent Team의 AI 에이전트입니다. 한국어로 응답하세요.",
+          messages,
+        }, { signal: controller.signal });
+
+        stream.on("text", (text) => {
+          fullResponse += text;
+          if (onStream) onStream(text);
+        });
+
+        await stream.finalMessage();
+        break;
+      }
+    }
+
+    return fullResponse.trim();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 현재 실행 모드 및 설정 상태 확인
+// ─────────────────────────────────────────────────────────────────────────────
+export async function checkClaudeInstalled(): Promise<boolean> {
+  const mode = getExecutionMode();
+  if (mode === "api") return !!process.env.ANTHROPIC_API_KEY;
+
+  // SDK 모드: CLI 설치 여부 확인
+  const { checkSDKAvailable } = await import("./claude-code-sdk");
+  const status = await checkSDKAvailable();
+  return status.installed && status.loggedIn;
+}
+
+// 현재 모드 정보 반환 (설정 패널 표시용)
+export function getClaudeMode(): {
+  mode: "sdk" | "api";
+  label: string;
+  description: string;
+} {
+  const mode = getExecutionMode();
+  if (mode === "sdk") {
+    return {
+      mode: "sdk",
+      label: "Claude Code SDK",
+      description: "Pro/Max 구독 사용 · API 과금 없음 · claude login 필요",
+    };
+  }
+  return {
+    mode: "api",
+    label: "Anthropic API",
+    description: "API 키 사용 · 토큰 과금 · ANTHROPIC_API_KEY 필요",
+  };
+}

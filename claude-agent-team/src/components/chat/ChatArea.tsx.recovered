@@ -1,0 +1,104 @@
+"use client";
+
+import { useEffect, useRef, useState, useCallback } from "react";
+import ChatMessage from "./ChatMessage";
+import PinnedShortcuts from "./PinnedShortcuts";
+import {
+  ChatMessage as ChatMessageType,
+  AgentId,
+  AgentStatus,
+  SSEEvent,
+  FileAttachment,
+  FileAttachmentKind,
+  OrchestrateTask,
+} from "@/types";
+import { AGENTS_CONFIG } from "@/config/agents";
+
+// Quick Start 카드 데이터 — 빈 상태 화면에서 표시
+// 클릭 시 자동으로 새 대화 생성 + 프롬프트 전송
+const QUICK_START_CARDS = [
+  {
+    icon: "🏗️",
+    title: "새 기능 개발",
+    desc: "요구사항을 분석하고 구현 계획을 세워줘",
+    prompt: "새 기능을 개발하려고 해. 요구사항 분석부터 시작해줘.",
+    color: "#3B82F6",
+  },
+  {
+    icon: "🔒",
+    title: "보안 감사",
+    desc: "현재 코드의 보안 취약점을 점검해줘",
+    prompt: "현재 프로젝트 코드의 보안 취약점을 전체적으로 감사해줘.",
+    color: "#EF4444",
+  },
+  {
+    icon: "🎨",
+    title: "UI/UX 디자인",
+    desc: "화면 레이아웃 설계와 컴포넌트 구현",
+    prompt: "UI/UX 디자인이 필요해. 와이어프레임부터 컴포넌트 코드까지 만들어줘.",
+    color: "#EC4899",
+  },
+  {
+    icon: "📝",
+    title: "문서 정리",
+    desc: "README 및 기술 문서를 최신화해줘",
+    prompt: "프로젝트 README.md와 기술 문서를 최신 상태로 업데이트해줘.",
+    color: "#F59E0B",
+  },
+];
+
+// 파일 크기 최대 1MB (초과 시 내용 생략)
+const MAX_FILE_SIZE = 1024 * 1024;
+
+// 텍스트 파일 확장자 목록
+const TEXT_EXTENSIONS = new Set([
+  "ts", "tsx", "js", "jsx", "json", "md", "txt", "py", "go",
+  "rs", "java", "c", "cpp", "h", "css", "html", "xml", "yaml",
+  "yml", "toml", "sh", "bash", "zsh", "env", "gitignore",
+  "dockerfile", "sql", "graphql", "vue", "svelte", "prisma",
+  "lock", "ini", "cfg", "conf", "log", "csv",
+]);
+
+/** 파일의 종류(text/image/binary) 판단 */
+function detectKind(file: File): FileAttachmentKind {
+  if (file.type.startsWith("image/")) return "image";
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (file.type.startsWith("text/") || TEXT_EXTENSIONS.has(ext)) return "text";
+  return "binary";
+}
+
+/** 파일 내용을 읽어 문자열로 반환 */
+function readFileContent(file: File, kind: FileAttachmentKind): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // 크기 초과 시 안내 문구 반환
+    if (file.size > MAX_FILE_SIZE) {
+      resolve(`[파일 크기 초과: ${(file.size / 1024).toFixed(1)}KB — 최대 1MB 지원]`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`"${file.name}" 읽기 실패`));
+    reader.onload = (e) => resolve((e.target?.result as string) ?? "");
+    if (kind === "image") {
+      reader.readAsDataURL(file);
+    } else if (kind === "text") {
+      reader.readAsText(file, "utf-8");
+    } else {
+      // 바이너리 파일은 내용 미리보기 불가 안내
+      resolve(`[바이너리 파일: ${file.name} (${file.type || "알 수 없는 형식"})]`);
+    }
+  });
+}
+
+/** FileSystemEntry를 재귀 탐색하여 {file, path} 쌍 수집 */
+function collectFromEntry(
+  entry: FileSystemEntry,
+  basePath = ""
+): Promise<{ file: File; path: string }[]> {
+  return new Promise((resolve) => {
+    if (entry.isFile) {
+      (entry as FileSystemFileEntry).file((f) => {
+        resolve([{ file: f, path: basePath + f.name }]);
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

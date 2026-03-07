@@ -1,0 +1,38 @@
+# 환경변수 (민감 정보 — 절대 커밋 금지)
+.env
+.env.local
+.env*.local
+
+# Next.js 빌드 결과
+.next/
+out/
+dist/
+
+# 의존성
+node_modules/
+
+# 임시 파일
+.agent-temp/
+*.log
+*.pid
+
+# Cloudflare Tunnel — 재시작마다 URL이 바뀌므로 git 추적 불필요
+current-url.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 에디터
+.vscode/settings.json
+*.swp
+
+# Local only projects (집 PC / 회사 PC 분리)
+# git 동기화 대상: projects/<name>  (local 옵션 없이 생성된 폴더)
+# 로컬 전용:       projects/local-* / projects/experimental/ / projects/local-scratch/
+projects/local-*
+projects/experimental/
+projects/local-scratch/
+
+
+/src/generated/prisma

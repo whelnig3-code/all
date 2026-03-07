@@ -1,0 +1,6 @@
+[
+  {
+    "role": "user",
+    "content": "JavaScript에서 delay 파라미터를 지원하는 debounce 함수를 구현하고 코드 검토해줘."
+  }
+]

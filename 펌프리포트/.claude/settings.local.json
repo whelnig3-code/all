@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tail:*)",
+      "Bash(cd \"/c/Users/user/Desktop/펌프리포트/pump_reporter\" && /c/Users/user/Desktop/펌프리포트/venv/Scripts/pyinstaller.exe pump_reporter.spec --clean --noconfirm 2>&1)",
+      "Bash(head:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(/c/Users/user/Desktop/펌프리포트/venv/Scripts/pip.exe install:*)",
+      "Bash(/c/Users/user/AppData/Local/Programs/Python/Python312/python.exe:*)"
+    ]
+  }
+}

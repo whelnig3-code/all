@@ -1,0 +1,38 @@
+// Next.js 커스텀 HTTP 서버 + Socket.IO 통합 진입점
+// 표준 `next start` 대신 이 파일로 서버를 실행하면 WebSocket이 활성화됩니다.
+
+import { createServer } from "http";
+import { parse } from "url";
+import next from "next";
+import { initSocketServer } from "./src/lib/socket-server";
+
+// 개발/프로덕션 환경 판별
+const dev = process.env.NODE_ENV !== "production";
+const port = parseInt(process.env.PORT || "3000", 10);
+
+// Next.js 앱 인스턴스 생성
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
+// Next.js 준비 완료 후 HTTP 서버 시작
+app.prepare().then(() => {
+  // HTTP 서버 생성 — Next.js의 모든 요청을 handle()에 위임
+  const httpServer = createServer((req, res) => {
+    const parsedUrl = parse(req.url!, true);
+    handle(req, res, parsedUrl);
+  });
+
+  // Socket.IO 서버 초기화 (HTTP 서버에 바인딩)
+  initSocketServer(httpServer);
+
+  // 지정된 포트에서 HTTP 서버 시작
+  httpServer.listen(port, () => {
+    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`> Socket.IO 실시간 기능 활성화됨`);
+  });
+});
+
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

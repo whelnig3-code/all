@@ -1,0 +1,671 @@
+import { AgentId, AgentStatus, SSEEvent } from "@/types";
+import { AGENTS_CONFIG, AGENT_SYSTEM_PROMPTS } from "@/config/agents";
+import { executeClaudeCode } from "./claude-code";
+import { getAgentTools, executeTool } from "./tools";
+import { getMessages } from "./conversation-store";
+import { readAgentMemory, updateAgentMemory } from "./agent-memory";
+
+// socket-server는 서버 사이드에서만 동적으로 임포트합니다.
+// 클라이언트 사이드에서 이 모듈이 번들링될 경우를 대비하여 안전하게 처리합니다.
+let socketBroadcast:
+  | ((agentId: string, status: string, task?: string) => void)
+  | null = null;
+
+try {
+  // Next.js 서버 환경(window 객체 없음)에서만 socket-server 임포트
+  if (typeof window === "undefined") {
+    import("./socket-server")
+      .then((m) => {
+        socketBroadcast = m.broadcastAgentStatus;
+      })
+      .catch(() => {
+        // socket-server 로드 실패 시 조용히 무시 (WebSocket 없이 동작)
+      });
+  }
+} catch {
+  // 예외 발생 시 무시
+}
+
+// 에이전트 활성화 상태 관리 (인메모리)
+const agentActiveMap: Record<string, boolean> = {
+  planner: true,
+  developer: true,
+  reviewer: true,
+  writer: true,
+  "security-auditor": true,
+  researcher: true,
+  designer: true,
+};
+
+// 현재 활성 에이전트 상태
+const agentStatusMap: Record<string, AgentStatus> = {
+  planner: "idle",
+  developer: "idle",
+  reviewer: "idle",
+  writer: "idle",
+  "security-auditor": "idle",
+  researcher: "idle",
+  designer: "idle",
+};
+
+// API 사용량 추적 (인메모리)
+let apiCallCount = 0;
+let estimatedTokens = 0;
+
+// 에이전트 상태 조회
+export function getAgentStatuses() {
+  return Object.values(AGENTS_CONFIG).map((config) => ({
+    ...config,
+    status: agentStatusMap[config.id] || "idle",
+    active: agentActiveMap[config.id] ?? true,
+  }));
+}
+
+// API 사용량 통계
+export function getApiStats() {
+  return { apiCallCount, estimatedTokens };
+}
+
+// 에이전트 활성/비활성 전환
+export function toggleAgent(agentId: AgentId, active: boolean) {
+  agentActiveMap[agentId] = active;
+  // 상태 변경 시 WebSocket 브로드캐스트 (연결된 클라이언트에 즉시 반영)
+  socketBroadcast?.(agentId, active ? "idle" : "inactive");
+}
+
+// 메시지에서 적합한 에이전트 선택
+// 새 기능/복잡한 개발 요청 → planner 우선 (승인 후 developer 진행)
+// 버그 수정/단순 작업 → developer 직행
+function selectAgent(message: string): AgentId {
+  const lower = message.toLowerCase();
+
+  // 1순위: 전문 에이전트 키워드 (명확한 도메인 요청)
+  if (lower.includes("보안") || lower.includes("취약") || lower.includes("security")) {
+    return "security-auditor";
+  }
+  if (lower.includes("문서") || lower.includes("readme") || lower.includes("docs")) {
+    return "writer";
+  }
+  if (lower.includes("리뷰") || lower.includes("검토") || lower.includes("review")) {
+    return "reviewer";
+  }
+  if (lower.includes("조사") || lower.includes("분석") || lower.includes("research")) {
+    return "researcher";
+  }
+  // 디자이너: UI/UX 디자인 전담
+  if (
+    lower.includes("디자인") || lower.includes("ui") || lower.includes("ux") ||
+    lower.includes("와이어프레임") || lower.includes("레이아웃") || lower.includes("컴포넌트 설계") ||
+    lower.includes("design") || lower.includes("wireframe")
+  ) {
+    return "designer";
+  }
+
+  // 2순위: 명확한 버그 수정 → 개발자 직행 (플래너 없이 바로 처리)
+  const isBugFix =
+    lower.includes("버그") || lower.includes("오류") || lower.includes("에러") ||
+    lower.includes("수정") || lower.includes("고쳐") || lower.includes("fix") ||
+    lower.includes("안돼") || lower.includes("안되") || lower.includes("실패");
+  if (isBugFix) return "developer";
+
+  // 3순위: 새 기능/복잡한 개발 → 플래너 먼저 (설계 후 개발)
+  // - 만들기/개발/구현 등 신규 기능 키워드
+  // - 번호 목록 (1. 2. 3. 형태) → 여러 요구사항 나열 = 복잡한 요청
+  const isNewFeature =
+    lower.includes("만들어") || lower.includes("개발해") || lower.includes("구현해") ||
+    lower.includes("자동화") || lower.includes("시스템") || lower.includes("프로그램") ||
+    lower.includes("플랫폼") || lower.includes("서비스") || lower.includes("앱") ||
+    lower.includes("기능") || lower.includes("설계") || lower.includes("계획") ||
+    lower.includes("아키텍처") || lower.includes("추가해") || lower.includes("만들고") ||
+    // 번호 목록 패턴 (1. 2. 3. 등) → 복잡한 다단계 요청으로 판단
+    /\d+\.\s/.test(message);
+  if (isNewFeature) return "planner";
+
+  // 기본값: 개발자 (단순 질문, 짧은 요청 등)
+  return "developer";
+}
+
+// ── 모델별 타임아웃 결정 함수 ────────────────────────────────────────────────
+// - claude-opus-*  : 복잡한 기획/설계 작업, 10분(600,000ms)
+// - claude-sonnet-*: 기획·개발·리뷰 등 실질 작업 기준 10분(600,000ms)
+//   → planner가 파일 다수 읽기 + plan.md 작성 시 5분 초과 사례 있어 상향
+// - haiku / 기타   : 가벼운 문서 작업, 기본 5분(300,000ms)
+// 단축 모델명("opus", "sonnet", "haiku")도 함께 처리합니다.
+function getModelTimeout(model: string | undefined): number {
+  const m = (model ?? "").toLowerCase();
+
+  // Opus 계열: 풀 모델명(claude-opus-*) 또는 단축명("opus")
+  if (m.includes("opus")) return 600_000; // 10분
+
+  // Sonnet 계열: 풀 모델명(claude-sonnet-*) 또는 단축명("sonnet")
+  // SDK 모드 subprocess: 2분으로 타임아웃하여 UI 멈춤 방지
+  if (m.includes("sonnet")) return 120_000; // 2분 (SDK subprocess에 최적화)
+
+  // Haiku / 기타 모델: 기본값
+  return 300_000; // 5분
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+// 현재 실행 중인 요청의 AbortController (중단 기능용)
+// 서버 인스턴스당 하나의 요청만 중단 대상으로 관리
+let currentAbortController: AbortController | null = null;
+
+// 현재 실행 중인 에이전트 작업 중단
+// 반환값: true = 중단 성공, false = 실행 중인 작업 없음
+export function cancelCurrentAgent(): boolean {
+  if (currentAbortController) {
+    // AbortController 신호를 발생시켜 실행 중인 루프 탈출
+    currentAbortController.abort();
+    currentAbortController = null;
+    // 모든 active 상태 에이전트를 idle로 초기화
+    Object.keys(agentStatusMap).forEach((id) => {
+      if (agentStatusMap[id as AgentId] === "active") {
+        agentStatusMap[id as AgentId] = "idle";
+        socketBroadcast?.(id, "idle");
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
+// 히스토리 1개 메시지 최대 길이 (토큰 절약)
+const MAX_MSG_CHARS = 2000;
+
+// 대화 히스토리 로드 (멀티턴 대화용)
+// maxMessages=6: 최근 3턴(user+assistant×3)만 컨텍스트에 포함하여 토큰 절약
+async function loadConversationHistory(
+  conversationId: string,
+  maxMessages: number = 6
+): Promise<Array<{ role: "user" | "assistant"; content: string }>> {
+  try {
+    // conversation-store의 동기 getMessages를 Promise로 래핑
+    const stored = await Promise.resolve(getMessages(conversationId));
+    if (!stored || stored.length === 0) return [];
+
+    // 최근 N개 메시지만 사용 (슬라이딩 윈도우)
+    const recent = stored.slice(-maxMessages);
+
+    return recent
+      .filter((m) => m.role === "user" || m.role === "agent")
+      .map((m) => ({
+        role: (m.role === "user" ? "user" : "assistant") as "user" | "assistant",
+        // 긴 메시지는 MAX_MSG_CHARS자로 트런케이트 (토큰 절약)
+        content:
+          m.content.length > MAX_MSG_CHARS
+            ? m.content.slice(0, MAX_MSG_CHARS) +
+              "\n... [이하 생략 — 전체 내용은 파일에서 확인]"
+            : m.content,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+// 파이프라인 연결 맵: 에이전트 완료 후 자동으로 다음 에이전트 진행 제안
+// planner → designer or developer, designer → developer, developer → reviewer
+const PIPELINE_NEXT: Partial<Record<AgentId, { nextAgent: AgentId; msg: string }>> = {
+  planner:   { nextAgent: "designer",  msg: "📋 플래너가 설계를 완료했습니다.\nUI 디자인을 시작할까요?" },
+  designer:  { nextAgent: "developer", msg: "🎨 디자인이 완료됐습니다.\n개발을 시작할까요?" },
+  developer: { nextAgent: "reviewer",  msg: "⚡ 개발이 완료됐습니다.\n코드 리뷰를 시작할까요?" },
+};
+
+// 핸드오프 메모 읽기 소스: 이 에이전트가 시작할 때 어떤 에이전트의 메모를 읽을지
+const HANDOFF_SOURCES: Partial<Record<AgentId, AgentId>> = {
+  designer:          "planner",    // 디자이너: 플래너 설계 기반으로 디자인
+  developer:         "designer",   // 개발자: 디자이너 산출물 우선, 없으면 플래너
+  reviewer:          "developer",
+  writer:            "developer",
+  "security-auditor": "developer",
+};
+
+// 에이전트별 우선 출력 파일 목록 (먼저 탐색할 파일)
+// ※ planner는 동적 파일명(plan-*.md)을 쓸 수 있으므로 Step B(전체 스캔)로 주로 감지됨
+const AGENT_OUTPUT_FILES: Partial<Record<AgentId, string[]>> = {
+  planner: ["docs/plan.md", "docs/design.md"],
+  designer: ["docs/design.md", "docs/wireframe.md"],
+  reviewer: ["docs/analysis_report.md", "docs/review.md"],
+  "security-auditor": ["docs/security-report.md", "docs/audit.md"],
+  writer: ["README.md", "docs/README.md"],
+};
+
+// 스캔 시 무시할 디렉토리
+const SKIP_DIRS = new Set(["node_modules", ".git", ".next", "dist", "build", ".claude", "coverage"]);
+// 스캔 대상 확장자
+const INCLUDE_EXTS = new Set([".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".css", ".py", ".env.local"]);
+
+/**
+ * baseDir 하위에서 sinceMs 이후 수정된 파일을 최대 maxFiles개 반환.
+ * SDK 모드 agentic 안전망: 에이전트가 어떤 파일을 작성했는지 자동 감지.
+ */
+async function findRecentlyModifiedFiles(
+  baseDir: string,
+  sinceMs: number,
+  maxFiles = 10
+): Promise<string[]> {
+  const { promises: fsp } = await import("fs");
+  const pathMod = (await import("path")).default;
+  const result: string[] = [];
+
+  async function scan(dir: string, relDir: string) {
+    if (result.length >= maxFiles) return;
+    let entries;
+    try {
+      entries = await fsp.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (result.length >= maxFiles) return;
+      const name = entry.name;
+      const fullPath = pathMod.join(dir, name);
+      const relPath = relDir ? `${relDir}/${name}` : name;
+
+      if (entry.isDirectory()) {
+        if (!SKIP_DIRS.has(name)) await scan(fullPath, relPath);
+      } else if (entry.isFile()) {
+        const ext = pathMod.extname(name).toLowerCase();
+        if (INCLUDE_EXTS.has(ext)) {
+          try {
+            const stat = await fsp.stat(fullPath);
+            if (stat.mtimeMs >= sinceMs) result.push(relPath);
+          } catch { /* skip */ }
+        }
+      }
+    }
+  }
+
+  await scan(baseDir, "");
+  return result;
+}
+
+/** 핸드오프 메모 읽기: 선행 에이전트가 저장한 메모 파일 읽기 */
+async function readHandoffMemo(fromAgentId: AgentId): Promise<string> {
+  const { promises: fsp } = await import("fs");
+  const pathMod = (await import("path")).default;
+  const base = process.env.PROJECT_BASE_DIR || process.cwd();
+  const filePath = pathMod.join(base, "docs", "handoffs", `${fromAgentId}.md`);
+  try {
+    const content = await fsp.readFile(filePath, "utf-8");
+    return content.slice(0, 2000); // 토큰 절약: 최대 2000자
+  } catch {
+    return ""; // 파일 없으면 무시
+  }
+}
+
+/** 핸드오프 메모 저장: 에이전트 완료 후 다음 에이전트를 위해 자동 저장 */
+async function writeHandoffMemo(agentId: AgentId, agentName: string, content: string): Promise<void> {
+  const { promises: fsp } = await import("fs");
+  const pathMod = (await import("path")).default;
+  const base = process.env.PROJECT_BASE_DIR || process.cwd();
+  const dir = pathMod.join(base, "docs", "handoffs");
+  const filePath = pathMod.join(dir, `${agentId}.md`);
+  const memo = [
+    `# 🗒️ ${agentName} 핸드오프 메모`,
+    `생성: ${new Date().toISOString()}`,
+    ``,
+    `## 작업 요약`,
+    ``,
+    content.slice(0, 3000),
+  ].join("\n");
+  try {
+    await fsp.mkdir(dir, { recursive: true });
+    await fsp.writeFile(filePath, memo, "utf-8");
+  } catch { /* 저장 실패 무시 */ }
+}
+
+// 사용자 메시지를 처리하고 SSE 이벤트를 순차적으로 yield
+export async function* processUserMessage(
+  message: string,
+  conversationId?: string,
+  targetAgent?: AgentId
+): AsyncGenerator<SSEEvent> {
+  // 실행 시작 시각 기록 (완료 후 방금 수정된 파일 감지용)
+  const taskStartTime = Date.now();
+
+  // 새 요청 시작 시 AbortController 생성 (이전 요청은 이미 종료된 상태)
+  currentAbortController = new AbortController();
+  const abortSignal = currentAbortController.signal;
+
+  const agentId = targetAgent ?? selectAgent(message);
+
+  // 에이전트 비활성화 상태 확인
+  if (agentActiveMap[agentId] === false) {
+    yield {
+      type: "error",
+      error: `${AGENTS_CONFIG[agentId as keyof typeof AGENTS_CONFIG]?.name || agentId} 에이전트가 비활성화되어 있습니다.`,
+    };
+    return;
+  }
+
+  const config = AGENTS_CONFIG[agentId as keyof typeof AGENTS_CONFIG];
+  const agentName = config?.name || agentId;
+  const agentIcon = config?.icon || "🤖";
+
+  // 에이전트 활성화 알림 + WebSocket 브로드캐스트
+  agentStatusMap[agentId] = "active";
+  // 메시지 앞 50자를 현재 작업 요약으로 전송
+  socketBroadcast?.(agentId, "active", message.slice(0, 50));
+  yield {
+    type: "agent",
+    agent: agentId,
+    content: `${agentIcon} **${agentName}**이(가) 작업을 시작합니다...`,
+    status: "active",
+  };
+
+  // 멀티턴 대화 히스토리 로드
+  const history = conversationId
+    ? await loadConversationHistory(conversationId)
+    : [];
+
+  // 핸드오프 메모: 선행 에이전트 메모 읽어서 systemPrompt에 주입
+  const handoffSourceId = HANDOFF_SOURCES[agentId as AgentId];
+  const handoffMemo = handoffSourceId ? await readHandoffMemo(handoffSourceId) : "";
+  const baseSystemPrompt = AGENT_SYSTEM_PROMPTS[agentId as keyof typeof AGENT_SYSTEM_PROMPTS] ||
+    "당신은 JM Agent Team의 AI 에이전트입니다. 한국어로 응답하세요.";
+  const systemPromptWithHandoff = handoffMemo
+    ? `${baseSystemPrompt}\n\n---\n[이전 ${handoffSourceId} 핸드오프 메모]\n${handoffMemo}\n---`
+    : baseSystemPrompt;
+
+  // 장기 메모리: 이전 세션에서 학습한 내용 주입
+  const agentMemory = await readAgentMemory(agentId as AgentId);
+  const systemPromptFinal = agentMemory
+    ? `${systemPromptWithHandoff}\n\n---\n[장기 메모리 — 이전 세션 학습 내용]\n${agentMemory}\n---`
+    : systemPromptWithHandoff;
+
+  // 에이전트별 도구 설정
+  const tools = getAgentTools(agentId);
+
+  // ── 비동기 이벤트 큐 ─────────────────────────────────────────
+  // executeClaudeCode의 onStream/onToolUse 콜백이 클로저 밖이라 yield 불가
+  // 대신 큐에 쌓고 제너레이터 루프에서 실시간으로 yield합니다.
+  // 텍스트 청크(string) 또는 구조화된 SSE 이벤트(SSEEvent) 혼합 가능
+  const chunkQueue: (string | SSEEvent)[] = [];
+  let chunkResolve: (() => void) | null = null; // 대기 중인 yield 깨우기
+  let execDone = false;
+  let streamError: unknown = null;
+
+  // executeClaudeCode 반환값 (Claude의 순수 텍스트 응답, 도구 로그 제외)
+  // onStream이 호출됐다면 이미 streamBuffer에 포함됨
+  // onStream 없이 조용히 완료된 경우의 안전망으로 사용
+  let finalClaudeResponse = "";
+
+  // Claude가 실제 텍스트를 스트리밍했는지 여부 (도구 로그 제외)
+  let hasStreamedText = false;
+
+  /** 큐에 신호 보내기 (청크 추가 or 완료 시 호출) */
+  function signalQueue(): void {
+    chunkResolve?.();
+    chunkResolve = null;
+  }
+
+  // executeClaudeCode를 await 없이 시작: 청크는 큐에 쌓임
+  const execPromise = executeClaudeCode({
+    prompt: message,
+    systemPrompt: systemPromptFinal,
+    conversationHistory: history,
+    tools: tools.length > 0 ? tools : undefined,
+    // 모델별 동적 타임아웃: opus=10분 / sonnet=5분 / 기타=3분
+    timeout: getModelTimeout(config?.model),
+    // 스트리밍 청크 → 큐에 추가 후 즉시 제너레이터 루프로 전달
+    onStream: (chunk) => {
+      // 도구 로그(🔧)가 아닌 실제 Claude 텍스트 응답인지 확인
+      // SDK 모드: 도구 로그도 onStream으로 오므로 구별 필요
+      if (!chunk.includes("🔧") && chunk.trim().length > 0) {
+        hasStreamedText = true;
+      }
+      chunkQueue.push(chunk);
+      signalQueue();
+    },
+    onToolUse: async (toolName, toolInput) => {
+      // 도구 사용 시작 이벤트를 큐에 추가 (UI에 "🔧 도구명 사용 중..." 표시)
+      const toolUseEvent: SSEEvent = {
+        type: "tool_use",
+        agent: agentId,
+        tool: toolName,
+        toolInput: toolInput,
+      };
+      chunkQueue.push(toolUseEvent);
+      signalQueue();
+
+      // 실제 도구 실행
+      const result = await executeTool(toolName, toolInput);
+      apiCallCount++;
+
+      // 도구 결과 이벤트를 큐에 추가 (UI에 결과 표시 후 assistant 응답으로 대체됨)
+      // 너무 긴 결과는 300자로 축약 (토큰 절약 + 가독성)
+      const preview =
+        result.length > 300 ? result.slice(0, 300) + "\n... (결과 생략)" : result;
+      const toolResultEvent: SSEEvent = {
+        type: "tool_result",
+        agent: agentId,
+        tool: toolName,
+        toolResult: preview,
+      };
+      chunkQueue.push(toolResultEvent);
+
+      // 기존 호환성 유지: 도구 로그를 텍스트 청크로도 추가 (스트림 버퍼에 포함)
+      const toolLog = `\n\n🔧 **도구 실행**: \`${toolName}\`\n\`\`\`\n${preview}\n\`\`\`\n`;
+      chunkQueue.push(toolLog);
+      signalQueue();
+      return result;
+    },
+  })
+    .then((result) => {
+      // 최종 응답 텍스트 저장 (onStream과 동일 내용이지만 안전망용)
+      finalClaudeResponse = result;
+      execDone = true;
+      signalQueue();
+    })
+    .catch((err) => {
+      streamError = err;
+      execDone = true;
+      signalQueue();
+    });
+
+  // ── 이벤트 실시간 yield 루프 ──────────────────────────────────
+  // execDone이 true이고 큐가 비워질 때까지 반복
+  // abortSignal.aborted가 true이면 즉시 루프 탈출 (중단 기능)
+  let streamBuffer = "";
+  while (!execDone || chunkQueue.length > 0) {
+    // 중단 신호 감지 시 즉시 루프 탈출
+    if (abortSignal.aborted) break;
+
+    if (chunkQueue.length > 0) {
+      const item = chunkQueue.shift()!;
+
+      // 항목 타입 분기: SSEEvent 객체이면 그대로 yield, 문자열이면 stream 이벤트로 래핑
+      if (typeof item === "string") {
+        // 텍스트 청크: "stream" 이벤트로 ChatArea에 전달 (타이핑 효과)
+        streamBuffer += item;
+        yield {
+          type: "stream" as const,
+          agent: agentId,
+          content: item,
+          status: "active" as const,
+        };
+      } else {
+        // 구조화된 SSE 이벤트 (tool_use / tool_result 등): 그대로 yield
+        // ChatArea에서 타입별로 다른 UI 처리 가능
+        // 도구 로그 텍스트는 별도로 string 청크로도 큐에 추가되어 streamBuffer에 포함됨
+        yield item;
+      }
+    } else if (!execDone) {
+      // 다음 이벤트 또는 완료 신호 대기
+      await new Promise<void>((r) => {
+        chunkResolve = r;
+      });
+    }
+  }
+
+  // execPromise 완료 보장 (위 .catch에서 이미 처리됨, 안전 대기)
+  await execPromise;
+
+  // 함수 종료 시 AbortController 정리 (중단 후 재사용 방지)
+  currentAbortController = null;
+
+  apiCallCount++;
+  estimatedTokens += Math.round((message.length + streamBuffer.length) / 4);
+
+  // 중단 신호가 발생한 경우 중단 완료 이벤트를 반환하고 종료
+  if (abortSignal.aborted) {
+    agentStatusMap[agentId] = "idle";
+    socketBroadcast?.(agentId, "idle");
+    yield {
+      type: "done" as const,
+      summary: "작업이 중단되었습니다.",
+    };
+    return;
+  }
+
+  if (streamError) {
+    // claude subprocess 실패 → 실제 에러 메시지 표시 (가짜 성공 응답 금지)
+    agentStatusMap[agentId] = "error";
+    socketBroadcast?.(agentId, "error");
+    const errMsg = streamError instanceof Error ? streamError.message : String(streamError);
+    // 에러 내용을 스트림으로 전달 (UI에서 에러임을 명확히 인식)
+    yield {
+      type: "stream" as const,
+      agent: agentId,
+      content: `❌ **에이전트 실행 실패**\n\n\`\`\`\n${errMsg}\n\`\`\`\n\n**진단 방법:** 터미널에서 \`claude -p "테스트" --print\` 실행`,
+    };
+  } else {
+    // 정상 완료: 최종 전체 응답 이벤트 (ChatArea가 isStreaming 종료에 사용)
+    agentStatusMap[agentId] = "done";
+    socketBroadcast?.(agentId, "idle");
+
+    // 안전망 1: onStream 반환값이 있으면 streamBuffer에 추가
+    // (SDK 모드의 result.result 또는 API 모드의 finalText가 스트리밍 외부로 온 경우)
+    let displayContent = streamBuffer;
+    if (!hasStreamedText && finalClaudeResponse) {
+      displayContent = streamBuffer
+        ? streamBuffer + "\n\n---\n\n" + finalClaudeResponse
+        : finalClaudeResponse;
+    }
+
+    // ── 안전망 2: 출력 파일 자동 표시 (SDK 모드 agentic 안전망) ────────────────
+    // Claude Code CLI가 도구만 실행하고 텍스트를 출력하지 않는 경우
+    // Step A: 에이전트별 우선 출력 파일 확인 (planner → docs/plan.md 등)
+    // Step B: 우선 파일 없으면 → 프로젝트 전체에서 방금 수정된 파일 자동 감지
+    if (!hasStreamedText) {
+      const { promises: fsp } = await import("fs");
+      const { default: pathMod } = await import("path");
+      const base = process.env.PROJECT_BASE_DIR || process.cwd();
+      let foundOutput = false;
+
+      // Step A: 에이전트별 우선 출력 파일 (docs/plan.md 등)
+      const priorityFiles = AGENT_OUTPUT_FILES[agentId as AgentId] ?? [];
+      for (const filePath of priorityFiles) {
+        try {
+          const fullPath = pathMod.join(base, filePath);
+          const stat = await fsp.stat(fullPath);
+          if (stat.mtimeMs >= taskStartTime - 2000) {
+            const content = await fsp.readFile(fullPath, "utf-8");
+            if (content.trim()) {
+              const autoChunk = `\n\n---\n\n## 📄 **${filePath}**\n\n${content}`;
+              yield { type: "stream" as const, agent: agentId, content: autoChunk, status: "active" as const };
+              displayContent = (displayContent || "") + autoChunk;
+              foundOutput = true;
+              break;
+            }
+          }
+        } catch { /* 파일 없음 — 다음 파일 시도 */ }
+      }
+
+      // Step B: 우선 파일 미발견 → 프로젝트 전체 최근 수정 파일 스캔
+      // developer/researcher 등이 임의 경로에 파일을 작성한 경우 자동 감지
+      if (!foundOutput) {
+        try {
+          const recentFiles = await findRecentlyModifiedFiles(base, taskStartTime - 2000);
+          if (recentFiles.length > 0) {
+            let summary = `\n\n---\n\n## ✅ 작업 완료 — 수정된 파일 (${recentFiles.length}개)\n\n`;
+            summary += recentFiles.map((f) => `- \`${f}\``).join("\n");
+
+            // 소규모 파일(5000자 이하)은 내용도 표시 (최대 2개)
+            let shown = 0;
+            for (const f of recentFiles) {
+              if (shown >= 2) break;
+              try {
+                const content = await fsp.readFile(pathMod.join(base, f), "utf-8");
+                if (content.trim() && content.length <= 5000) {
+                  const ext = pathMod.extname(f).replace(".", "") || "text";
+                  summary += `\n\n### 📄 ${f}\n\`\`\`${ext}\n${content}\n\`\`\``;
+                  shown++;
+                }
+              } catch { /* skip */ }
+            }
+
+            yield { type: "stream" as const, agent: agentId, content: summary, status: "active" as const };
+            displayContent = (displayContent || "") + summary;
+            foundOutput = true;
+          }
+        } catch { /* 스캔 실패 시 무시 */ }
+      }
+
+      // Step C: 아무 파일도 수정되지 않았으면 도구 로그를 그대로 표시
+      if (!foundOutput && streamBuffer.trim()) {
+        displayContent = streamBuffer;
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
+    yield {
+      type: "agent" as const,
+      agent: agentId,
+      content: displayContent || "(응답 없음)",
+      status: "done" as const,
+    };
+
+    // 핸드오프 메모 저장: 다음 에이전트를 위한 컨텍스트 보존
+    if (displayContent && displayContent !== "(응답 없음)") {
+      await writeHandoffMemo(agentId as AgentId, agentName, displayContent);
+    }
+
+    // 장기 메모리 업데이트: 이번 세션 학습 내용을 다음 세션을 위해 저장
+    if (displayContent && displayContent !== "(응답 없음)") {
+      await updateAgentMemory(agentId as AgentId, agentName, displayContent.slice(0, 800));
+    }
+
+    // ── 파이프라인 제안: 실제 작업이 수행된 경우에만 다음 에이전트 진행 제안 ───
+    // hasStreamedText 또는 displayContent가 있을 때만 → 실제 작업이 완료된 경우
+    // "(응답 없음)"인 경우는 파이프라인 제안 안 함
+    const pipelineNext = PIPELINE_NEXT[agentId as AgentId];
+    if (pipelineNext && (hasStreamedText || (displayContent && displayContent !== "(응답 없음)"))) {
+      yield {
+        type: "pipeline" as const,
+        agent: agentId,
+        nextAgent: pipelineNext.nextAgent,
+        pipelineMsg: pipelineNext.msg,
+      };
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+  }
+
+  setTimeout(() => {
+    agentStatusMap[agentId] = "idle";
+  }, 3000);
+
+  yield {
+    type: "done" as const,
+    summary: "작업이 완료되었습니다.",
+  };
+}
+
+// 목업 응답 생성
+function generateMockResponse(agentId: string, message: string): string {
+  const responses: Record<string, string> = {
+    planner: `## 📋 기획 분석\n\n요청사항 **"${message.slice(0, 50)}..."**을 분석했습니다.\n\n### 제안 아키텍처\n- **Phase 1**: 요구사항 정리 및 기술 스택 선정\n- **Phase 2**: 핵심 기능 구현\n- **Phase 3**: 테스트 및 검증\n\n> ⚠️ ANTHROPIC_API_KEY가 설정되지 않아 목업 응답입니다. .env.local에 API 키를 추가하세요.`,
+    developer: `## ⚡ 개발 응답\n\n\`\`\`typescript\n// ${message.slice(0, 30)} 구현 예시\nexport function implementation() {\n  // TODO: API 키 설정 후 실제 코드 생성\n  return "API 키를 설정하면 실제 코드가 생성됩니다.";\n}\n\`\`\`\n\n> ⚠️ ANTHROPIC_API_KEY가 설정되지 않아 목업 응답입니다.`,
+    reviewer: `## 🔍 코드 리뷰\n\n**검토 완료** — 주요 발견 사항:\n\n1. ✅ 기본 구조 양호\n2. ⚠️ 에러 핸들링 보강 필요\n3. ℹ️ 타입 정의 추가 권장\n\n> ⚠️ ANTHROPIC_API_KEY가 설정되지 않아 목업 응답입니다.`,
+    writer: `## 📝 문서 초안\n\n### 개요\n${message.slice(0, 100)}...\n\n### 사용 방법\n1. 설치: \`npm install\`\n2. 실행: \`npm run dev\`\n\n> ⚠️ ANTHROPIC_API_KEY가 설정되지 않아 목업 응답입니다.`,
+    "security-auditor": `## 🔒 보안 감사 결과\n\n**위험도 평가**: 낮음 (목업)\n\n| 항목 | 상태 |\n|------|------|\n| XSS 취약점 | ✅ 없음 |\n| SQL 인젝션 | ✅ 없음 |\n| 인증 로직 | ⚠️ 확인 필요 |\n\n> ⚠️ ANTHROPIC_API_KEY가 설정되지 않아 목업 응답입니다.`,
+    researcher: `## 🔬 조사 결과\n\n**주제**: ${message.slice(0, 50)}\n\n### 주요 레퍼런스\n- 공식 문서 참조 권장\n- 커뮤니티 베스트 프랙티스 적용\n- 최신 업데이트 확인 필요\n\n> ⚠️ ANTHROPIC_API_KEY가 설정되지 않아 목업 응답입니다.`,
+  };
+
+  return responses[agentId] || responses["developer"];
+}
+
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

@@ -1,0 +1,102 @@
+# ============================================================================
+# docker-compose.yml — claude-agent-team
+# Services: app (Next.js + Socket.IO), db (PostgreSQL 16), redis (Redis 7)
+# Usage:
+#   docker compose up -d          # Start all services
+#   docker compose logs -f app    # Follow app logs
+#   docker compose down -v        # Stop and remove volumes
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # App — Next.js 15 custom server with Socket.IO
+  # --------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Anthropic API (required for CLAUDE_CODE_MODE=api)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CLAUDE_CODE_MODE=${CLAUDE_CODE_MODE:-sdk}
+      # Auth
+      - DASHBOARD_SECRET=${DASHBOARD_SECRET}
+      # Database — connects to the db service
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/agent_team
+      # Redis — connects to the redis service
+      - REDIS_URL=redis://redis:6379
+      # Optional: Telegram notifications
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      # Disable remote tunnel in Docker (use docker port mapping instead)
+      - ENABLE_REMOTE_ACCESS=false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - app-docs:/app/docs
+      - app-logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL 16
+  # --------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: agent_team
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agent_team"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # --------------------------------------------------------------------------
+  # Redis 7
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+  app-docs:
+    driver: local
+  app-logs:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

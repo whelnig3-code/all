@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>YATAI - Review Event QR Cards (A4 x4)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page { size: A4; margin: 0; }
+
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: #eee;
+  }
+
+  .sheet {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: white;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 8mm;
+    gap: 4mm;
+  }
+
+  .card {
+    background: #A1161A;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6mm;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-radius: 3mm;
+  }
+
+  .card::before,
+  .card::after {
+    content: '';
+    position: absolute;
+    width: 18mm;
+    height: 18mm;
+    border: 2px solid rgba(230, 184, 0, 0.3);
+  }
+  .card::before { top: 3mm; left: 3mm; border-right: none; border-bottom: none; }
+  .card::after { bottom: 3mm; right: 3mm; border-left: none; border-top: none; }
+
+  .top-hint {
+    font-size: 7.5pt;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 3mm;
+    letter-spacing: 0.5px;
+  }
+
+  .qr-box {
+    width: 32mm;
+    height: 32mm;
+    background: white;
+    border-radius: 3mm;
+    padding: 2mm;
+    margin-bottom: 3mm;
+  }
+  .qr-box img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .event-label {
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 1.5mm;
+  }
+
+  .reward {
+    font-size: 18pt;
+    font-weight: 900;
+    color: #E6B800;
+    letter-spacing: 2px;
+    margin-bottom: 1.5mm;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  .condition {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #E6B800;
+    margin-bottom: 2mm;
+  }
+  .condition .heart { color: #ff6b81; }
+
+  .divider {
+    width: 45mm;
+    height: 1px;
+    background: rgba(255,255,255,0.3);
+    margin-bottom: 2mm;
+  }
+
+  .rules {
+    font-size: 7.5pt;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+  }
+
+  .store-name {
+    margin-top: 3mm;
+    font-size: 10pt;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.5);
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="card">
+    <div class="top-hint">휴대폰 카메라로 QR코드를 인식해주세요</div>
+    <div class="qr-box"><img src="../qr/review.png" alt="Review QR"></div>
+    <div class="event-label">네이버 리뷰 EVENT!</div>
+    <div class="reward">음료 1잔 서비스</div>
+    <div class="condition"><span class="heart">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 별점 5점 + 메인메뉴 사진 필수!</div>
+    <div class="divider"></div>
+    <div class="rules">테이블당 1회만 가능합니다<br>리뷰 작성 후 화면을 직원에게 보여주세요</div>
+    <div class="store-name">YATAI</div>
+  </div>
+
+  <div class="card">
+    <div class="top-hint">휴대폰 카메라로 QR코드를 인식해주세요</div>
+    <div class="qr-box"><img src="../qr/review.png" alt="Review QR"></div>
+    <div class="event-label">네이버 리뷰 EVENT!</div>
+    <div class="reward">음료 1잔 서비스</div>
+    <div class="condition"><span class="heart">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 별점 5점 + 메인메뉴 사진 필수!</div>
+    <div class="divider"></div>
+    <div class="rules">테이블당 1회만 가능합니다<br>리뷰 작성 후 화면을 직원에게 보여주세요</div>
+    <div class="store-name">YATAI</div>
+  </div>
+
+  <div class="card">
+    <div class="top-hint">휴대폰 카메라로 QR코드를 인식해주세요</div>
+    <div class="qr-box"><img src="../qr/review.png" alt="Review QR"></div>
+    <div class="event-label">네이버 리뷰 EVENT!</div>
+    <div class="reward">음료 1잔 서비스</div>
+    <div class="condition"><span class="heart">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 별점 5점 + 메인메뉴 사진 필수!</div>
+    <div class="divider"></div>
+    <div class="rules">테이블당 1회만 가능합니다<br>리뷰 작성 후 화면을 직원에게 보여주세요</div>
+    <div class="store-name">YATAI</div>
+  </div>
+
+  <div class="card">
+    <div class="top-hint">휴대폰 카메라로 QR코드를 인식해주세요</div>
+    <div class="qr-box"><img src="../qr/review.png" alt="Review QR"></div>
+    <div class="event-label">네이버 리뷰 EVENT!</div>
+    <div class="reward">음료 1잔 서비스</div>
+    <div class="condition"><span class="heart">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 별점 5점 + 메인메뉴 사진 필수!</div>
+    <div class="divider"></div>
+    <div class="rules">테이블당 1회만 가능합니다<br>리뷰 작성 후 화면을 직원에게 보여주세요</div>
+    <div class="store-name">YATAI</div>
+  </div>
+</div>
+
+</body>
+</html>

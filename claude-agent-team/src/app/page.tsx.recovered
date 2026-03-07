@@ -1,0 +1,84 @@
+"use client";
+
+import { useState, useEffect, useCallback, useMemo } from "react";
+import Sidebar from "@/components/layout/Sidebar";
+import AgentBar from "@/components/layout/AgentBar";
+import ChatArea from "@/components/chat/ChatArea";
+import RightPanel from "@/components/layout/RightPanel";
+import TerminalPanel from "@/components/terminal/TerminalPanel";
+import SettingsPanel from "@/components/settings/SettingsPanel";
+import AgentTeamPanel from "@/components/agents/AgentTeamPanel";
+import WorkflowPanel from "@/components/workflow/WorkflowPanel";
+import CommandPalette from "@/components/common/CommandPalette";
+import FileExplorer from "@/components/files/FileExplorer";
+import CodeEditorPanel from "@/components/editor/CodeEditorPanel";
+import ProjectSetupPanel from "@/components/setup/ProjectSetupPanel";
+import TodoPanel from "@/components/todo/TodoPanel";
+import { useAgentStatus } from "@/hooks/useAgentStatus";
+import { Project } from "@/types";
+import { AGENTS_CONFIG } from "@/config/agents";
+
+// 대화 타입 (API 응답 형태와 일치)
+interface Conversation {
+  id: string;
+  projectId: string | null;
+  title: string;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState("chat");
+  const [collapsed, setCollapsed] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  // 파일 탐색기 → 에디터 연동: 열릴 파일 경로
+  const [editorFilePath, setEditorFilePath] = useState<string | null>(null);
+
+  // 대화 목록 및 활성 대화 상태
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+
+  // 모달 표시 상태
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+
+  // 커맨드 팔레트
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  // CommandPalette 에이전트 선택 시 ChatArea에 전달할 타겟 에이전트 ID
+  const [pendingTargetAgent, setPendingTargetAgent] = useState<string | null>(null);
+  // AgentTeamPanel 워크플로우 실행 시 ChatArea 팀업에 전달할 에이전트 목록
+  const [pendingWorkflowAgents, setPendingWorkflowAgents] = useState<string[] | null>(null);
+
+  // 반응형: 좁은 뷰포트(< 900px)에서 RightPanel 자동 숨김
+  // SSR/CSR Hydration 불일치 방지: 초기값 고정 후 useEffect에서 실제 값 설정
+  const [windowWidth, setWindowWidth] = useState(1280);
+  useEffect(() => {
+    setWindowWidth(window.innerWidth);
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  // 900px 미만이거나 파일/에디터 탭일 때 RightPanel 숨김
+  const showRightPanel = windowWidth >= 900 && activeTab !== "files" && activeTab !== "editor";
+
+  // Ctrl+K 커맨드 팔레트 단축키
+  const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      e.preventDefault();
+      setShowCommandPalette((prev) => !prev);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [handleGlobalKeyDown]);
+
+  // 에이전트 초기 상태 — useMemo로 참조 고정 (무한 리렌더 방지)
+  const initialAgents = useMemo(
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

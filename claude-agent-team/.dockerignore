@@ -1,0 +1,50 @@
+# Dependencies (rebuilt inside container)
+node_modules
+
+# Next.js build output (rebuilt inside container)
+.next
+
+# Git
+.git
+.github
+
+# Documentation
+docs
+*.md
+
+# Environment files (secrets — never bake into image)
+.env
+.env.*
+!.env.production
+
+# Agent temp files
+.agent-temp
+projects
+
+# Logs
+logs
+*.log
+
+# Editor / OS
+.vscode
+.DS_Store
+Thumbs.db
+*.swp
+
+# Dev / test files
+_test_shadow.ts
+chain_stress.log
+chain_summary_only.log
+check-port.ps1
+check-server.sh
+kill-port.ps1
+debug_pm2.txt
+current-url.txt
+nul
+do
+
+# Husky (git hooks — not needed in container)
+.husky
+
+# Claude
+.claude

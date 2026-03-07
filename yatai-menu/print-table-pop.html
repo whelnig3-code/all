@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>YATAI - Review Event Table POP</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: #FAF7F2; color: #1a1a1a;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pop-card {
+      width: var(--w, 148mm); height: var(--h, 210mm);
+      padding: var(--pad, 10mm);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      border: 2.5px solid #C45C26;
+      border-radius: 4mm;
+      background: #FAF7F2;
+    }
+    .pop-header {
+      width: 100%; text-align: center;
+      padding-bottom: var(--hdr-pb, 4mm);
+      border-bottom: 2.5px solid #C45C26;
+    }
+    .pop-brand { font-size: var(--brand-fs, 20pt); font-weight: 900; letter-spacing: 6px; color: #C45C26; }
+    .pop-brand-sub { font-size: var(--sub-fs, 7pt); color: #aaa; letter-spacing: 2px; margin-top: 1mm; }
+
+    .pop-title { font-size: var(--title-fs, 24pt); font-weight: 900; color: #C45C26; margin: var(--title-mt, 5mm) 0 var(--title-mb, 3mm); letter-spacing: 2px; }
+
+    .pop-stars { font-size: var(--stars-fs, 30pt); color: #D4A017; letter-spacing: 3px; }
+    .pop-reward { font-size: var(--reward-fs, 22pt); font-weight: 800; color: #1a1a1a; margin-top: var(--reward-mt, 3mm); line-height: 1.3; }
+    .pop-reward-en { font-size: var(--en-fs, 10pt); color: #999; margin-top: 2mm; }
+
+    .pop-qr { margin: var(--qr-mt, 5mm) 0; }
+    .pop-qr img { width: var(--qr-size, 55mm); height: var(--qr-size, 55mm); }
+
+    .pop-steps { text-align: left; width: 80%; margin: var(--steps-mt, 3mm) auto; }
+    .pop-step { font-size: var(--step-fs, 13pt); font-weight: 500; line-height: 1.8; }
+    .pop-step-num {
+      display: inline-block;
+      width: var(--num-w, 7.5mm); height: var(--num-w, 7.5mm);
+      line-height: var(--num-w, 7.5mm);
+      text-align: center; background: #C45C26;
+      color: #fff; font-size: var(--num-fs, 10pt);
+      font-weight: 700; border-radius: 50%; margin-right: 2mm;
+    }
+
+    .pop-footer {
+      width: 100%; text-align: center;
+      padding-top: var(--foot-pt, 3mm);
+      border-top: 1px solid #ddd;
+    }
+    .pop-limit { font-size: var(--limit-fs, 9pt); color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="pop-card">
+    <div class="pop-header">
+      <div class="pop-brand">YATAI</div>
+      <div class="pop-brand-sub">JAPANESE RESTAURANT</div>
+    </div>
+    <div class="pop-title">리뷰 이벤트</div>
+    <div>
+      <div class="pop-stars">★★★★★</div>
+      <div class="pop-reward">리뷰 작성 시<br>음료 1병 무료</div>
+      <div class="pop-reward-en">Leave a 5-star review<br>Get 1 free drink</div>
+    </div>
+    <div class="pop-qr"><img src="qr/review.png" alt="Review QR"></div>
+    <div class="pop-steps">
+      <div class="pop-step"><span class="pop-step-num">1</span>QR 코드 스캔</div>
+      <div class="pop-step"><span class="pop-step-num">2</span>네이버 리뷰 작성</div>
+      <div class="pop-step"><span class="pop-step-num">3</span>직원에게 보여주기</div>
+    </div>
+    <div class="pop-footer">
+      <div class="pop-limit">※ 테이블당 1회 제공 | Limit: 1 per table</div>
+    </div>
+  </div>
+</body>
+</html>

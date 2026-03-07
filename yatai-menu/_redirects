@@ -1,0 +1,3 @@
+# Netlify redirects
+# Default: tablet menu
+/   /index.html   200

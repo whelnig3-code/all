@@ -1,0 +1,122 @@
+// Prisma Schema for Claude Agent Team
+// Designed to match existing file-based data structures.
+// Phase 3-1: Schema design only — no migrations applied.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Conversation & Messages ─────────────────────────────────────────────────
+
+model Conversation {
+  id           String    @id @default(cuid())
+  title        String    @default("")
+  projectId    String?
+  project      Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  messageCount Int       @default(0)
+  messages     Message[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // "user" | "assistant"
+  content        String       @db.Text
+  agentId        String?      // which agent responded (e.g. "developer", "reviewer")
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ── Project ─────────────────────────────────────────────────────────────────
+
+model Project {
+  id            String         @id @default(cuid())
+  name          String
+  icon          String         @default("📁")
+  description   String         @default("")
+  path          String         @default("")
+  defaultAgent  String?        // AgentId — project-level default agent
+  conversations Conversation[]
+  workflows     Workflow[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+// ── Workflow ────────────────────────────────────────────────────────────────
+
+model Workflow {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  steps       Json     // string[] — ordered list of agentId values
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+// ── Todo ────────────────────────────────────────────────────────────────────
+
+model Todo {
+  id        String   @id @default(cuid())
+  text      String
+  done      Boolean  @default(false)
+  priority  String   @default("medium") // "low" | "medium" | "high"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Agent Telemetry ─────────────────────────────────────────────────────────
+
+model AgentStat {
+  id            String   @id @default(cuid())
+  agentId       String   // "developer", "reviewer", "planner", etc.
+  callCount     Int      @default(0)
+  totalTokens   Int      @default(0)
+  estimatedCost Float    @default(0)
+  date          DateTime @default(now()) @db.Date
+
+  @@unique([agentId, date])
+  @@index([agentId])
+  @@index([date])
+}
+
+// ── Agent Memory ────────────────────────────────────────────────────────────
+
+model AgentMemory {
+  id        String   @id @default(cuid())
+  agentId   String   @unique
+  content   String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// ── Custom Agent ──────────────────────────────────────────────────────────
+
+model CustomAgent {
+  id           String   @id            // kebab-case slug
+  name         String
+  icon         String   @default("🤖")
+  color        String   @default("#6B7280")
+  description  String   @default("")
+  model        String   @default("sonnet")
+  systemPrompt String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+}

@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 120 node_modules/.bin/next build:*)",
+      "Bash(dir:*)",
+      "Bash(git -C \"C:/Users/user/Desktop/claude-agent-team\" log --oneline -5)",
+      "Bash(git -C \"C:/Users/user/Desktop/claude-agent-team\" branch)",
+      "Bash(test:*)",
+      "Bash(npm:*)",
+      "Bash(node --version:*)",
+      "Bash(git -C \"/c/Users/user/Desktop/claude-agent-team\" status)",
+      "Bash(git -C \"/c/Users/user/Desktop/claude-agent-team\" worktree list)",
+      "Bash(git -C \"/c/Users/user/Desktop/claude-agent-team/.claude/worktrees/dreamy-torvalds\" status)",
+      "Bash(git -C /c/Users/user/jm-ai-workstation log --oneline -10)",
+      "Bash(python3:*)",
+      "Bash(node -e:*)",
+      "Bash(node:*)",
+      "Bash(# Check subdirectories that may contain JSONL files for dir in /c/Users/user/.claude/projects/C--Users-user-Desktop-claude-agent-team/*/; do if ls \"\"$dir\"\"*.jsonl | head -1 | grep -q jsonl; then echo \"\"### Dir: $dir\"\" for f in \"\"$dir\"\"*.jsonl; do echo \"\" Searching: $f\"\" node /tmp/extract_jsonl.js \"\"$f\"\" 2>&1 done fi done)",
+      "Bash(then)",
+      "Bash(echo:*)",
+      "Bash(for f in \"$dir\"*.jsonl)",
+      "Bash(do)",
+      "Bash(done)",
+      "Bash(fi)",
+      "Bash(SUBAGENT_DIR=\"/c/Users/user/.claude/projects/C--Users-user-Desktop-claude-agent-team--claude-worktrees-dreamy-torvalds/3645a962-27f8-417d-a790-1c4ea9c4e7a0/subagents\")",
+      "Bash(for f in \"$SUBAGENT_DIR\"/*.jsonl)",
+      "Bash(# Let''s look at other project directories in .claude/projects that might have these files ls \"\"/c/Users/user/.claude/projects/\"\")",
+      "Bash(# Search in the subdirectory JSONL files for conversation-store.ts and healthz find /c/Users/user/.claude/projects/ -name \"\"*.jsonl\"\")",
+      "Bash(# Now search for next.config.ts and package.json specifically for the claude-agent-team project find /c/Users/user/.claude/projects/ -name \"\"*.jsonl\"\")",
+      "Bash(# Get the package.json from claude-agent-team main project find /c/Users/user/.claude/projects/ -name \"\"*.jsonl\"\")",
+      "Bash(grep:*)",
+      "Bash(# Search all subagents in suspicious-jones for package.json and next.config.ts find \"\"/c/Users/user/.claude/projects/C--Users-user-Desktop-claude-agent-team--claude-worktrees-suspicious-jones/\"\" -name \"\"*.jsonl\"\")",
+      "Bash(# Search all wizardly-faraday subagents find \"\"/c/Users/user/.claude/projects/C--Users-user-Desktop-claude-agent-team--claude-worktrees-wizardly-faraday/\"\" -name \"\"*.jsonl\"\")",
+      "Bash(# Search the C--Users-user directory for all JSONL files to find the main package.json ls \"\"/c/Users/user/.claude/projects/C--Users-user/\"\")",
+      "Bash(# Search all C--Users-user JSONL files for main package.json and healthz find \"\"/c/Users/user/.claude/projects/C--Users-user/\"\" -name \"\"*.jsonl\"\")",
+      "Bash(# Let''s do a broader raw grep for healthz across all JSONL files find \"\"/c/Users/user/.claude/projects/\"\" -name \"\"*.jsonl\"\" | xargs grep -l \"\"healthz\"\")",
+      "Bash(# So healthz is mentioned in context of /api/healthz route - let''s search for Write of a healthz route file find \"\"/c/Users/user/.claude/projects/\"\" -name \"\"*.jsonl\"\" | xargs grep -l \"\"api/healthz\\\\|healthz.*route\\\\|route.*healthz\"\")"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "tenant_id": "YOUR_TENANT_ID",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "site_id": "YOUR_SHAREPOINT_SITE_ID",
+    "drive_id": "YOUR_DOCUMENT_LIBRARY_DRIVE_ID",
+    "folder_path": "안평리_모니터링_리포트",
+    "team_id": "YOUR_TEAM_ID",
+    "channel_id": "YOUR_CHANNEL_ID"
+}

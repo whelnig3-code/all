@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#1a1a1a">
+  <title>YATAI - Menu</title>
+  <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+  <header class="gallery-header">
+    <h1 class="gallery-title">YATAI</h1>
+    <div class="page-indicator">
+      <span class="current-page">1</span> / <span class="total-pages">9</span>
+    </div>
+  </header>
+
+  <main class="gallery-container" id="gallery">
+    <!-- Pages injected by gallery.js -->
+  </main>
+
+  <!-- Left/Right navigation arrows -->
+  <button class="nav-arrow nav-arrow--left" id="navLeft" aria-label="Previous page">&#8249;</button>
+  <button class="nav-arrow nav-arrow--right" id="navRight" aria-label="Next page">&#8250;</button>
+
+  <nav class="gallery-dots" id="dots">
+    <!-- Dot indicators injected by gallery.js -->
+  </nav>
+
+  <!-- Fullscreen overlay for zoom -->
+  <div class="zoom-overlay" id="zoomOverlay">
+    <button class="zoom-close" id="zoomClose" aria-label="Close">&times;</button>
+    <div class="zoom-container" id="zoomContainer">
+      <img class="zoom-image" id="zoomImage" src="" alt="">
+    </div>
+  </div>
+
+  <script src="gallery.js"></script>
+</body>
+</html>

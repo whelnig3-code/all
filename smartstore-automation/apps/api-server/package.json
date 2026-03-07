@@ -1,0 +1,49 @@
+{
+  "name": "@smartstore/api-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "@smartstore/adapters": "*",
+    "@smartstore/core": "*",
+    "@smartstore/db": "*",
+    "@smartstore/integrations": "*",
+    "@smartstore/shared": "*",
+    "bullmq": "^5.4.0",
+    "fastify": "^4.26.0",
+    "ioredis": "^5.3.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/*.test.ts"
+    ],
+    "moduleNameMapper": {
+      "^@smartstore/(.*)$": "<rootDir>/../../packages/$1/src/index.ts"
+    },
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
+  }
+}

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  <title>YATAI - Mobile Menu</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --bg: #1a1a1a; --text: #f5f5f5; --accent: #e8a735; --card-bg: #2c2c2c; --red: #A1161A; --red-light: #c42228; --surface: #222; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; -webkit-text-size-adjust: 100%; }
+
+    /* --- Header --- */
+    .header { position: sticky; top: 0; z-index: 50; background: var(--bg); border-bottom: 1px solid #333; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+    .logo { font-size: 20px; font-weight: 700; letter-spacing: 3px; color: var(--accent); }
+    .header-sub { font-size: 12px; color: #888; }
+
+    /* --- Language switcher --- */
+    .lang-bar { padding: 8px 16px; border-bottom: 1px solid #333; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .lang-bar::-webkit-scrollbar { display: none; }
+    .lang-switcher { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+    .lang-btn { background: #333; border: 1px solid #444; color: #ccc; padding: 5px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
+    .lang-btn-active { background: var(--red); color: #fff; border-color: var(--red); font-weight: 600; }
+    .lang-flag { font-size: 10px; font-weight: 700; opacity: 0.7; }
+    .lang-btn-active .lang-flag { opacity: 1; }
+    .lang-label { font-size: 12px; }
+
+    /* --- Category nav --- */
+    .cat-nav { background: var(--bg); border-bottom: 1px solid #333; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 8px 16px; }
+    .cat-nav::-webkit-scrollbar { display: none; }
+    .cat-nav-list { display: flex; gap: 8px; list-style: none; justify-content: center; flex-wrap: wrap; }
+    .cat-nav-item { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; color: #aaa; background: transparent; border: 1px solid #444; cursor: pointer; white-space: nowrap; text-decoration: none; transition: all 0.2s; }
+    .cat-nav-item.active { background: var(--accent); color: #1a1a1a; border-color: var(--accent); font-weight: 600; }
+
+    /* --- Content --- */
+    .content { padding: 0 12px 80px; }
+
+    /* --- Category section --- */
+    .category-section { padding-top: 16px; }
+    .category-title { font-size: 16px; font-weight: 700; color: var(--accent); padding: 8px 0; margin-bottom: 8px; border-bottom: 1px solid #333; }
+    .category-title-sub { font-size: 11px; color: #888; font-weight: 400; margin-left: 6px; }
+    .cat-desc { font-size: 12px; color: #888; margin-bottom: 8px; padding: 4px 0; }
+
+    /* --- Menu item --- */
+    .menu-item { display: flex; gap: 12px; background: var(--card-bg); border-radius: 10px; padding: 10px; margin-bottom: 10px; cursor: pointer; }
+    .menu-item:active { background: #353535; }
+    .menu-item-img-wrap {
+      width: 90px; height: 90px; border-radius: 8px; overflow: hidden;
+      background: #333; flex-shrink: 0; position: relative;
+    }
+    .menu-item-img { width: 100%; height: 100%; object-fit: cover; }
+    .menu-item-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+      color: #555; font-size: 10px; letter-spacing: 1px;
+    }
+    .menu-item-badge {
+      position: absolute; top: 4px; left: 4px;
+      background: var(--accent); color: #1a1a1a; font-size: 9px; font-weight: 700;
+      padding: 2px 5px; border-radius: 3px;
+    }
+    .menu-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+    .menu-item-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; line-height: 1.3; }
+    .menu-item-name-sub { font-size: 11px; color: #888; margin-bottom: 2px; }
+    .menu-item-desc { font-size: 12px; color: #999; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .menu-item-bottom { display: flex; align-items: center; gap: 8px; }
+    .menu-item-price { font-size: 15px; font-weight: 700; color: var(--accent); }
+    .menu-item-price.no-price { color: #666; font-weight: 400; font-size: 12px; }
+    .menu-item-time { font-size: 10px; background: var(--red); color: #fff; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+
+    /* --- Lunch banner --- */
+    .lunch-banner {
+      margin: 12px; background: var(--red); border-radius: 10px;
+      padding: 12px 16px; text-align: center;
+    }
+    .lunch-banner-time { font-size: 11px; opacity: 0.8; }
+    .lunch-banner-title { font-size: 16px; font-weight: 900; display: block; margin: 4px 0; }
+    .lunch-banner-desc { font-size: 11px; opacity: 0.9; display: block; }
+    .lunch-banner-price { font-size: 20px; font-weight: 900; color: var(--accent); display: block; margin-top: 4px; }
+
+    /* --- Footer --- */
+    .footer { padding: 16px; font-size: 10px; color: #666; line-height: 1.6; border-top: 1px solid #333; margin-top: 16px; }
+
+    .loading-msg { text-align: center; padding: 60px 20px; color: #888; font-size: 14px; }
+    .error-msg { text-align: center; padding: 60px 20px; color: #e74c3c; font-size: 14px; }
+
+    /* --- Popup overlay --- */
+    .popup-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      justify-content: center; align-items: flex-end;
+      padding: 0;
+    }
+    .popup-box {
+      background: var(--card-bg); border-radius: 16px 16px 0 0; width: 100%;
+      max-height: 92vh; overflow-y: auto; position: relative;
+    }
+    .popup-close {
+      position: absolute; top: 10px; right: 12px; z-index: 10;
+      background: rgba(0,0,0,0.6); border: none; color: #fff;
+      font-size: 22px; width: 32px; height: 32px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .popup-img-wrap {
+      position: relative; width: 100%; padding-top: 60%; overflow: hidden;
+      border-radius: 16px 16px 0 0;
+    }
+    .popup-img {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+    .popup-img-ph {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+      color: #555; font-size: 14px; letter-spacing: 3px;
+    }
+    .popup-badge {
+      position: absolute; top: 10px; left: 10px;
+      background: var(--accent); color: #1a1a1a; font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px;
+    }
+    .popup-body { padding: 14px 16px 20px; }
+    .popup-name { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+    .popup-name-ko { font-size: 13px; color: #888; margin-bottom: 4px; }
+    .popup-price { font-size: 20px; font-weight: 900; color: var(--accent); margin: 6px 0; }
+    .popup-desc {
+      font-size: 13px; color: #ccc; line-height: 1.6; margin-bottom: 6px;
+      background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;
+    }
+    .popup-desc-ko {
+      font-size: 12px; color: #888; line-height: 1.5;
+      padding: 0 12px 6px; font-style: italic;
+    }
+    .popup-time {
+      display: inline-block; background: var(--red); color: #fff;
+      font-size: 11px; padding: 3px 8px; border-radius: 4px; margin: 4px 0;
+    }
+    .popup-actions {
+      display: flex; align-items: center; gap: 10px; margin-top: 14px;
+    }
+    .popup-qty {
+      display: flex; align-items: center;
+      background: var(--surface); border-radius: 8px; overflow: hidden;
+    }
+    .popup-qty-btn {
+      background: none; border: none; color: var(--text); font-size: 18px;
+      width: 36px; height: 36px; cursor: pointer;
+    }
+    .popup-qty-btn:active { background: rgba(255,255,255,0.1); }
+    .popup-qty-val {
+      font-size: 15px; font-weight: 700; min-width: 26px; text-align: center;
+    }
+    .popup-add-btn {
+      flex: 1; background: var(--red); color: #fff; border: none;
+      font-size: 15px; font-weight: 700; padding: 10px 16px;
+      border-radius: 8px; cursor: pointer;
+    }
+    .popup-add-btn:active { background: var(--red-light); }
+
+    /* --- Cart popup --- */
+    .cart-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 6px; }
+    .cart-title { font-size: 17px; font-weight: 800; }
+    .cart-clear {
+      background: none; border: 1px solid #555; color: #aaa; font-size: 11px;
+      padding: 3px 8px; border-radius: 6px; cursor: pointer;
+    }
+    .cart-staff-note {
+      font-size: 10px; color: var(--accent); padding: 0 16px 6px;
+      letter-spacing: 1px; font-weight: 600;
+    }
+    .cart-empty { text-align: center; padding: 30px 16px; color: #888; }
+    .cart-list { padding: 0 16px; }
+    .cart-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #333;
+    }
+    .cart-row-name { font-size: 14px; font-weight: 600; flex: 1; min-width: 0; }
+    .cart-row-right { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+    .cart-row-qbtn {
+      background: var(--surface); border: 1px solid #444; color: var(--text);
+      width: 26px; height: 26px; border-radius: 6px; font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .cart-row-qty { font-size: 13px; font-weight: 600; min-width: 18px; text-align: center; }
+    .cart-row-price { font-size: 13px; font-weight: 700; color: var(--accent); min-width: 55px; text-align: right; }
+    .cart-row-del {
+      background: none; border: none; color: #666; font-size: 16px;
+      cursor: pointer; padding: 0 3px;
+    }
+    .cart-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; border-top: 2px solid var(--accent); margin-top: 6px;
+      font-size: 16px; font-weight: 800;
+    }
+    .cart-total-price { color: var(--accent); }
+
+    /* --- FAB --- */
+    .cart-fab {
+      position: fixed; bottom: 20px; right: 16px; z-index: 500;
+      width: 50px; height: 50px; border-radius: 50%;
+      background: var(--red); border: none; color: #fff;
+      font-size: 22px; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cart-fab:active { transform: scale(0.92); }
+    .cart-fab-badge {
+      position: absolute; top: -3px; right: -3px;
+      background: var(--accent); color: #1a1a1a; font-size: 11px; font-weight: 800;
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* --- Toast --- */
+    .cart-toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--accent); color: #1a1a1a; font-size: 13px; font-weight: 700;
+      padding: 8px 16px; border-radius: 8px;
+      opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+      z-index: 600;
+    }
+    .cart-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <span class="logo">YATAI</span>
+      <span class="header-sub" id="headerSub"></span>
+    </div>
+    <div class="lang-bar" id="langBar"></div>
+    <nav class="cat-nav" id="catNav">
+      <ul class="cat-nav-list" id="catNavList"></ul>
+    </nav>
+  </header>
+
+  <main class="content" id="menuContent">
+    <div class="loading-msg">Loading menu...</div>
+  </main>
+
+  <div class="lunch-banner" id="lunchBanner" style="display:none;">
+    <span class="lunch-banner-time">11:00 ~ 15:00</span>
+    <span class="lunch-banner-title" id="lunchTitle"></span>
+    <span class="lunch-banner-desc" id="lunchDesc"></span>
+    <span class="lunch-banner-price" id="lunchPrice"></span>
+  </div>
+
+  <footer class="footer" id="footer"></footer>
+
+  <!-- Item detail popup -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-box" id="popupContent"></div>
+  </div>
+
+  <!-- Cart popup -->
+  <div class="popup-overlay" id="cartOverlay">
+    <div class="popup-box" id="cartContent"></div>
+  </div>
+
+  <!-- FAB -->
+  <button class="cart-fab" onclick="Cart.showCart()">
+    <span style="font-size:22px;">&#128722;</span>
+    <span class="cart-fab-badge" id="cartFabBadge" style="display:none;">0</span>
+  </button>
+
+  <!-- Toast -->
+  <div class="cart-toast" id="cartToast"></div>
+
+  <script src="i18n.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var PLACEHOLDER = 'images/placeholder.webp';
+      var menuContent = document.getElementById('menuContent');
+      var headerSub = document.getElementById('headerSub');
+      var langBar = document.getElementById('langBar');
+      var catNavList = document.getElementById('catNavList');
+
+      var lunchLabels = {
+        title: { ko: '점심특선 LUNCH SPECIAL', en: 'LUNCH SPECIAL' },
+        desc: { ko: '돈까스백반 (돈까스+비빔국수+된장찌개+샐러드+밥+반찬)', en: 'Tonkatsu Set (Tonkatsu+Noodles+Soup+Salad+Rice+Side)' }
+      };
+      var originLabels = {
+        ko: '원산지: 광어-국내산 | 우럭-국내산 | 연어-노르웨이산 | 참치-원양산 | 우삼겹-미국산 | 닭고기-브라질산 | 바다장어-페루산 | 쭈꾸미-베트남산 | 알탕재료-러시아산',
+        en: 'Origin: Flatfish-Korea | Rockfish-Korea | Salmon-Norway | Tuna-Ocean | Beef-USA | Chicken-Brazil | Sea Eel-Peru | Octopus-Vietnam | Roe-Russia'
+      };
+
+      i18n.init();
+      i18n.renderSwitcher(langBar);
+
+      document.addEventListener('langchange', function () { renderAll(); });
+
+      fetch('data/menu.json')
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          window._menuData = data;
+          renderAll(data);
+        })
+        .catch(function () {
+          menuContent.innerHTML = '<div class="error-msg">Failed to load menu</div>';
+        });
+
+      function renderAll(data) {
+        data = data || window._menuData;
+        if (!data) return;
+        renderCatNav(data);
+        renderMenu(data);
+        renderLunch();
+        renderFooter();
+        updateActiveNav();
+      }
+
+      function renderCatNav(data) {
+        var cats = data.categories.slice().sort(function (a, b) { return a.sort - b.sort; });
+        var html = '';
+        cats.forEach(function (cat) {
+          var hasItems = data.items.some(function (i) { return i.category === cat.id && i.active; });
+          if (!hasItems) return;
+          html += '<li><a class="cat-nav-item" href="#cat-' + cat.id + '" data-cat="' + cat.id + '">' +
+            escapeHtml(i18n.getText(cat.name)) + '</a></li>';
+        });
+        catNavList.innerHTML = html;
+      }
+
+      function renderMenu(data) {
+        var cats = data.categories.slice().sort(function (a, b) { return a.sort - b.sort; });
+        var activeCount = 0;
+        var lang = i18n.getLang();
+        var html = '';
+
+        cats.forEach(function (cat) {
+          var items = data.items
+            .filter(function (i) { return i.category === cat.id && i.active; })
+            .sort(function (a, b) { return a.sort - b.sort; });
+          if (items.length === 0) return;
+          activeCount += items.length;
+
+          html += '<section class="category-section" id="cat-' + cat.id + '">';
+          html += '<h2 class="category-title">' + escapeHtml(i18n.getText(cat.name));
+          if (lang === 'ko' && cat.name.en) {
+            html += '<span class="category-title-sub">' + escapeHtml(cat.name.en) + '</span>';
+          } else if (lang !== 'ko' && cat.name.ko) {
+            html += '<span class="category-title-sub">' + escapeHtml(cat.name.ko) + '</span>';
+          }
+          html += '</h2>';
+          if (cat.description) {
+            var catDesc = i18n.getText(cat.description);
+            if (catDesc) {
+              html += '<div class="cat-desc">' + escapeHtml(catDesc) + '</div>';
+            }
+          }
+
+          items.forEach(function (item) {
+            var imgSrc = item.image || PLACEHOLDER;
+            var isPlaceholder = imgSrc === PLACEHOLDER;
+            var name = i18n.getText(item.name);
+            var koName = item.name.ko || '';
+            var desc = i18n.getText(item.description);
+
+            html += '<div class="menu-item" data-item-id="' + escapeAttr(item.id) + '">';
+
+            html += '<div class="menu-item-img-wrap">';
+            if (isPlaceholder) {
+              html += '<div class="menu-item-placeholder">PHOTO</div>';
+            } else {
+              html += '<img class="menu-item-img" loading="lazy" src="' + escapeAttr(imgSrc) + '" alt="' + escapeAttr(name) + '">';
+            }
+            if (item.recommended) {
+              html += '<span class="menu-item-badge">BEST</span>';
+            }
+            html += '</div>';
+
+            html += '<div class="menu-item-info">';
+            html += '<div class="menu-item-name">' + escapeHtml(name) + '</div>';
+            if (lang !== 'ko' && koName && koName !== name) {
+              html += '<div class="menu-item-name-sub">' + escapeHtml(koName) + '</div>';
+            }
+            if (desc) {
+              html += '<div class="menu-item-desc">' + escapeHtml(desc) + '</div>';
+            }
+            html += '<div class="menu-item-bottom">';
+            if (item.price > 0) {
+              html += '<span class="menu-item-price">' + i18n.formatPrice(item.price) + '</span>';
+            } else {
+              html += '<span class="menu-item-price no-price">' + i18n.t('priceTbd') + '</span>';
+            }
+            if (item.available_time) {
+              html += '<span class="menu-item-time">' + i18n.t('lunchOnly') + ' ' + item.available_time.start + '~' + item.available_time.end + '</span>';
+            }
+            html += '</div></div></div>';
+          });
+
+          html += '</section>';
+        });
+
+        menuContent.innerHTML = html;
+        headerSub.textContent = i18n.t('menu') + ' · ' + activeCount + ' ' + i18n.t('items');
+        scrollToHash();
+      }
+
+      function renderLunch() {
+        var lang = i18n.getLang();
+        var banner = document.getElementById('lunchBanner');
+        banner.style.display = '';
+        document.getElementById('lunchTitle').textContent = lunchLabels.title[lang] || lunchLabels.title.ko;
+        document.getElementById('lunchDesc').textContent = lunchLabels.desc[lang] || lunchLabels.desc.ko;
+        document.getElementById('lunchPrice').textContent = i18n.formatPrice(10000);
+      }
+
+      function renderFooter() {
+        var lang = i18n.getLang();
+        document.getElementById('footer').textContent = originLabels[lang] || originLabels.ko;
+      }
+
+      // --- Scroll / Nav ---
+      function scrollToHash() {
+        var hash = window.location.hash;
+        if (!hash) return;
+        var target = document.getElementById(hash.replace('#', ''));
+        if (target) setTimeout(function () { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+      }
+      window.addEventListener('hashchange', scrollToHash);
+
+      var scrollTimer = null;
+      window.addEventListener('scroll', function () {
+        if (scrollTimer) return;
+        scrollTimer = setTimeout(function () { scrollTimer = null; updateActiveNav(); }, 80);
+      });
+
+      function updateActiveNav() {
+        var sections = document.querySelectorAll('.category-section');
+        var navItems = catNavList.querySelectorAll('.cat-nav-item');
+        if (sections.length === 0) return;
+        var scrollTop = window.scrollY + 160;
+        var activeId = sections[0].id;
+        for (var i = 0; i < sections.length; i++) {
+          if (sections[i].offsetTop <= scrollTop) activeId = sections[i].id;
+        }
+        for (var j = 0; j < navItems.length; j++) {
+          var cat = navItems[j].getAttribute('data-cat');
+          if ('cat-' + cat === activeId) {
+            navItems[j].classList.add('active');
+            navItems[j].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } else {
+            navItems[j].classList.remove('active');
+          }
+        }
+      }
+
+      catNavList.addEventListener('click', function (e) {
+        var link = e.target.closest('.cat-nav-item');
+        if (!link) return;
+        e.preventDefault();
+        var cat = link.getAttribute('data-cat');
+        var target = document.getElementById('cat-' + cat);
+        if (target) {
+          window.history.replaceState(null, '', '#cat-' + cat);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+
+      // --- Card click -> item popup ---
+      menuContent.addEventListener('click', function (e) {
+        var card = e.target.closest('.menu-item');
+        if (!card) return;
+        var id = card.getAttribute('data-item-id');
+        var data = window._menuData;
+        if (!data) return;
+        var item = data.items.find(function (i) { return i.id === id; });
+        if (item) Cart.showItemPopup(item);
+      });
+
+      // Init cart
+      Cart.init();
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+      function escapeAttr(str) {
+        if (!str) return '';
+        return str.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      // PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    })();
+  </script>
+</body>
+</html>

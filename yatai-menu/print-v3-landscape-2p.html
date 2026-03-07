@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>YATAI Menu V3 - A3 Landscape 2P</title>
+  <style>
+    @page { size: 426mm 303mm; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 426mm;
+      font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background: #fff; color: #222;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .page {
+      width: 426mm; height: 303mm;
+      padding: 2mm 6mm 1.5mm;
+      display: flex; flex-direction: column;
+      page-break-after: always;
+      overflow: hidden; background: #fff;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    /* === HEADER === */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.5mm 0; border-bottom: 3px solid #A1161A;
+      flex-shrink: 0;
+    }
+    .header-brand { font-size: 28pt; font-weight: 900; letter-spacing: 10px; color: #A1161A; }
+    .header-right { text-align: right; }
+    .header-hours { font-size: 12pt; font-weight: 700; color: #222; }
+    .header-closed { font-size: 12pt; font-weight: 900; color: #A1161A; margin-top: 0.3mm; }
+
+    /* === BEST SECTION === */
+    .best-section { flex-shrink: 0; margin: 1mm 0; }
+    .best-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 4mm; padding: 1.5mm 0;
+      background: #A1161A; color: #fff;
+    }
+    .best-label { font-size: 12pt; font-weight: 900; color: #E6B800; letter-spacing: 2px; }
+    .best-item { font-size: 10pt; font-weight: 600; }
+    .best-sep { opacity: 0.5; font-size: 8pt; }
+    .best-photos {
+      display: flex; gap: 2mm;
+      margin-top: 1mm;
+    }
+    .best-photo-block { text-align: center; flex: 1; }
+    .best-photo-slot {
+      width: 100%; height: 25mm;
+      background: #f5f5f5; border: 2px dashed #ddd;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .best-photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+    .ph { font-size: 8pt; color: #bbb; }
+    .best-photo-name { font-size: 12pt; font-weight: 700; color: #A1161A; margin-top: 0.5mm; }
+    .best-photo-star { color: #E6B800; }
+    .best-photo-price { font-size: 13pt; font-weight: 800; color: #222; }
+
+    /* === PAGE2 HEADER === */
+    .page2-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: 0.5mm 0; border-bottom: 3px solid #A1161A;
+      flex-shrink: 0;
+    }
+    .page2-brand { font-size: 18pt; font-weight: 900; letter-spacing: 6px; color: #A1161A; }
+    .page2-sub { font-size: 8pt; color: #999; letter-spacing: 2px; }
+
+    /* === GRID === */
+    .cols-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4mm;
+      flex: 1;
+      align-content: start;
+      margin-top: 1mm;
+    }
+    .cols-3-p2 {
+      display: grid;
+      grid-template-columns: 0.7fr 1.15fr 1.15fr;
+      gap: 4mm;
+      flex: 1;
+      align-content: start;
+      margin-top: 1mm;
+    }
+
+    /* === CATEGORY === */
+    .cat { margin-bottom: 1.5mm; }
+    .cat-bar {
+      background: #A1161A; color: #fff;
+      padding: 0.8mm 3mm; margin-bottom: 0.5mm;
+      display: flex; align-items: baseline; gap: 2mm;
+    }
+    .cat-bar-ko { font-size: 16pt; font-weight: 800; }
+    .cat-bar-en { font-size: 7pt; opacity: 0.8; }
+    .cat-note { font-size: 9pt; color: #A1161A; font-style: italic; padding: 0.2mm 0 0.3mm 2mm; }
+    .notice-box {
+      margin: 1.5mm 0 1mm;
+      padding: 1.5mm 3mm;
+      background: #FFF8E1;
+      border: 1.5px solid #A1161A;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #A1161A;
+      line-height: 1.3;
+    }
+
+    /* === ITEM ROW === */
+    .row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 0.8mm 1.5mm; line-height: 1.4;
+    }
+    .name { font-size: 13pt; font-weight: 500; flex-shrink: 0; }
+    .name-en { font-size: 6pt; color: #999; margin-left: 1.5mm; }
+    .star { color: #E6B800; font-size: 12pt; margin-right: 0.5mm; font-weight: 700; }
+    .dots { flex: 1; border-bottom: 1.5px dotted #ccc; margin: 0 2mm; min-width: 4mm; }
+    .price { font-size: 13pt; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+    .desc { font-size: 10pt; color: #555; padding: 0.2mm 0 0.3mm 2.5mm; line-height: 1.2; }
+
+    /* === FOOTER === */
+    .footer { flex-shrink: 0; }
+    .origin { padding: 0.5mm 0 0.3mm; border-top: 2.5px solid #A1161A; }
+    .origin-title { font-size: 13pt; font-weight: 700; color: #A1161A; }
+    .origin-text { font-size: 13pt; color: #222; line-height: 1.4; }
+    .review { text-align: center; padding: 0.5mm 0; border-top: 3px solid #A1161A; }
+    .review-title { font-size: 14pt; font-weight: 800; color: #A1161A; }
+    .review-body { font-size: 12pt; margin-top: 0.2mm; }
+    .review-stars { color: #E6B800; font-size: 14pt; }
+    .review-limit { font-size: 9pt; color: #888; margin-top: 0.2mm; }
+    .qr-bar { display: flex; justify-content: center; gap: 24mm; padding: 0.5mm 0 0; }
+    .qr-block { text-align: center; }
+    .qr-img { width: 22mm; height: 22mm; border: 1.5px solid #A1161A; padding: 1mm; background: #fff; }
+    .qr-label { font-size: 10pt; font-weight: 700; color: #A1161A; margin-bottom: 0.3mm; }
+    .qr-desc { font-size: 9pt; color: #333; margin-top: 0.3mm; }
+
+    /* === PAGE 1 COMPACT FOOTER === */
+    .footer-compact .review { padding: 0.3mm 0; }
+    .footer-compact .review-title { font-size: 12pt; }
+    .footer-compact .review-body { font-size: 10pt; }
+    .footer-compact .review-stars { font-size: 12pt; }
+    .footer-compact .review-limit { font-size: 8pt; }
+    .footer-compact .qr-bar { gap: 20mm; padding: 0.3mm 0; }
+    .footer-compact .qr-img { width: 18mm; height: 18mm; }
+    .footer-compact .qr-label { font-size: 9pt; }
+    .footer-compact .qr-desc { font-size: 8pt; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  'use strict';
+  var NOTES={'sashimi-set':'\u25B8 \uC2A4\uB07C\uB2E4\uC2DC 12\uC885 \uC81C\uACF5 \u2014 12 side dishes'};
+  var NOTICE_HTML='<div class="notice-box">\u203B \uC54C\uB9BC: \uCD5C\uC0C1\uC758 \uD488\uC9C8\uC744 \uC704\uD574 \uB2F9\uC77C \uC0C1\uD669\uC5D0 \uB530\uB77C \uD68C(\uD65C\uC5B4/\uC219\uC131) \uBC0F \uC2A4\uB07C\uB2E4\uC2DC \uAD6C\uC131\uC774 \uBCC0\uB3D9\uB420 \uC218 \uC788\uC2B5\uB2C8\uB2E4.</div>';
+  var BEST=['set-b','sushi-assorted','roll-california','fried-tori-karaage','roll-dragon'];
+  var P1=[['set','sashimi','sashimi-set'],['sushi','sushi-single'],['roll','signature']];
+  var P2=[['grill','fried'],['meal','noodle'],['hotpot','drink','sake','extras']];
+  var ORIGINS=['\uAD11\uC5B4\u2014\uAD6D\uB0B4\uC0B0','\uC6B0\uB7ED\u2014\uAD6D\uB0B4\uC0B0','\uC5F0\uC5B4\u2014\uB178\uB974\uC6E8\uC774\uC0B0','\uCC38\uCE58\u2014\uC6D0\uC591\uC0B0','\uC6B0\uC0BC\uACA8\u2014\uBBF8\uAD6D\uC0B0','\uB2ED\uACE0\uAE30\u2014\uBE0C\uB77C\uC9C8\uC0B0','\uBC14\uB2E4\uC7A5\uC5B4\u2014\uD398\uB8E8\uC0B0','\uCABD\uAFB8\uBBF8\u2014\uBCA0\uD2B8\uB0A8\uC0B0','\uC54C\uD0D5 \uC7AC\uB8CC\u2014\uB7EC\uC2DC\uC544\uC0B0'];
+
+  fetch('data/menu.json').then(function(r){return r.json()}).then(render);
+
+  function render(d){
+    var cm={},bc={},im={};
+    d.categories.forEach(function(c){cm[c.id]=c});
+    d.items.forEach(function(i){im[i.id]=i;if(!i.active)return;if(!bc[i.category])bc[i.category]=[];bc[i.category].push(i)});
+    Object.keys(bc).forEach(function(k){bc[k].sort(function(a,b){return a.sort-b.sort})});
+
+    var h='';
+
+    /* ========== PAGE 1 ========== */
+    h+='<div class="page">';
+    h+='<div class="header"><div class="header-brand">YATAI</div>';
+    h+='<div class="header-right"><div class="header-hours">11:00 ~ 23:00 (Last Order 22:00)</div>';
+    h+='<div class="header-closed">\uC815\uAE30\uD734\uBB34: \uB9E4\uC8FC \uD654\uC694\uC77C</div></div></div>';
+
+    /* BEST section */
+    h+='<div class="best-section">';
+    var bp=[];BEST.forEach(function(id){var it=im[id];if(it)bp.push('<span class="best-item">'+esc(it.name.ko)+'</span>')});
+    h+='<div class="best-bar"><span class="best-label">\u2B50 \uC57C\uD0C0\uC774 \uCD94\uCC9C\uBA54\uB274</span>'+bp.join('<span class="best-sep">\u00B7</span>')+'</div>';
+    h+='<div class="best-photos">';
+    BEST.forEach(function(id){
+      var it=im[id];
+      h+='<div class="best-photo-block"><div class="best-photo-slot">';
+      if(it&&it.image&&it.image!=='images/placeholder.webp'){h+='<img src="'+it.image+'">';}
+      else{h+='<span class="ph">PHOTO</span>';}
+      h+='</div>';
+      if(it){h+='<div class="best-photo-name"><span class="best-photo-star">\u2605</span> '+esc(it.name.ko)+'</div><div class="best-photo-price">\u20A9'+it.price.toLocaleString('ko-KR')+'</div>';}
+      h+='</div>';
+    });
+    h+='</div></div>';
+
+    /* Menu grid */
+    h+='<div class="cols-3">';
+    P1.forEach(function(cats,ci){h+='<div>';cats.forEach(function(cid){h+=catHTML(cm[cid],bc[cid],NOTES[cid])});if(ci===0)h+=NOTICE_HTML;h+='</div>'});
+    h+='</div>';
+
+    /* Page 1 Footer - Review + QR (centered, compact) */
+    h+='<div class="footer footer-compact">';
+    h+='<div class="review"><div class="review-title">\uB9AC\uBDF0 \uC774\uBCA4\uD2B8</div>';
+    h+='<div class="review-body">\uB124\uC774\uBC84 \uB9AC\uBDF0 <span class="review-stars">\u2605\u2605\u2605\u2605\u2605</span> \uC791\uC131 \uC2DC \uC74C\uB8CC 1\uBCD1 \uBB34\uB8CC</div>';
+    h+='<div class="review-limit">\u203B 1 \uD14C\uC774\uBE14\uB2F9 1\uD68C</div></div>';
+    h+='<div class="qr-bar">';
+    h+='<div class="qr-block"><div class="qr-label">\uD83D\uDCDD Review</div><img class="qr-img" src="qr/review.png"><div class="qr-desc">\uB124\uC774\uBC84 \uB9AC\uBDF0 \uC791\uC131</div></div>';
+    h+='<div class="qr-block"><div class="qr-label">\uD83D\uDCF7 Menu Photos</div><img class="qr-img" src="qr/gallery.png"><div class="qr-desc">\uC74C\uC2DD \uC0AC\uC9C4 \uBCF4\uAE30</div></div>';
+    h+='<div class="qr-block"><div class="qr-label">\uD83C\uDF10 Mobile Menu</div><img class="qr-img" src="qr/mobile-menu.png"><div class="qr-desc">\uBAA8\uBC14\uC77C \uBA54\uB274 \uBCF4\uAE30</div></div>';
+    h+='</div></div>';
+
+    h+='</div>';
+
+    /* ========== PAGE 2 ========== */
+    h+='<div class="page">';
+    h+='<div class="page2-header"><div class="page2-brand">YATAI</div>';
+    h+='<div class="page2-sub">JAPANESE RESTAURANT \u00B7 MENU</div></div>';
+
+    h+='<div class="cols-3-p2">';
+    P2.forEach(function(cats){h+='<div>';cats.forEach(function(cid){h+=catHTML(cm[cid],bc[cid],NOTES[cid])});h+='</div>'});
+    h+='</div>';
+
+    /* Footer */
+    h+='<div class="footer">';
+    h+='<div class="origin"><span class="origin-title">\uC6D0\uC0B0\uC9C0 \uD45C\uC2DC  </span><span class="origin-text">'+ORIGINS.join(' | ')+'</span></div>';
+    h+='<div class="review"><div class="review-title">\uB9AC\uBDF0 \uC774\uBCA4\uD2B8</div>';
+    h+='<div class="review-body">\uB124\uC774\uBC84 \uB9AC\uBDF0 <span class="review-stars">\u2605\u2605\u2605\u2605\u2605</span> \uC791\uC131 \uC2DC \uC74C\uB8CC 1\uBCD1 \uBB34\uB8CC</div>';
+    h+='<div class="review-limit">\u203B 1 \uD14C\uC774\uBE14\uB2F9 1\uD68C</div></div>';
+    h+='<div class="qr-bar">';
+    h+='<div class="qr-block"><div class="qr-label">\uD83D\uDCDD Review</div><img class="qr-img" src="qr/review.png"><div class="qr-desc">\uB124\uC774\uBC84 \uB9AC\uBDF0 \uC791\uC131</div></div>';
+    h+='<div class="qr-block"><div class="qr-label">\uD83D\uDCF7 Menu Photos</div><img class="qr-img" src="qr/gallery.png"><div class="qr-desc">\uC74C\uC2DD \uC0AC\uC9C4 \uBCF4\uAE30</div></div>';
+    h+='<div class="qr-block"><div class="qr-label">\uD83C\uDF10 Mobile Menu</div><img class="qr-img" src="qr/mobile-menu.png"><div class="qr-desc">\uBAA8\uBC14\uC77C \uBA54\uB274 \uBCF4\uAE30</div></div>';
+    h+='</div></div>';
+
+    h+='</div>';
+    document.getElementById('app').innerHTML=h;
+  }
+
+  function catHTML(cat,items,note){
+    if(!cat||!items||!items.length)return'';
+    var h='<div class="cat"><div class="cat-bar"><span class="cat-bar-ko">'+esc(cat.name.ko)+'</span><span class="cat-bar-en">'+esc(cat.name.en)+'</span></div>';
+    if(note)h+='<div class="cat-note">'+note+'</div>';
+    items.forEach(function(it){
+      h+='<div class="row"><span class="name">';
+      if(it.recommended)h+='<span class="star">\u2605</span>';
+      h+=esc(it.name.ko);if(it.name.en)h+='<span class="name-en">'+esc(it.name.en)+'</span>';
+      h+='</span><span class="dots"></span><span class="price">\u20A9'+it.price.toLocaleString('ko-KR')+'</span></div>';
+      if(it.description&&it.description.ko)h+='<div class="desc">'+esc(it.description.ko)+'</div>';
+    });
+    return h+'</div>';
+  }
+  function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+})();
+</script>
+</body>
+</html>

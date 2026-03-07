@@ -1,0 +1,40 @@
+{
+  "name": "smartstore-automation",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "npm run dev -w apps/api-server",
+    "dev:worker": "npm run dev -w apps/worker",
+    "dev:dashboard": "npm run dev -w apps/dashboard",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "lint": "turbo run lint",
+    "lint:all": "eslint 'packages/*/src/**/*.ts' 'apps/api-server/src/**/*.ts' 'apps/worker/src/**/*.ts' --max-warnings 50",
+    "format": "prettier --write 'packages/*/src/**/*.ts' 'apps/*/src/**/*.{ts,tsx}'",
+    "format:check": "prettier --check 'packages/*/src/**/*.ts' 'apps/*/src/**/*.{ts,tsx}'",
+    "db:push": "npm run db:push -w packages/db",
+    "db:migrate": "npm run migrate -w packages/db",
+    "db:generate": "npm run generate -w packages/db",
+    "db:studio": "npm run studio -w packages/db",
+    "db:verify-unique-key": "npx tsx scripts/verify-unique-key.ts",
+    "db:fix-unique-key": "npx tsx scripts/fix-unique-key.ts",
+    "db:push-safe": "npx tsx scripts/push-safe.ts",
+    "db:seed-settings": "npx tsx scripts/seed-settings.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "prettier": "^3.8.1",
+    "turbo": "^1.13.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

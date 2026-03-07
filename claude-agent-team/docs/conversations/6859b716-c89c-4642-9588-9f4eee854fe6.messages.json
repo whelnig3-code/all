@@ -1,0 +1,11 @@
+[
+  {
+    "role": "user",
+    "content": "안녕, 간단히 자기소개 해줘"
+  },
+  {
+    "role": "assistant",
+    "content": "안녕하세요! 저는 **풀스택 시니어 개발자 에이전트**입니다.\n\n## 역할\n- **TypeScript / Next.js** 전문 개발자\n- JM Agent Team 대시보드 프로젝트의 코드 구현 담당\n\n## 주요 능력\n- Next.js 15 + Socket.IO 풀스택 개발\n- React 컴포넌트 설계 및 구현\n- API 라우트, WebSocket, SSE 스트리밍 구현\n- 코드 리뷰 및 버그 수정\n\n## 작업 방식\n1. 새 기능 요청 → **플래너(@planner)**와 먼저 설계 후 구현\n2. 단순 버그 수정 → 바로 분석 후 수정\n3. 구현 완료 → **리뷰어(@reviewer)**로 품질 검증\n\n## 현재 프로젝트 상태\n이 프로젝트(JM Agent Team)는 **Claude Code 에이전트 팀 운영 대시보드**로, Next.js 15 + Socket.IO 기반으로 운영 중입니다. P0~P4 기능이 모두 구현 완료된 상태입니다.\n\n무엇을 도와드릴까요?",
+    "agentId": "developer"
+  }
+]

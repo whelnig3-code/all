@@ -1,0 +1,17 @@
+[0] Script started 
+   2026-03-03  7:42:51.44 
+[1] Node v24.14.0 
+[2] PM2 v6.0.14 
+[5] SECRET OK 
+[6] Build OK 
+[7] Port clearing 
+[7] Port cleared EL=0 
+[pm2-ping] Starting 
+[pm2-ping] Done EL=0 
+[pm2-stop] 
+[pm2-delete] 
+[pm2-start] Starting 
+[pm2-start] Done EL=0 
+[pm2-ok] 
+[url-found] 
+[show-done] 

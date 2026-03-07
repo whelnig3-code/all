@@ -1,0 +1,15 @@
+[
+  {
+    "role": "user",
+    "content": "이 코드 좀 봐줘"
+  },
+  {
+    "role": "assistant",
+    "content": "어떤 코드를 검토해드릴까요? 다음 중 하나를 알려주세요:\n\n1. **특정 파일 경로** — 예: `src/lib/agent-manager.ts`\n2. **코드 직접 붙여넣기** — 검토할 코드를 여기에 붙여넣기\n3. **전체 프로젝트 핵심 파일 리뷰** — 현재 프로젝트의 주요 파일들 일괄 검토",
+    "agentId": "reviewer"
+  },
+  {
+    "role": "user",
+    "content": "이 코드 좀 봐줘"
+  }
+]

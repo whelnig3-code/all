@@ -1,0 +1,38 @@
+{
+  "name": "@smartstore/crawlers",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "@smartstore/shared": "*",
+    "playwright": "^1.44.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.4.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/*.test.ts"
+    ],
+    "moduleNameMapper": {
+      "^@smartstore/(.*)$": "<rootDir>/../../packages/$1/src/index.ts"
+    },
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
+  }
+}

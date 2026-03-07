@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>YATAI Menu - A3 Portrait 2P - Izakaya</title>
+  <style>
+    @page { size: 303mm 426mm; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 303mm;
+      font-family: 'Segoe UI', 'Noto Sans KR', 'Noto Sans JP', sans-serif;
+      background: #FAF7F2; color: #1a1a1a;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .page {
+      width: 303mm; height: 426mm;
+      padding: 8mm 10mm 8mm;
+      page-break-after: always;
+      overflow: hidden;
+      background: #FAF7F2;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    /* === HEADER === */
+    .header {
+      text-align: center;
+      padding: 4mm 0;
+      margin-bottom: 3mm;
+      border-bottom: 3px solid #C45C26;
+      background: linear-gradient(180deg, #FAF7F2 0%, #F5EDE0 100%);
+    }
+    .header-brand {
+      font-size: 40pt; font-weight: 900;
+      letter-spacing: 10px; color: #C45C26;
+    }
+    .header-sub {
+      font-size: 9pt; color: #888;
+      letter-spacing: 4px; margin-top: 1mm;
+    }
+    .header-hours {
+      font-size: 8pt; color: #aaa;
+      margin-top: 2mm; letter-spacing: 0.5px;
+    }
+
+    /* === POPULAR === */
+    .popular {
+      text-align: center;
+      padding: 2.5mm 0;
+      margin-bottom: 3mm;
+      background: #C45C26;
+      color: #fff;
+      border-radius: 1.5mm;
+    }
+    .popular-title {
+      font-size: 9pt; font-weight: 700;
+      letter-spacing: 1px; margin-bottom: 1mm;
+    }
+    .popular-items { font-size: 8.5pt; opacity: 0.95; }
+    .popular-items span { margin: 0 2.5mm; }
+
+    /* === PAGE 2 LABEL === */
+    .page2-header {
+      text-align: center;
+      padding: 3mm 0;
+      margin-bottom: 3mm;
+      border-bottom: 3px solid #C45C26;
+    }
+    .page2-brand {
+      font-size: 16pt; font-weight: 800;
+      letter-spacing: 6px; color: #C45C26;
+    }
+    .page2-sub {
+      font-size: 8pt; color: #aaa; letter-spacing: 2px; margin-top: 1mm;
+    }
+
+    /* === LAYOUT === */
+    .layout-3col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4mm;
+    }
+    .layout-front {
+      display: grid;
+      grid-template-columns: 1fr 80mm 1fr;
+      gap: 3mm;
+    }
+
+    /* === CENTER BRAND COLUMN === */
+    .brand-col {
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 0 2mm;
+    }
+    .brand-vertical {
+      writing-mode: vertical-rl;
+      font-size: 48pt; font-weight: 900;
+      color: #C45C26;
+      letter-spacing: 8px;
+      margin: 6mm 0;
+      text-orientation: mixed;
+    }
+    .brand-jp {
+      writing-mode: vertical-rl;
+      font-size: 14pt; color: #C45C26;
+      letter-spacing: 4px;
+      margin-bottom: 4mm;
+    }
+    .brand-divider {
+      width: 60%; height: 1.5px;
+      background: #C45C26; margin: 3mm 0;
+    }
+    .brand-sub-text {
+      font-size: 7pt; color: #aaa;
+      letter-spacing: 1px; text-align: center;
+    }
+
+    /* === CATEGORY HEADER BAR === */
+    .cat { break-inside: avoid; margin-bottom: 3mm; }
+    .cat-bar {
+      background: #C45C26;
+      color: #fff;
+      padding: 1.2mm 3mm;
+      margin-bottom: 1.5mm;
+      border-radius: 1mm;
+      display: flex;
+      align-items: baseline;
+      gap: 2mm;
+    }
+    .cat-bar-ko {
+      font-size: 10pt; font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .cat-bar-en {
+      font-size: 6.5pt; font-weight: 400;
+      opacity: 0.8;
+    }
+    .cat-note {
+      font-size: 6pt; color: #C45C26;
+      font-style: italic;
+      padding: 0.3mm 0 1mm 1mm;
+      line-height: 1.3;
+    }
+
+    /* === ITEM ROW === */
+    .row {
+      display: flex; justify-content: space-between;
+      align-items: baseline;
+      padding: 0.6mm 1mm; line-height: 1.35;
+    }
+    .name {
+      font-size: 9pt; font-weight: 500;
+      flex-shrink: 0;
+    }
+    .name-en {
+      font-size: 5.5pt; color: #999;
+      margin-left: 1mm;
+    }
+    .star {
+      color: #D4A017; font-size: 8pt;
+      margin-right: 0.5mm;
+    }
+    .dots {
+      flex: 1;
+      border-bottom: 1px dotted #ccc;
+      margin: 0 1.5mm; min-width: 3mm;
+    }
+    .price {
+      font-size: 9pt; font-weight: 600;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .desc {
+      font-size: 5.5pt; color: #999;
+      padding-left: 2mm; margin-bottom: 0.2mm;
+      line-height: 1.25;
+    }
+
+    /* === BOTTOM SECTIONS === */
+    .full-span { grid-column: 1 / -1; }
+    .origin {
+      margin-top: 2mm; padding-top: 2mm;
+      border-top: 1px solid #ddd;
+    }
+    .origin-title {
+      font-size: 7pt; font-weight: 700;
+      color: #C45C26; margin-bottom: 0.5mm;
+    }
+    .origin-text { font-size: 6pt; color: #999; line-height: 1.5; }
+
+    .review {
+      text-align: center;
+      margin-top: 2mm; padding: 2.5mm 0;
+      border-top: 2px solid #C45C26;
+    }
+    .review-title {
+      font-size: 10pt; font-weight: 800;
+      color: #C45C26; margin-bottom: 1mm;
+      letter-spacing: 1px;
+    }
+    .review-body { font-size: 8.5pt; color: #1a1a1a; line-height: 1.5; }
+    .review-en { font-size: 6.5pt; color: #aaa; margin-top: 0.5mm; }
+    .review-limit { font-size: 6pt; color: #ccc; margin-top: 0.5mm; }
+
+    .qr-bar {
+      display: flex; justify-content: center;
+      gap: 16mm; padding-top: 3mm; margin-top: 2mm;
+      border-top: 1px solid #ddd;
+    }
+    .qr-block { text-align: center; }
+    .qr-img { width: 20mm; height: 20mm; }
+    .qr-label {
+      font-size: 8pt; font-weight: 700;
+      color: #C45C26; margin-bottom: 1mm;
+    }
+    .qr-desc { font-size: 6.5pt; color: #999; margin-top: 1mm; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+  (function(){
+    'use strict';
+
+    var CAT_NOTES = {
+      'sashimi-set': '\u25B8 \uC2A4\uB044\uB2E4\uC2DC 12\uC885 \uC81C\uACF5 — Fresh sashimi served with 12 side dishes.'
+    };
+    var POPULAR = ['sushi-assorted','fried-tori-karaage','roll-dragon'];
+    var ORIGINS = [
+      '\uAD11\uC5B4—\uAD6D\uB0B4\uC0B0','\uC6B0\uB7ED—\uAD6D\uB0B4\uC0B0',
+      '\uC5F0\uC5B4—\uB178\uB974\uC6E8\uC774\uC0B0','\uCC38\uCE58—\uC6D0\uC591\uC0B0',
+      '\uC6B0\uC0BC\uACA8—\uBBF8\uAD6D\uC0B0','\uB2ED\uACE0\uAE30—\uBE0C\uB77C\uC9C8\uC0B0',
+      '\uBC14\uB2E4\uC7A5\uC5B4—\uD398\uB8E8\uC0B0','\uCABD\uAFB8\uBBF8—\uBCA0\uD2B8\uB0A8\uC0B0',
+      '\uC54C\uD0D5 \uC7AC\uB8CC—\uB7EC\uC2DC\uC544\uC0B0'
+    ];
+
+    fetch('data/menu.json').then(function(r){return r.json()}).then(render);
+
+    function render(data){
+      var cm={},bc={},im={};
+      data.categories.forEach(function(c){cm[c.id]=c});
+      data.items.forEach(function(i){
+        im[i.id]=i;
+        if(!i.active)return;
+        if(!bc[i.category])bc[i.category]=[];
+        bc[i.category].push(i);
+      });
+      Object.keys(bc).forEach(function(k){bc[k].sort(function(a,b){return a.sort-b.sort})});
+
+      var h='';
+
+      // ========== PAGE 1: FRONT ==========
+      h+='<div class="page">';
+      h+=headerHTML();
+      h+=popularHTML(im);
+
+      h+='<div class="layout-front">';
+
+      // LEFT: Set + Sashimi
+      h+='<div>';
+      h+=catHTML(cm['set'],bc['set']);
+      h+=catHTML(cm['sashimi'],bc['sashimi']);
+      h+=catHTML(cm['sashimi-set'],bc['sashimi-set'],CAT_NOTES['sashimi-set']);
+      h+='</div>';
+
+      // CENTER: Brand column
+      h+='<div class="brand-col">';
+      h+='<div class="brand-divider"></div>';
+      h+='<div style="display:flex;gap:4mm;align-items:center;margin:4mm 0">';
+      h+='<div class="brand-vertical">YATAI</div>';
+      h+='<div class="brand-jp">\u65E5\u672C\u6599\u7406</div>';
+      h+='</div>';
+      h+='<div class="brand-divider"></div>';
+      h+='<div style="margin-top:6mm">';
+      h+=catHTML(cm['sushi-single'],bc['sushi-single']);
+      h+='</div>';
+      h+='</div>';
+
+      // RIGHT: Sushi + Roll
+      h+='<div>';
+      h+=catHTML(cm['sushi'],bc['sushi']);
+      h+=catHTML(cm['roll'],bc['roll']);
+      h+='</div>';
+
+      h+='</div>'; // layout-front
+      h+='</div>'; // page
+
+      // ========== PAGE 2: BACK ==========
+      h+='<div class="page">';
+      h+='<div class="page2-header"><div class="page2-brand">YATAI</div><div class="page2-sub">JAPANESE RESTAURANT \u00B7 MENU</div></div>';
+
+      h+='<div class="layout-3col">';
+
+      // Col 1: Signature + Grill + Fried
+      h+='<div>';
+      h+=catHTML(cm['signature'],bc['signature']);
+      h+=catHTML(cm['grill'],bc['grill']);
+      h+=catHTML(cm['fried'],bc['fried']);
+      h+='</div>';
+
+      // Col 2: Rice Meals + Noodles
+      h+='<div>';
+      h+=catHTML(cm['meal'],bc['meal']);
+      h+=catHTML(cm['noodle'],bc['noodle']);
+      h+='</div>';
+
+      // Col 3: Hot Pot + Drinks + Extras
+      h+='<div>';
+      h+=catHTML(cm['hotpot'],bc['hotpot']);
+      h+=catHTML(cm['drink'],bc['drink']);
+      h+=catHTML(cm['extras'],bc['extras']);
+      h+='</div>';
+
+      h+='<div class="full-span origin"><div class="origin-title">\uC6D0\uC0B0\uC9C0 \uD45C\uC2DC</div><div class="origin-text">'+ORIGINS.join(' &nbsp;|&nbsp; ')+'</div></div>';
+      h+=reviewHTML();
+      h+=qrHTML();
+
+      h+='</div>'; // layout-3col
+      h+='</div>'; // page
+
+      document.getElementById('app').innerHTML=h;
+    }
+
+    function headerHTML(){
+      return '<div class="header">'+
+        '<div class="header-brand">YATAI</div>'+
+        '<div class="header-sub">JAPANESE RESTAURANT</div>'+
+        '<div class="header-hours">OPEN 11:00 \u2013 23:00 &nbsp;\u00B7&nbsp; LAST ORDER 22:00</div>'+
+      '</div>';
+    }
+
+    function popularHTML(im){
+      var parts=[];
+      POPULAR.forEach(function(id){
+        var it=im[id];
+        if(it) parts.push('<span>\u2605 '+esc(it.name.ko)+'</span>');
+      });
+      return '<div class="popular">'+
+        '<div class="popular-title">\u2605 Popular Menu</div>'+
+        '<div class="popular-items">'+parts.join('<span> \u00B7 </span>')+'</div>'+
+      '</div>';
+    }
+
+    function catHTML(cat,items,note){
+      if(!cat||!items||!items.length)return'';
+      var h='<div class="cat">';
+      h+='<div class="cat-bar"><span class="cat-bar-ko">'+esc(cat.name.ko)+'</span><span class="cat-bar-en">'+esc(cat.name.en)+'</span></div>';
+      if(note) h+='<div class="cat-note">'+note+'</div>';
+      items.forEach(function(it){h+=itemHTML(it)});
+      return h+'</div>';
+    }
+
+    function itemHTML(it){
+      var h='<div class="row"><span class="name">';
+      if(it.recommended) h+='<span class="star">\u2605</span>';
+      h+=esc(it.name.ko);
+      if(it.name.en) h+='<span class="name-en">'+esc(it.name.en)+'</span>';
+      h+='</span><span class="dots"></span>';
+      h+='<span class="price">\u20A9'+it.price.toLocaleString('ko-KR')+'</span></div>';
+      if(it.description&&it.description.ko) h+='<div class="desc">'+esc(it.description.ko)+'</div>';
+      return h;
+    }
+
+    function reviewHTML(){
+      return '<div class="full-span review">'+
+        '<div class="review-title">\uB9AC\uBDF0 \uC774\uBCA4\uD2B8</div>'+
+        '<div class="review-body">\uB124\uC774\uBC84 \uB9AC\uBDF0 \u2605\u2605\u2605\u2605\u2605 \uC791\uC131 \uC2DC \uC74C\uB8CC 1\uBCD1 \uBB34\uB8CC</div>'+
+        '<div class="review-en">Leave a \u2605\u2605\u2605\u2605\u2605 review — Get 1 free drink</div>'+
+        '<div class="review-limit">\u203B 1 \uD14C\uC774\uBE14\uB2F9 1\uD68C | Limit: 1 per table</div>'+
+      '</div>';
+    }
+
+    function qrHTML(){
+      return '<div class="full-span qr-bar">'+
+        '<div class="qr-block"><div class="qr-label">\uD83D\uDCF7 Menu Photos</div>'+
+          '<img class="qr-img" src="qr/gallery.png"><div class="qr-desc">Scan to view food photos</div></div>'+
+        '<div class="qr-block"><div class="qr-label">\uD83C\uDF10 Mobile Menu</div>'+
+          '<img class="qr-img" src="qr/mobile-menu.png"><div class="qr-desc">Scan for multi-language menu</div></div>'+
+      '</div>';
+    }
+
+    function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  })();
+  </script>
+</body>
+</html>

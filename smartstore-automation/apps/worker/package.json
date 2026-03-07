@@ -1,0 +1,48 @@
+{
+  "name": "@smartstore/worker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "@smartstore/adapters": "*",
+    "@smartstore/core": "*",
+    "@smartstore/crawlers": "*",
+    "@smartstore/db": "*",
+    "@smartstore/integrations": "*",
+    "@smartstore/shared": "*",
+    "bullmq": "^5.4.0",
+    "ioredis": "^5.3.0",
+    "node-cron": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "@types/node-cron": "^3.0.11",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/*.test.ts"
+    ],
+    "moduleNameMapper": {
+      "^@smartstore/(.*)$": "<rootDir>/../../packages/$1/src/index.ts"
+    },
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    }
+  }
+}

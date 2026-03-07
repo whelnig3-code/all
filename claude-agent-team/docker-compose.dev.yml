@@ -1,0 +1,30 @@
+# ============================================================================
+# docker-compose.dev.yml — Development override
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Mounts the local source directory for hot-reload development.
+# Only db and redis run as containers; the app uses your local source.
+# ============================================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    command: npx tsx server.ts
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/agent_team
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      # Mount local source for hot-reload
+      - .:/app
+      # Prevent overwriting container's node_modules with host's (platform mismatch)
+      - /app/node_modules
+      # Prevent overwriting container's .next with host's
+      - /app/.next

@@ -1,0 +1,2787 @@
+{
+  "categories": [
+    {
+      "id": "set",
+      "sort": 1,
+      "name": {
+        "ko": "세트메뉴 / 코스",
+        "en": "Set Menu / Course",
+        "zh": "套餐/套餐",
+        "ja": "セットメニュー/コース",
+        "vi": "Set / Course",
+        "th": "เซ็ตเมนู/คอร์ส",
+        "ne": "सेट मेनु/कोर्स",
+        "ru": "Сет-меню/Курс"
+      }
+    },
+    {
+      "id": "sashimi",
+      "sort": 2,
+      "name": {
+        "ko": "회 (단품)",
+        "en": "Raw Fish",
+        "zh": "生鱼片(单品)",
+        "ja": "刺身(単品)",
+        "vi": "Sashimi đơn",
+        "th": "ซาชิมิเดี่ยว",
+        "ne": "साशिमी एकल",
+        "ru": "Сашими"
+      }
+    },
+    {
+      "id": "sashimi-set",
+      "sort": 3,
+      "name": {
+        "ko": "회 (세트)",
+        "en": "Sashimi Set",
+        "zh": "生鱼片套餐",
+        "ja": "刺身セット",
+        "vi": "Set Sashimi",
+        "th": "ชุดซาชิมิ",
+        "ne": "साशिमी सेट",
+        "ru": "Сашими-сет"
+      }
+    },
+    {
+      "id": "sushi",
+      "sort": 4,
+      "name": {
+        "ko": "초밥",
+        "en": "Sushi",
+        "zh": "寿司",
+        "ja": "寿司",
+        "vi": "Sushi",
+        "th": "ซูชิ",
+        "ne": "सुशी",
+        "ru": "Суши"
+      }
+    },
+    {
+      "id": "sushi-single",
+      "sort": 5,
+      "name": {
+        "ko": "초밥 (1pcs)",
+        "en": "Sushi Single (1pcs)",
+        "zh": "单个寿司",
+        "ja": "お寿司(1貫)",
+        "vi": "Sushi lẻ",
+        "th": "ซูชิชิ้นเดียว",
+        "ne": "सुशी एकल",
+        "ru": "Суши поштучно"
+      }
+    },
+    {
+      "id": "roll",
+      "sort": 6,
+      "name": {
+        "ko": "롤",
+        "en": "Roll",
+        "zh": "卷",
+        "ja": "ロール",
+        "vi": "Cuốn",
+        "th": "โรล",
+        "ne": "रोल",
+        "ru": "Роллы"
+      }
+    },
+    {
+      "id": "signature",
+      "sort": 7,
+      "name": {
+        "ko": "특선 요리",
+        "en": "Signature Dishes",
+        "zh": "招牌菜",
+        "ja": "特選料理",
+        "vi": "Món đặc biệt",
+        "th": "เมนูเด็ด",
+        "ne": "विशेष परिकार",
+        "ru": "Фирменные блюда"
+      }
+    },
+    {
+      "id": "grill",
+      "sort": 8,
+      "name": {
+        "ko": "구이",
+        "en": "Grilled",
+        "zh": "烤物",
+        "ja": "焼き物",
+        "vi": "Nướng",
+        "th": "ย่าง",
+        "ne": "ग्रिल",
+        "ru": "Гриль"
+      }
+    },
+    {
+      "id": "fried",
+      "sort": 9,
+      "name": {
+        "ko": "튀김",
+        "en": "Fried",
+        "zh": "炸物",
+        "ja": "揚げ物",
+        "vi": "Chiên",
+        "th": "ทอด",
+        "ne": "तलेको",
+        "ru": "Жареное"
+      }
+    },
+    {
+      "id": "meal",
+      "sort": 10,
+      "name": {
+        "ko": "식사",
+        "en": "Rice Meals",
+        "zh": "饭类",
+        "ja": "ご飯もの",
+        "vi": "Cơm",
+        "th": "ข้าว",
+        "ne": "भात",
+        "ru": "Рис"
+      }
+    },
+    {
+      "id": "noodle",
+      "sort": 11,
+      "name": {
+        "ko": "면류",
+        "en": "Noodles",
+        "zh": "面类",
+        "ja": "麺類",
+        "vi": "Mì",
+        "th": "เส้น",
+        "ne": "चाउमिन",
+        "ru": "Лапша"
+      }
+    },
+    {
+      "id": "hotpot",
+      "sort": 12,
+      "name": {
+        "ko": "전골 / 탕",
+        "en": "Hot Pot / Soup",
+        "zh": "火锅/汤",
+        "ja": "鍋/スープ",
+        "vi": "Lẩu/Canh",
+        "th": "หม้อไฟ/ซุป",
+        "ne": "हट पट/सुप",
+        "ru": "Горячий горшок/Суп"
+      }
+    },
+    {
+      "id": "drink",
+      "sort": 13,
+      "name": {
+        "ko": "주류 / 음료",
+        "en": "Drinks",
+        "zh": "酒水/饮料",
+        "ja": "ドリンク",
+        "vi": "Đồ uống",
+        "th": "เครื่องดื่ม",
+        "ne": "पेय",
+        "ru": "Напитки"
+      }
+    },
+    {
+      "id": "extras",
+      "sort": 15,
+      "name": {
+        "ko": "추가 / 사이드",
+        "en": "Extras",
+        "zh": "附加",
+        "ja": "サイドメニュー",
+        "vi": "Thêm",
+        "th": "เพิ่มเติม",
+        "ne": "अतिरिक्त",
+        "ru": "Дополнительно"
+      }
+    },
+    {
+      "id": "sake",
+      "sort": 14,
+      "name": {
+        "ko": "사케 / 일본주",
+        "en": "Sake",
+        "zh": "清酒",
+        "ja": "日本酒",
+        "vi": "Rượu sake",
+        "th": "สาเก",
+        "ne": "साके",
+        "ru": "Саке"
+      }
+    },
+    {
+      "id": "lunch",
+      "sort": 0,
+      "name": {
+        "ko": "점심특선",
+        "en": "Lunch Special",
+        "zh": "午餐特惠",
+        "ja": "ランチスペシャル",
+        "vi": "Bua trua dac biet",
+        "th": "สเปเชียลมื้อเที่ยง",
+        "ne": "लन्च स्पेशल",
+        "ru": "Ланч"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "set-ilpum",
+      "category": "set",
+      "sort": 1,
+      "price": 110000,
+      "active": false,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "일품요리세트",
+        "en": "Premium Course",
+        "zh": "精品料理套餐",
+        "ja": "一品料理セット",
+        "vi": "Set mon dac biet",
+        "th": "เซ็ตอาหารพิเศษ",
+        "ne": "विशेष सेट",
+        "ru": "Премиум сет"
+      },
+      "description": {
+        "ko": "콘버터, 샐러드, 활어회(대), 우삼겹숙주볶음, 명란계란말이, 일식깐풍기, 초밥(10pcs), 생선구이, 백합두부탕 또는 매운탕",
+        "en": "Corn butter, salad, live fish sashimi (L), beef bean sprout, mentaiko egg roll, Japanese-style spicy chicken, sushi (10pcs), grilled fish, clam tofu soup or spicy fish stew",
+        "zh": "玉米黄油、沙拉、活鱼生鱼片(大)、牛肉豆芽、明太子蛋卷、日式辣鸡、寿司(10)、烤鱼、蛤蜊豆腐汤",
+        "ja": "コーンバター、サラダ、活魚刺身(大)、牛もやし、明太子卵焼き、和風スパイシーチキン、寿司(10貫)、焼き魚、あさり豆腐湯",
+        "vi": "Bo bap, salad, sashimi ca song(L), bo gia do, trung mentaiko, ga cay Nhat, sushi(10), ca nuong, canh dau hu ngheu",
+        "th": "ข้าวโพดเนย สลัด ซาชิมิปลาสด(L) เนื้อถั่วงอก ไข่เมนไทโกะ ไก่เผ็ดญี่ปุ่น ซูชิ(10) ปลาย่าง ซุปเต้าหู้หอยลาย",
+        "ne": "कर्न बटर, सलाद, ताजा साशिमी(L), बीफ स्प्राउट, मेन्टाइको एग रोल, जापानी चिकन, सुशी(१०), ग्रिल्ड फिश, क्ल्याम टोफु सुप",
+        "ru": "Корн-баттер, салат, сашими(Б), говядина с ростками, тамагояки ментайко, курица, суши(10), рыба гриль, суп с тофу"
+      },
+      "recommended": false
+    },
+    {
+      "id": "set-yatai-special",
+      "category": "set",
+      "sort": 2,
+      "price": 108000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "야타이 스페셜 (4인)",
+        "en": "YATAI Special (4P)",
+        "zh": "屋台特别套餐 (4人)",
+        "ja": "ヤタイスペシャル (4人前)",
+        "vi": "Yatai Dac biet (4 nguoi)",
+        "th": "ยาไตสเปเชียล (4 คน)",
+        "ne": "यातै स्पेशल (४ जना)",
+        "ru": "Ятай Спешл (4 чел)"
+      },
+      "description": {
+        "ko": "죽, 콘버터, 부침개, 샐러드, 모듬튀김, 초밥(8pcs), 퓨전롤(8pcs), 시샤모구이(4), 닭날개 데리야끼(4pcs), 매운탕, 날치알마끼, 닭고기, 은행",
+        "en": "Porridge, corn butter, pancake, salad, assorted tempura, sushi (8pcs), fusion roll (8pcs), shishamo (4), chicken wing teriyaki (4pcs), spicy stew, tobiko maki, chicken, ginkgo",
+        "zh": "粥、玉米黄油、煎饼、沙拉、什锦天妇罗、寿司(8)、创意卷(8)、柳叶鱼(4)、鸡翅照烧(4)、辣汤、飞鱼籽卷、鸡肉、银杏",
+        "ja": "お粥、コーンバター、チヂミ、サラダ、盛り合わせ天ぷら、寿司(8貫)、フュージョンロール(8)、ししゃも(4)、チキンウイング照り焼き(4)、辛い鍋、とびこ巻き、チキン、銀杏",
+        "vi": "Chao, bo bap, banh xeo, salad, tempura tong hop, sushi(8), roll(8), shishamo(4), canh ga teriyaki(4), lau cay, maki trung ca, ga, ngan",
+        "th": "ข้าวต้ม ข้าวโพดเนย แพนเค้ก สลัด เทมปุระรวม ซูชิ(8) โรล(8) ชิชาโมะ(4) ปีกไก่เทอริยากิ(4) ซุปเผ็ด โทบิโกะมากิ ไก่ แปะก๊วย",
+        "ne": "दलिया, कर्न बटर, प्यानकेक, सलाद, मिश्रित टेम्पुरा, सुशी(८), रोल(८), शिशामो(४), चिकन विङ तेरियाकी(४), पिरो सुप, तोबिको माकी, चिकन, गिन्को",
+        "ru": "Каша, корн-баттер, блинчик, салат, темпура ассорти, суши(8), ролл(8), шишамо(4), куриные крылья терияки(4), острый суп, тобико маки, курица, гинкго"
+      },
+      "recommended": true
+    },
+    {
+      "id": "set-a",
+      "category": "set",
+      "sort": 3,
+      "price": 32000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "회정식 A",
+        "en": "Sashimi Course A",
+        "zh": "刺身套餐 A",
+        "ja": "刺身コース A",
+        "vi": "Set Sashimi A",
+        "th": "เซ็ตซาชิมิ A",
+        "ne": "साशिमी सेट A",
+        "ru": "Сашими-сет A"
+      },
+      "description": {
+        "ko": "죽, 콘버터, 샐러드, 버섯구이, 우동, 사시미 3종, 초밥3pcs, 튀김3pcs, 은행, 홍합구이, 매운탕, 알밥, 마끼",
+        "en": "Porridge, corn butter, salad, grilled mushroom, udon, 3 types sashimi, sushi 3pcs, tempura 3pcs, ginkgo, grilled mussel, spicy stew, fish roe rice, maki",
+        "zh": "粥、玉米黄油、沙拉、烤蘑菇、乌冬、3种生鱼片、寿司3个、天妇罗3个、银杏、烤贻贝、辣汤、鱼籽饭、卷",
+        "ja": "お粥、コーンバター、サラダ、きのこ焼き、うどん、刺身3種、寿司3貫、天ぷら3品、銀杏、ムール貝焼き、辛い鍋、いくら丼、巻き",
+        "vi": "Chao, bo bap, salad, nam nuong, udon, sashimi 3 loai, sushi 3, tempura 3, ngan, hong hop nuong, lau cay, com trung ca, maki",
+        "th": "ข้าวต้ม ข้าวโพดเนย สลัด เห็ดย่าง อุด้ง ซาชิมิ3ชนิด ซูชิ3 เทมปุระ3 แปะก๊วย หอยแมลงภู่ย่าง ซุปเผ็ด ข้าวไข่ปลา มากิ",
+        "ne": "दलिया, कर्न बटर, सलाद, च्याउ ग्रिल, उडोन, साशिमी ३ प्रकार, सुशी ३, टेम्पुरा ३, गिन्को, ग्रिल्ड मसल, पिरो सुप, रो राइस, माकी",
+        "ru": "Каша, корн-баттер, салат, грибы гриль, удон, сашими 3 вида, суши 3, темпура 3, гинкго, мидии гриль, острый суп, икра-рис, маки"
+      },
+      "recommended": false
+    },
+    {
+      "id": "set-b",
+      "category": "set",
+      "sort": 4,
+      "price": 38000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "회정식 B",
+        "en": "Sashimi Course B",
+        "zh": "刺身套餐 B",
+        "ja": "刺身コース B",
+        "vi": "Set Sashimi B",
+        "th": "เซ็ตซาชิมิ B",
+        "ne": "साशिमी सेट B",
+        "ru": "Сашими-сет B"
+      },
+      "description": {
+        "ko": "A코스 + 닭날개 데리야끼 + 우삼겹숙주볶음",
+        "en": "Course A + chicken wing teriyaki + beef bean sprout stir-fry",
+        "zh": "A套餐 + 鸡翅照烧 + 牛肉豆芽炒",
+        "ja": "Aコース + チキンウイング照り焼き + 牛もやし炒め",
+        "vi": "Set A + Canh ga teriyaki + Bo xao gia do",
+        "th": "เซ็ต A + ปีกไก่เทอริยากิ + เนื้อผัดถั่วงอก",
+        "ne": "सेट A + चिकन विङ तेरियाकी + बीफ स्प्राउट",
+        "ru": "Сет A + Куриные крылья терияки + Говядина с ростками"
+      },
+      "recommended": true
+    },
+    {
+      "id": "sashimi-gwangeo",
+      "category": "sashimi",
+      "sort": 1,
+      "price": 49000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어회",
+        "en": "Flatfish Sashimi",
+        "zh": "比目鱼刺身",
+        "ja": "ヒラメ刺身",
+        "vi": "Sashimi ca bon",
+        "th": "ซาชิมิปลากวางอ",
+        "ne": "फ्ल्याटफिश साशिमी",
+        "ru": "Сашими камбала"
+      },
+      "description": {
+        "ko": "날치알 무침 + 콘버터 + 생선구이 + 죽",
+        "en": "Tobiko Salad + Corn Butter + Grilled Fish + Porridge",
+        "zh": "飞鱼籽拌菜 + 玉米黄油 + 烤鱼 + 粥",
+        "ja": "とびこ和え + コーンバター + 焼き魚 + お粥",
+        "vi": "Goi trung ca chuon + Bo bap + Ca nuong + Chao",
+        "th": "ยำไข่ปลาบิน + ข้าวโพดเนย + ปลาย่าง + ข้าวต้ม",
+        "ne": "तोबिको सलाद + कर्न बटर + माछा ग्रिल + दलिया",
+        "ru": "Салат тобико + Корн-баттер + Рыба гриль + Каша"
+      },
+      "recommended": true
+    },
+    {
+      "id": "sashimi-ureok",
+      "category": "sashimi",
+      "sort": 2,
+      "price": 49000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우럭회",
+        "en": "Rockfish Sashimi",
+        "zh": "石斑鱼刺身",
+        "ja": "メバル刺身",
+        "vi": "Sashimi ca mu",
+        "th": "ซาชิมิปลาอูร็อค",
+        "ne": "रकफिश साशिमी",
+        "ru": "Сашими окунь"
+      },
+      "description": {
+        "ko": "날치알 무침 + 콘버터 + 생선구이 + 죽",
+        "en": "Tobiko Salad + Corn Butter + Grilled Fish + Porridge",
+        "zh": "飞鱼籽拌菜 + 玉米黄油 + 烤鱼 + 粥",
+        "ja": "とびこ和え + コーンバター + 焼き魚 + お粥",
+        "vi": "Goi trung ca chuon + Bo bap + Ca nuong + Chao",
+        "th": "ยำไข่ปลาบิน + ข้าวโพดเนย + ปลาย่าง + ข้าวต้ม",
+        "ne": "तोबिको सलाद + कर्न बटर + माछा ग्रिल + दलिया",
+        "ru": "Салат тобико + Корн-баттер + Рыба гриль + Каша"
+      },
+      "recommended": false
+    },
+    {
+      "id": "sashimi-salmon",
+      "category": "sashimi",
+      "sort": 3,
+      "price": 36000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "연어회 (300g)",
+        "en": "Salmon Sashimi (300g)",
+        "zh": "三文鱼刺身 (100g)",
+        "ja": "サーモン刺身 (100g)",
+        "vi": "Sashimi ca hoi (100g)",
+        "th": "ซาชิมิแซลมอน (100g)",
+        "ne": "सल्मन साशिमी (100g)",
+        "ru": "Сашими лосось (100г)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sashimi-mulhoe",
+      "category": "sashimi",
+      "sort": 4,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어물회 (1인)",
+        "en": "Flatfish Mulhoe (1p)",
+        "zh": "冷拌生鱼片",
+        "ja": "水刺身",
+        "vi": "Goi ca song",
+        "th": "มูลฮเว",
+        "ne": "मुल्हो",
+        "ru": "Мульхве"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sashimi-side",
+      "category": "sashimi",
+      "sort": 5,
+      "price": 7000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "매운탕 추가",
+        "en": "Add Spicy Fish Stew",
+        "zh": "加点辣汤",
+        "ja": "辛い鍋追加",
+        "vi": "Them canh cay",
+        "th": "เพิ่มซุปเผ็ด",
+        "ne": "पिरो सुप थप",
+        "ru": "Доп. острый суп"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sashimi-set-gwangeo",
+      "category": "sashimi-set",
+      "sort": 1,
+      "price": 89000,
+      "active": false,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어회",
+        "en": "Flatfish Sashimi",
+        "zh": "比目鱼刺身套餐",
+        "ja": "ヒラメ刺身セット",
+        "vi": "Set Sashimi ca bon",
+        "th": "เซ็ตซาชิมิปลากวางอ",
+        "ne": "फ्ल्याटफिश साशिमी सेट",
+        "ru": "Сашими-сет камбала"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "sashimi-set-ureok",
+      "category": "sashimi-set",
+      "sort": 2,
+      "price": 89000,
+      "active": false,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우럭회",
+        "en": "Rockfish Sashimi",
+        "zh": "石斑鱼刺身套餐",
+        "ja": "メバル刺身セット",
+        "vi": "Set Sashimi ca mu",
+        "th": "เซ็ตซาชิมิปลาอูร็อค",
+        "ne": "रकफिश साशिमी सेट",
+        "ru": "Сашими-сет окунь"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sashimi-set-combo",
+      "category": "sashimi-set",
+      "sort": 3,
+      "price": 89000,
+      "active": false,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어 + 우럭",
+        "en": "Flatfish + Rockfish",
+        "zh": "比目鱼+石斑鱼套餐",
+        "ja": "ヒラメ+メバルセット",
+        "vi": "Set ca bon + ca mu",
+        "th": "เซ็ตปลากวางอ+อูร็อค",
+        "ne": "फ्ल्याटफिश+रकफिश सेट",
+        "ru": "Камбала+Окунь сет"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-assorted",
+      "category": "sushi",
+      "sort": 1,
+      "price": 16000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "모듬초밥",
+        "en": "Assorted Sushi",
+        "zh": "什锦寿司",
+        "ja": "盛り合わせ寿司",
+        "vi": "Sushi tong hop",
+        "th": "ซูชิรวม",
+        "ne": "मिश्रित सुशी",
+        "ru": "Ассорти суши"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "sushi-salmon",
+      "category": "sushi",
+      "sort": 2,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "연어초밥",
+        "en": "Salmon Sushi",
+        "zh": "三文鱼寿司",
+        "ja": "サーモン寿司",
+        "vi": "Sushi ca hoi",
+        "th": "ซูชิแซลมอน",
+        "ne": "सल्मन सुशी",
+        "ru": "Суши лосось"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-ureok",
+      "category": "sushi",
+      "sort": 3,
+      "price": 24000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우럭초밥",
+        "en": "Rockfish Sushi",
+        "zh": "石斑鱼寿司",
+        "ja": "メバル寿司",
+        "vi": "Sushi ca mu",
+        "th": "ซูชิปลาอูร็อค",
+        "ne": "रकफिश सुशी",
+        "ru": "Суши окунь"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-shrimp-soy",
+      "category": "sushi",
+      "sort": 4,
+      "price": 19000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "간장새우초밥",
+        "en": "Soy Shrimp Sushi",
+        "zh": "酱油虾寿司",
+        "ja": "醤油エビ寿司",
+        "vi": "Sushi tom xi dau",
+        "th": "ซูชิกุ้งซีอิ๊ว",
+        "ne": "सोया झिँगा सुशी",
+        "ru": "Суши креветка в соевом"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-gwangeo",
+      "category": "sushi",
+      "sort": 5,
+      "price": 19000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어초밥",
+        "en": "Flatfish Sushi",
+        "zh": "比目鱼寿司",
+        "ja": "ヒラメ寿司",
+        "vi": "Sushi ca bon",
+        "th": "ซูชิปลากวางอ",
+        "ne": "फ्ल्याटफिश सुशी",
+        "ru": "Суши камбала"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-inari",
+      "category": "sushi",
+      "sort": 6,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "유부초밥",
+        "en": "Inari Sushi",
+        "zh": "豆腐皮寿司",
+        "ja": "いなり寿司",
+        "vi": "Sushi dau hu",
+        "th": "ซูชิอินาริ",
+        "ne": "इनारी सुशी",
+        "ru": "Инари суши"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-eel",
+      "category": "sushi",
+      "sort": 7,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "바다장어초밥",
+        "en": "Sea Eel Sushi",
+        "zh": "海鳗寿司",
+        "ja": "穴子寿司",
+        "vi": "Sushi luon bien",
+        "th": "ซูชิปลาไหลทะเล",
+        "ne": "इल सुशी",
+        "ru": "Суши угорь"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-shrimp",
+      "category": "sushi",
+      "sort": 8,
+      "price": 15000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "새우초밥",
+        "en": "Shrimp Sushi",
+        "zh": "虾寿司",
+        "ja": "エビ寿司",
+        "vi": "Sushi tom",
+        "th": "ซูชิกุ้ง",
+        "ne": "झिँगा सुशी",
+        "ru": "Суши креветка"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sushi-egg",
+      "category": "sushi",
+      "sort": 9,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "계란초밥 (10pcs)",
+        "en": "Egg Sushi (10pcs)",
+        "zh": "蛋寿司",
+        "ja": "玉子寿司",
+        "vi": "Sushi trung",
+        "th": "ซูชิไข่",
+        "ne": "अण्डा सुशी",
+        "ru": "Суши тамаго"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-gwangeo",
+      "category": "sushi-single",
+      "sort": 1,
+      "price": 1800,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어",
+        "en": "Flatfish",
+        "zh": "比目鱼",
+        "ja": "ヒラメ",
+        "vi": "Ca bon",
+        "th": "ปลากวางอ",
+        "ne": "फ्ल्याटफिश",
+        "ru": "Камбала"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "single-shrimp-soy",
+      "category": "sushi-single",
+      "sort": 2,
+      "price": 1800,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "간장새우",
+        "en": "Soy Shrimp",
+        "zh": "酱油虾",
+        "ja": "醤油エビ",
+        "vi": "Tom xi dau",
+        "th": "กุ้งซีอิ๊ว",
+        "ne": "सोया झिँगा",
+        "ru": "Креветка соевая"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-egg",
+      "category": "sushi-single",
+      "sort": 3,
+      "price": 1200,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "계란초밥",
+        "en": "Egg Sushi",
+        "zh": "蛋",
+        "ja": "玉子",
+        "vi": "Trung",
+        "th": "ไข่",
+        "ne": "अण्डा",
+        "ru": "Тамаго"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-salmon",
+      "category": "sushi-single",
+      "sort": 4,
+      "price": 1800,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "연어",
+        "en": "Salmon",
+        "zh": "三文鱼",
+        "ja": "サーモン",
+        "vi": "Ca hoi",
+        "th": "แซลมอน",
+        "ne": "सल्मन",
+        "ru": "Лосось"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-fin",
+      "category": "sushi-single",
+      "sort": 5,
+      "price": 2000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어지느러미",
+        "en": "Flatfish Fin",
+        "zh": "比目鱼鳍",
+        "ja": "ヒラメえんがわ",
+        "vi": "Vay ca bon",
+        "th": "ครีบปลากวางอ",
+        "ne": "फ्ल्याटफिश फिन",
+        "ru": "Камбала энгава"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-ureok",
+      "category": "sushi-single",
+      "sort": 6,
+      "price": 2500,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우럭",
+        "en": "Rockfish",
+        "zh": "石斑鱼",
+        "ja": "メバル",
+        "vi": "Ca mu",
+        "th": "ปลาอูร็อค",
+        "ne": "रकफिश",
+        "ru": "Окунь"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-shrimp",
+      "category": "sushi-single",
+      "sort": 7,
+      "price": 1500,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "새우",
+        "en": "Shrimp",
+        "zh": "虾",
+        "ja": "エビ",
+        "vi": "Tom",
+        "th": "กุ้ง",
+        "ne": "झिँगा",
+        "ru": "Креветка"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-inari",
+      "category": "sushi-single",
+      "sort": 8,
+      "price": 1000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "유부",
+        "en": "Inari",
+        "zh": "豆腐皮",
+        "ja": "いなり",
+        "vi": "Dau hu",
+        "th": "อินาริ",
+        "ne": "इनारी",
+        "ru": "Инари"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "single-eel",
+      "category": "sushi-single",
+      "sort": 9,
+      "price": 1700,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "바다장어",
+        "en": "Sea Eel",
+        "zh": "海鳗",
+        "ja": "穴子",
+        "vi": "Luon bien",
+        "th": "ปลาไหลทะเล",
+        "ne": "इल",
+        "ru": "Угорь"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "roll-california",
+      "category": "roll",
+      "sort": 1,
+      "price": 9000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "켈리포니아롤",
+        "en": "California Roll",
+        "zh": "加州卷",
+        "ja": "カリフォルニアロール",
+        "vi": "Cuon California",
+        "th": "แคลิฟอร์เนียโรล",
+        "ne": "क्यालिफोर्निया रोल",
+        "ru": "Калифорния ролл"
+      },
+      "description": {
+        "ko": "맛살, 오이, 날치알",
+        "en": "Crab stick, cucumber, flying fish roe",
+        "zh": "蟹肉棒、黄瓜、飞鱼籽",
+        "ja": "カニカマ、きゅうり、とびこ",
+        "vi": "Thanh cua, dua leo, trung ca chuon",
+        "th": "ปูอัด แตงกวา ไข่ปลาบิน",
+        "ne": "क्र्याब स्टिक, काँक्रो, फ्लाइङ फिश रो",
+        "ru": "Крабовая палочка, огурец, тобико"
+      },
+      "recommended": true
+    },
+    {
+      "id": "roll-tiger",
+      "category": "roll",
+      "sort": 2,
+      "price": 14000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "타이거롤",
+        "en": "Tiger Roll",
+        "zh": "虎卷",
+        "ja": "タイガーロール",
+        "vi": "Cuon Tiger",
+        "th": "ไทเกอร์โรล",
+        "ne": "टाइगर रोल",
+        "ru": "Тайгер ролл"
+      },
+      "description": {
+        "ko": "새우튀김, 새우, 오이",
+        "en": "Shrimp tempura, shrimp, cucumber",
+        "zh": "炸虾、虾、黄瓜",
+        "ja": "エビ天、エビ、きゅうり",
+        "vi": "Tom tempura, tom, dua leo",
+        "th": "กุ้งเทมปุระ กุ้ง แตงกวา",
+        "ne": "झिँगा टेम्पुरा, झिँगा, काँक्रो",
+        "ru": "Креветка темпура, креветка, огурец"
+      },
+      "recommended": false
+    },
+    {
+      "id": "roll-bayisland",
+      "category": "roll",
+      "sort": 3,
+      "price": 14000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "베이아일랜드롤",
+        "en": "Bay Island Roll",
+        "zh": "海湾岛卷",
+        "ja": "ベイアイランドロール",
+        "vi": "Cuon Bay Island",
+        "th": "เบย์ไอส์แลนด์โรล",
+        "ne": "बे आइल्यान्ड रोल",
+        "ru": "Бэй Айленд ролл"
+      },
+      "description": {
+        "ko": "바다장어, 새우, 오이, 날치알",
+        "en": "Sea eel, shrimp, cucumber, flying fish roe",
+        "zh": "海鳗、虾、黄瓜、飞鱼籽",
+        "ja": "穴子、エビ、きゅうり、とびこ",
+        "vi": "Luon bien, tom, dua leo, trung ca",
+        "th": "ปลาไหลทะเล กุ้ง แตงกวา ไข่ปลา",
+        "ne": "समुद्री इल, झिँगा, काँक्रो, रो",
+        "ru": "Морской угорь, креветка, огурец, тобико"
+      },
+      "recommended": false
+    },
+    {
+      "id": "roll-crunch",
+      "category": "roll",
+      "sort": 4,
+      "price": 9000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "크런치롤",
+        "en": "Crunch Roll",
+        "zh": "脆卷",
+        "ja": "クランチロール",
+        "vi": "Cuon Crunch",
+        "th": "ครันช์โรล",
+        "ne": "क्रन्च रोल",
+        "ru": "Кранч ролл"
+      },
+      "description": {
+        "ko": "새우튀김, 맛살, 오이",
+        "en": "Shrimp tempura, crab stick, cucumber",
+        "zh": "炸虾、蟹肉棒、黄瓜",
+        "ja": "エビ天、カニカマ、きゅうり",
+        "vi": "Tom tempura, thanh cua, dua leo",
+        "th": "กุ้งเทมปุระ ปูอัด แตงกวา",
+        "ne": "झिँगा टेम्पुरा, क्र्याब स्टिक, काँक्रो",
+        "ru": "Креветка темпура, крабовая палочка, огурец"
+      },
+      "recommended": false
+    },
+    {
+      "id": "roll-lionking",
+      "category": "roll",
+      "sort": 5,
+      "price": 14000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "라이언킹롤",
+        "en": "Lion King Roll",
+        "zh": "狮子王卷",
+        "ja": "ライオンキングロール",
+        "vi": "Cuon Lion King",
+        "th": "ไลอ้อนคิงโรล",
+        "ne": "लायन किङ रोल",
+        "ru": "Лайон Кинг ролл"
+      },
+      "description": {
+        "ko": "연어, 맛살, 오이, 양파",
+        "en": "Salmon, crab stick, cucumber, onion",
+        "zh": "三文鱼、蟹肉棒、黄瓜、洋葱",
+        "ja": "サーモン、カニカマ、きゅうり、玉ねぎ",
+        "vi": "Ca hoi, thanh cua, dua leo, hanh tay",
+        "th": "แซลมอน ปูอัด แตงกวา หัวหอม",
+        "ne": "सल्मन, क्र्याब स्टिक, काँक्रो, प्याज",
+        "ru": "Лосось, крабовая палочка, огурец, лук"
+      },
+      "recommended": false
+    },
+    {
+      "id": "roll-alaska",
+      "category": "roll",
+      "sort": 6,
+      "price": 13000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "알레스카롤",
+        "en": "Alaska Roll",
+        "zh": "阿拉斯加卷",
+        "ja": "アラスカロール",
+        "vi": "Cuon Alaska",
+        "th": "อลาสก้าโรล",
+        "ne": "अलास्का रोल",
+        "ru": "Аляска ролл"
+      },
+      "description": {
+        "ko": "연어, 맛살, 오이, 양파",
+        "en": "Salmon, crab stick, cucumber, onion",
+        "zh": "三文鱼、蟹肉棒、黄瓜、洋葱",
+        "ja": "サーモン、カニカマ、きゅうり、玉ねぎ",
+        "vi": "Ca hoi, thanh cua, dua leo, hanh tay",
+        "th": "แซลมอน ปูอัด แตงกวา หัวหอม",
+        "ne": "सल्मन, क्र्याब स्टिक, काँक्रो, प्याज",
+        "ru": "Лосось, крабовая палочка, огурец, лук"
+      },
+      "recommended": false
+    },
+    {
+      "id": "roll-dragon",
+      "category": "roll",
+      "sort": 7,
+      "price": 14000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "드레곤롤",
+        "en": "Dragon Roll",
+        "zh": "龙卷",
+        "ja": "ドラゴンロール",
+        "vi": "Cuon Dragon",
+        "th": "ดราก้อนโรล",
+        "ne": "ड्रागन रोल",
+        "ru": "Дракон ролл"
+      },
+      "description": {
+        "ko": "바다장어, 맛살, 오이",
+        "en": "Sea eel, crab stick, cucumber",
+        "zh": "海鳗、蟹肉棒、黄瓜",
+        "ja": "穴子、カニカマ、きゅうり",
+        "vi": "Luon bien, thanh cua, dua leo",
+        "th": "ปลาไหลทะเล ปูอัด แตงกวา",
+        "ne": "समुद्री इल, क्र्याब स्टिक, काँक्रो",
+        "ru": "Морской угорь, крабовая палочка, огурец"
+      },
+      "recommended": true
+    },
+    {
+      "id": "sig-mussel-chili",
+      "category": "signature",
+      "sort": 1,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "홍합칠리구이",
+        "en": "Chili Grilled Mussels",
+        "zh": "辣烤贻贝",
+        "ja": "ムール貝チリ焼き",
+        "vi": "Hong hop nuong ot",
+        "th": "หอยแมลงภู่ย่างพริก",
+        "ne": "चिली मसल ग्रिल",
+        "ru": "Мидии чили гриль"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-beef-sprout",
+      "category": "signature",
+      "sort": 2,
+      "price": 24000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우삼겹숙주볶음",
+        "en": "Beef Brisket & Bean Sprout",
+        "zh": "牛肉豆芽炒",
+        "ja": "牛肉もやし炒め",
+        "vi": "Bo xao gia do",
+        "th": "เนื้อผัดถั่วงอก",
+        "ne": "बीफ स्प्राउट भुटेको",
+        "ru": "Говядина с ростками"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-mentaiko-egg",
+      "category": "signature",
+      "sort": 3,
+      "price": 9000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "명란계란말이",
+        "en": "Mentaiko Egg Roll",
+        "zh": "明太子蛋卷",
+        "ja": "明太子卵焼き",
+        "vi": "Trung cuon mentaiko",
+        "th": "ไข่เจียวเมนไทโกะ",
+        "ne": "मेन्टाइको अण्डा रोल",
+        "ru": "Тамагояки ментайко"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-sichuan-wing",
+      "category": "signature",
+      "sort": 4,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "사천 닭날개",
+        "en": "Sichuan Chicken Wings",
+        "zh": "四川辣鸡翅",
+        "ja": "四川チキンウイング",
+        "vi": "Canh ga Tu Xuyen",
+        "th": "ปีกไก่เสฉวน",
+        "ne": "सिचुआन चिकन विङ",
+        "ru": "Сычуаньские крылышки"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-shrimp-soy",
+      "category": "signature",
+      "sort": 5,
+      "price": 17000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "새우장 (10pcs)",
+        "en": "Soy Marinated Shrimp (10pcs)",
+        "zh": "酱油虾",
+        "ja": "エビの醤油漬け",
+        "vi": "Tom ngam xi dau",
+        "th": "กุ้งดองซีอิ๊ว",
+        "ne": "सोया झिँगा",
+        "ru": "Креветки в соевом"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-donkatsu-anju",
+      "category": "signature",
+      "sort": 6,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "돈까스안주",
+        "en": "Tonkatsu Side",
+        "zh": "猪排小菜",
+        "ja": "とんかつおつまみ",
+        "vi": "Tonkatsu khai vi",
+        "th": "ทงคัตสึกับแกล้ม",
+        "ne": "टोन्काट्सु स्न्याक",
+        "ru": "Тонкацу закуска"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-jjukkumi",
+      "category": "signature",
+      "sort": 7,
+      "price": 28000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "쭈꾸미볶음 + 소면",
+        "en": "Spicy Octopus + Noodles",
+        "zh": "辣炒小章鱼+素面",
+        "ja": "チュクミ炒め+素麺",
+        "vi": "Bach tuoc xao cay + mi",
+        "th": "หมึกผัดเผ็ด+โซเม็น",
+        "ne": "पिरो अक्टोपस+सोमेन",
+        "ru": "Осьминог острый+Лапша"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sig-salmon-salad",
+      "category": "signature",
+      "sort": 8,
+      "price": 25000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "연어샐러드",
+        "en": "Salmon Salad",
+        "zh": "三文鱼沙拉",
+        "ja": "サーモンサラダ",
+        "vi": "Salad ca hoi",
+        "th": "สลัดแซลมอน",
+        "ne": "सल्मन सलाद",
+        "ru": "Салат с лососем"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "grill-jeoneo",
+      "category": "grill",
+      "sort": 1,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "전어구이 (계절메뉴/5마리)",
+        "en": "Grilled Gizzard Shad (Seasonal/5pcs)",
+        "zh": "烤鲥鱼 (5条)",
+        "ja": "コノシロ焼き (5尾)",
+        "vi": "Ca jeoneo nuong (5 con)",
+        "th": "ปลาจอนอย่าง (5 ตัว)",
+        "ne": "जियोनो ग्रिल (५ वटा)",
+        "ru": "Рыба гриль (5шт)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "grill-cheongeo",
+      "category": "grill",
+      "sort": 2,
+      "price": 13000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "청어구이",
+        "en": "Grilled Herring",
+        "zh": "烤青鱼",
+        "ja": "ニシン焼き",
+        "vi": "Ca trich nuong",
+        "th": "ปลาเฮอร์ริ่งย่าง",
+        "ne": "हेरिङ ग्रिल",
+        "ru": "Сельдь гриль"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "grill-samchi",
+      "category": "grill",
+      "sort": 3,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "삼치구이",
+        "en": "Grilled Spanish Mackerel",
+        "zh": "烤马鲛鱼",
+        "ja": "サワラ焼き",
+        "vi": "Ca thu nuong",
+        "th": "ปลาอินทรีย่าง",
+        "ne": "म्याकरेल ग्रिल",
+        "ru": "Макрель гриль"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "grill-mero",
+      "category": "grill",
+      "sort": 4,
+      "price": 23000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "메로구이 (200g)",
+        "en": "Grilled Mero (200g)",
+        "zh": "烤银鳕鱼 (200g)",
+        "ja": "メロ焼き (200g)",
+        "vi": "Ca mero nuong (200g)",
+        "th": "ปลาเมโรย่าง (200g)",
+        "ne": "मेरो ग्रिल (200g)",
+        "ru": "Мерлуза гриль (200г)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "grill-shishamo",
+      "category": "grill",
+      "sort": 5,
+      "price": 16000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "시샤모구이 (10마리)",
+        "en": "Grilled Shishamo (10pcs)",
+        "zh": "烤柳叶鱼 (5条)",
+        "ja": "ししゃも焼き (5尾)",
+        "vi": "Ca shishamo nuong (5)",
+        "th": "ปลาชิชาโมะย่าง (5)",
+        "ne": "शिशामो ग्रिल (५)",
+        "ru": "Шишамо гриль (5шт)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "fried-tori-karaage",
+      "category": "fried",
+      "sort": 2,
+      "price": 16000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "토리가라아게 (일본식닭다리살튀김)",
+        "en": "Tori Karaage (Japanese Fried Chicken)",
+        "zh": "日式炸鸡",
+        "ja": "鶏の唐揚げ",
+        "vi": "Ga chien karaage",
+        "th": "ไก่คาราอาเกะ",
+        "ne": "टोरी कराएज",
+        "ru": "Тори карааге"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "fried-ebi-karaage",
+      "category": "fried",
+      "sort": 3,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "새우튀김 (튀김가루)",
+        "en": "Shrimp Tempura (Batter)",
+        "zh": "炸虾 (面粉)",
+        "ja": "エビの唐揚げ (衣)",
+        "vi": "Tom chien (bot)",
+        "th": "กุ้งทอด (แป้งทอด)",
+        "ne": "एबी कराएज (पिठो)",
+        "ru": "Креветки (в кляре)"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "fried-katsu-shrimp",
+      "category": "fried",
+      "sort": 4,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "까스새우튀김 (빵가루)",
+        "en": "Katsu Shrimp (Breaded)",
+        "zh": "炸虾排 (面包糠)",
+        "ja": "エビカツ (パン粉)",
+        "vi": "Tom chien (banh mi)",
+        "th": "กุ้งคัตสึ (เกล็ดขนมปัง)",
+        "ne": "काट्सु झिँगा (ब्रेडक्रम्ब)",
+        "ru": "Креветки кацу (панировка)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "fried-odari-karaage",
+      "category": "fried",
+      "sort": 5,
+      "price": 19000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "오다리가라아게 (일본식오징어다리튀김)",
+        "en": "Squid Karaage (Fried Squid Legs)",
+        "zh": "炸鱿鱼",
+        "ja": "イカの唐揚げ",
+        "vi": "Muc chien",
+        "th": "ปลาหมึกทอด",
+        "ne": "स्क्विड कराएज",
+        "ru": "Кальмар карааге"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-katsudon",
+      "category": "meal",
+      "sort": 1,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "가쯔동 (돈까스덮밥)",
+        "en": "Katsudon (Pork Cutlet Rice Bowl)",
+        "zh": "猪排盖饭",
+        "ja": "カツ丼",
+        "vi": "Com katsudon",
+        "th": "คัตสึด้ง",
+        "ne": "काट्सुडन",
+        "ru": "Кацудон"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "meal-gyudon",
+      "category": "meal",
+      "sort": 2,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "규동 (소고기덮밥)",
+        "en": "Gyudon (Beef Rice Bowl)",
+        "zh": "牛肉盖饭",
+        "ja": "牛丼",
+        "vi": "Com bo gyudon",
+        "th": "กิวด้ง",
+        "ne": "ग्युडन",
+        "ru": "Гюдон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-kimchidon",
+      "category": "meal",
+      "sort": 3,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "김치돈까스나베",
+        "en": "Kimchi Tonkatsu Nabe",
+        "zh": "泡菜猪排锅",
+        "ja": "キムチとんかつ鍋",
+        "vi": "Lau kimchi tonkatsu",
+        "th": "กิมจิทงคัตสึนาเบะ",
+        "ne": "किमची टोन्काट्सु नाबे",
+        "ru": "Кимчи тонкацу набэ"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-ebidon",
+      "category": "meal",
+      "sort": 4,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "에비동 (새우튀김덮밥)",
+        "en": "Ebidon (Shrimp Tempura Rice Bowl)",
+        "zh": "虾盖饭",
+        "ja": "エビ丼",
+        "vi": "Com tom ebidon",
+        "th": "เอบิด้ง",
+        "ne": "एबिडन",
+        "ru": "Эбидон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-chicken-don",
+      "category": "meal",
+      "sort": 5,
+      "price": 9000,
+      "active": false,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "치킨가라케동",
+        "en": "Chicken Karaage Don",
+        "zh": "炸鸡盖饭",
+        "ja": "チキン唐揚げ丼",
+        "vi": "Com ga chien",
+        "th": "ข้าวไก่คาราอาเกะ",
+        "ne": "चिकन कराएज डन",
+        "ru": "Чикен карааге дон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-tonkatsu",
+      "category": "meal",
+      "sort": 6,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "수제돈까스",
+        "en": "Handmade Tonkatsu",
+        "zh": "猪排",
+        "ja": "とんかつ",
+        "vi": "Tonkatsu",
+        "th": "ทงคัตสึ",
+        "ne": "टोन्काट्सु",
+        "ru": "Тонкацу"
+      },
+      "description": {
+        "ko": "소스가 뿌려져 있어요",
+        "en": "Sauce is drizzled on top",
+        "zh": "淋有酱汁",
+        "ja": "ソースがかかっています",
+        "vi": "Da rot sot",
+        "th": "ราดซอส",
+        "ne": "सस छर्किएको",
+        "ru": "Полито соусом"
+      },
+      "recommended": true
+    },
+    {
+      "id": "meal-tonkatsu-jp",
+      "category": "meal",
+      "sort": 7,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "수제일식돈까스",
+        "en": "Japanese Style Tonkatsu",
+        "zh": "日式猪排",
+        "ja": "和風とんかつ",
+        "vi": "Tonkatsu Nhat",
+        "th": "ทงคัตสึญี่ปุ่น",
+        "ne": "जापानी टोन्काट्सु",
+        "ru": "Тонкацу японский"
+      },
+      "description": {
+        "ko": "소스를 찍어 먹어요",
+        "en": "Dip in sauce",
+        "zh": "蘸酱吃",
+        "ja": "ソースにつけて",
+        "vi": "Cham sot an",
+        "th": "จิ้มซอส",
+        "ne": "ससमा डुबाएर",
+        "ru": "Макать в соус"
+      },
+      "recommended": false
+    },
+    {
+      "id": "meal-albap",
+      "category": "meal",
+      "sort": 8,
+      "price": 8000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "뚝배기 알밥",
+        "en": "Stone Pot Fish Roe Rice",
+        "zh": "鱼籽石锅饭",
+        "ja": "いくら石鍋ご飯",
+        "vi": "Com trung ca noi da",
+        "th": "ข้าวไข่ปลาหม้อดิน",
+        "ne": "रो स्टोन पट भात",
+        "ru": "Икра в горшочке"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-gwangeo-don",
+      "category": "meal",
+      "sort": 9,
+      "price": 14000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "광어회덮밥",
+        "en": "Flatfish Sashimi Rice",
+        "zh": "比目鱼刺身盖饭",
+        "ja": "ヒラメ海鮮丼",
+        "vi": "Com sashimi ca bon",
+        "th": "ข้าวซาชิมิปลากวางอ",
+        "ne": "फ्ल्याटफिश डन",
+        "ru": "Камбала дон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-ureok-don",
+      "category": "meal",
+      "sort": 10,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우럭회덮밥",
+        "en": "Rockfish Sashimi Rice",
+        "zh": "石斑鱼刺身盖饭",
+        "ja": "メバル海鮮丼",
+        "vi": "Com sashimi ca mu",
+        "th": "ข้าวซาชิมิปลาอูร็อค",
+        "ne": "रकफिश डन",
+        "ru": "Окунь дон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-tuna-don",
+      "category": "meal",
+      "sort": 11,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "참치회덮밥",
+        "en": "Tuna Sashimi Rice",
+        "zh": "金枪鱼刺身盖饭",
+        "ja": "マグロ丼",
+        "vi": "Com sashimi ca ngu",
+        "th": "ข้าวซาชิมิทูน่า",
+        "ne": "ट्युना डन",
+        "ru": "Тунец дон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-curry-katsu",
+      "category": "meal",
+      "sort": 12,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "돈까스카레 덮밥",
+        "en": "Curry Katsu Rice Bowl",
+        "zh": "咖喱猪排盖饭",
+        "ja": "カレーカツ丼",
+        "vi": "Com ca ri tonkatsu",
+        "th": "ข้าวแกงกะหรี่ทงคัตสึ",
+        "ne": "करी काट्सु डन",
+        "ru": "Карри кацу дон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-inari-udon",
+      "category": "noodle",
+      "sort": 1,
+      "price": 7000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "유부우동",
+        "en": "Inari Udon",
+        "zh": "豆腐皮乌冬",
+        "ja": "きつねうどん",
+        "vi": "Udon dau hu",
+        "th": "อุด้งอินาริ",
+        "ne": "इनारी उडोन",
+        "ru": "Удон инари"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-fish-udon",
+      "category": "noodle",
+      "sort": 2,
+      "price": 9000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "어묵우동",
+        "en": "Fish Cake Udon",
+        "zh": "鱼饼乌冬",
+        "ja": "おでんうどん",
+        "vi": "Udon cha ca",
+        "th": "อุด้งลูกชิ้นปลา",
+        "ne": "फिशकेक उडोन",
+        "ru": "Удон с камабоко"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-shrimp-udon",
+      "category": "noodle",
+      "sort": 3,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "왕새우튀김 우동",
+        "en": "King Shrimp Tempura Udon",
+        "zh": "炸虾乌冬",
+        "ja": "海老天うどん",
+        "vi": "Udon tom tempura",
+        "th": "อุด้งกุ้งเทมปุระ",
+        "ne": "झिँगा टेम्पुरा उडोन",
+        "ru": "Удон темпура"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-tonkotsu",
+      "category": "noodle",
+      "sort": 4,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "돈코츠라멘",
+        "en": "Tonkotsu Ramen",
+        "zh": "豚骨拉面",
+        "ja": "豚骨ラーメン",
+        "vi": "Mi tonkotsu",
+        "th": "ราเม็งทงคตสึ",
+        "ne": "टोन्कोत्सु रामेन",
+        "ru": "Тонкоцу рамен"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "noodle-tantan",
+      "category": "noodle",
+      "sort": 5,
+      "price": 11000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "매콤탄탄멘",
+        "en": "Spicy Tan Tan Men",
+        "zh": "担担面",
+        "ja": "担々麺",
+        "vi": "Mi tantan",
+        "th": "ตั้นตั้นเม็น",
+        "ne": "टान्टान रामेन",
+        "ru": "Тантанмэн"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-cold-soba",
+      "category": "noodle",
+      "sort": 6,
+      "price": 8000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "냉모밀",
+        "en": "Cold Soba",
+        "zh": "冷荞麦面",
+        "ja": "冷たいそば",
+        "vi": "Mi soba lanh",
+        "th": "โซบะเย็น",
+        "ne": "चिसो सोबा",
+        "ru": "Холодная соба"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-pan-soba",
+      "category": "noodle",
+      "sort": 7,
+      "price": 8000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "판모밀",
+        "en": "Pan Soba",
+        "zh": "笊篱荞麦面",
+        "ja": "ざるそば",
+        "vi": "Mi soba khay",
+        "th": "โซบะจาน",
+        "ne": "प्यान सोबा",
+        "ru": "Дзару соба"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-bibim-soba",
+      "category": "noodle",
+      "sort": 8,
+      "price": 9000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "비빔모밀국수",
+        "en": "Bibim Soba Noodles",
+        "zh": "拌荞麦面",
+        "ja": "ビビンそば",
+        "vi": "Mi soba tron",
+        "th": "บิบิมโซบะ",
+        "ne": "बिबिम सोबा",
+        "ru": "Бибим соба"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "noodle-yaki-udon",
+      "category": "noodle",
+      "sort": 9,
+      "price": 12000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "야끼우동",
+        "en": "Yaki Udon",
+        "zh": "炒乌冬",
+        "ja": "焼きうどん",
+        "vi": "Udon xao",
+        "th": "ยากิอุด้ง",
+        "ne": "याकी उडोन",
+        "ru": "Яки удон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "meal-altang",
+      "category": "meal",
+      "sort": 20,
+      "price": 12000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "뚝배기 알탕",
+        "en": "Fish Roe Hot Pot",
+        "zh": "鱼籽辣汤",
+        "ja": "アルタン(魚卵辛スープ)",
+        "vi": "Canh trung ca cay",
+        "th": "ซุปไข่ปลาเผ็ด",
+        "ne": "अल्ताङ (माछा अण्डा सुप)",
+        "ru": "Альтан (острый суп с икрой)"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "hotpot-seodeori",
+      "category": "hotpot",
+      "sort": 2,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "서더리전골",
+        "en": "Seodeori Hot Pot",
+        "zh": "鱼杂火锅",
+        "ja": "ソドリ鍋",
+        "vi": "Lau ca seodeori",
+        "th": "หม้อไฟซอดอรี",
+        "ne": "सियोदोरी तातो भाँडो",
+        "ru": "Содори набэ"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-daegu-1",
+      "category": "hotpot",
+      "sort": 3,
+      "price": 15000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "대구고니탕 (1인)",
+        "en": "Cod Soup (1P)",
+        "zh": "鳕鱼锅 (1人)",
+        "ja": "タラ鍋 (1人前)",
+        "vi": "Lau ca tuyet (1)",
+        "th": "หม้อไฟปลาค็อด (1 คน)",
+        "ne": "कड तातो भाँडो (१)",
+        "ru": "Набэ из трески (1)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-daegu-2",
+      "category": "hotpot",
+      "sort": 4,
+      "price": 28000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "대구고니탕 (2인)",
+        "en": "Cod Soup (2P)",
+        "zh": "鳕鱼锅 (2人)",
+        "ja": "タラ鍋 (2人前)",
+        "vi": "Lau ca tuyet (2)",
+        "th": "หม้อไฟปลาค็อด (2 คน)",
+        "ne": "कड तातो भाँडो (२)",
+        "ru": "Набэ из трески (2)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-daegu-3",
+      "category": "hotpot",
+      "sort": 5,
+      "price": 40000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "대구고니탕 (3인)",
+        "en": "Cod Soup (3P)",
+        "zh": "鳕鱼锅 (3人)",
+        "ja": "タラ鍋 (3人前)",
+        "vi": "Lau ca tuyet (3)",
+        "th": "หม้อไฟปลาค็อด (3 คน)",
+        "ne": "कड तातो भाँडो (३)",
+        "ru": "Набэ из трески (3)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-daegu-4",
+      "category": "hotpot",
+      "sort": 6,
+      "price": 50000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "대구고니탕 (4인)",
+        "en": "Cod Soup (4P)",
+        "zh": "鳕鱼锅 (4人)",
+        "ja": "タラ鍋 (4人前)",
+        "vi": "Lau ca tuyet (4)",
+        "th": "หม้อไฟปลาค็อด (4 คน)",
+        "ne": "कड तातो भाँडो (४)",
+        "ru": "Набэ из трески (4)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-al-goni",
+      "category": "hotpot",
+      "sort": 7,
+      "price": 35000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "알+고니전골",
+        "en": "Roe + Innards Hot Pot",
+        "zh": "鱼籽+内脏火锅",
+        "ja": "アル+コニ鍋",
+        "vi": "Lau trung ca + long",
+        "th": "หม้อไฟไข่ปลา+เครื่องใน",
+        "ne": "अल+गोनी तातो भाँडो",
+        "ru": "Набэ икра+потроха"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-clam-tofu",
+      "category": "hotpot",
+      "sort": 8,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "백합두부탕",
+        "en": "Clam Tofu Soup",
+        "zh": "蛤蜊豆腐汤",
+        "ja": "あさり豆腐鍋",
+        "vi": "Canh dau hu ngheu",
+        "th": "ซุปเต้าหู้หอยลาย",
+        "ne": "क्ल्याम टोफु सुप",
+        "ru": "Суп с тофу и моллюсками"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "hotpot-fishcake",
+      "category": "hotpot",
+      "sort": 9,
+      "price": 18000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "어묵탕",
+        "en": "Fish Cake Soup",
+        "zh": "鱼糕汤",
+        "ja": "おでん鍋",
+        "vi": "Canh cha ca",
+        "th": "ซุปลูกชิ้นปลา",
+        "ne": "फिशकेक सुप",
+        "ru": "Суп одэн"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "drink-soju",
+      "category": "drink",
+      "sort": 1,
+      "price": 5000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "소주",
+        "en": "Soju",
+        "zh": "烧酒",
+        "ja": "焼酎",
+        "vi": "Soju",
+        "th": "โซจู",
+        "ne": "सोजु",
+        "ru": "Соджу"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "drink-beer",
+      "category": "drink",
+      "sort": 2,
+      "price": 5000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "맥주",
+        "en": "Beer",
+        "zh": "啤酒",
+        "ja": "ビール",
+        "vi": "Bia",
+        "th": "เบียร์",
+        "ne": "बियर",
+        "ru": "Пиво"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "drink-soft",
+      "category": "drink",
+      "sort": 3,
+      "price": 2000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "콜라",
+        "en": "Coke",
+        "zh": "饮料",
+        "ja": "ソフトドリンク",
+        "vi": "Nuoc ngot",
+        "th": "น้ำอัดลม",
+        "ne": "सफ्ट ड्रिंक",
+        "ru": "Напиток"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sake-baekhwa-pot",
+      "category": "sake",
+      "sort": 4,
+      "price": 20000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "주전자",
+        "en": "Pot (Baekhwa)",
+        "zh": "白花水福 壶",
+        "ja": "百花水福 銚子",
+        "vi": "Baekhwa Subog binh",
+        "th": "แบกฮวาซูบก กา",
+        "ne": "बेकह्वा सुबोक जग",
+        "ru": "Пэкхвасубок кувшин"
+      },
+      "description": {},
+      "recommended": true
+    },
+    {
+      "id": "sake-baekhwa-daepo",
+      "category": "sake",
+      "sort": 5,
+      "price": 7000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "대포",
+        "en": "Large Cup (Baekhwa)",
+        "zh": "白花水福 大杯",
+        "ja": "百花水福 大杯",
+        "vi": "Baekhwa Subog lon",
+        "th": "แบกฮวาซูบก แก้วใหญ่",
+        "ne": "बेकह्वा सुबोक ठूलो",
+        "ru": "Пэкхвасубок бол."
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sake-baekhwa-tokuri",
+      "category": "sake",
+      "sort": 6,
+      "price": 7000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "도쿠리",
+        "en": "Tokuri (Baekhwa)",
+        "zh": "白花水福 德利",
+        "ja": "百花水福 徳利",
+        "vi": "Baekhwa Subog tokuri",
+        "th": "แบกฮวาซูบก โทคุริ",
+        "ne": "बेकह्वा सुबोक तोकुरी",
+        "ru": "Пэкхвасубок токкури"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sake-nihon-pot",
+      "category": "sake",
+      "sort": 7,
+      "price": 29000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "주전자",
+        "en": "Pot (Nihon)",
+        "zh": "日本酒 壶",
+        "ja": "日本盛半酌 銚子",
+        "vi": "Sake Nhat binh",
+        "th": "สาเกญี่ปุ่น กา",
+        "ne": "जापानी साके जग",
+        "ru": "Японское сакэ кувшин"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sake-nihon-daepo",
+      "category": "sake",
+      "sort": 8,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "대포",
+        "en": "Large Cup (Nihon)",
+        "zh": "日本酒 大杯",
+        "ja": "日本盛半酌 大杯",
+        "vi": "Sake Nhat lon",
+        "th": "สาเกญี่ปุ่น แก้วใหญ่",
+        "ne": "जापानी साके ठूलो",
+        "ru": "Японское сакэ бол."
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "sake-nihon-tokuri",
+      "category": "sake",
+      "sort": 9,
+      "price": 10000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "도쿠리",
+        "en": "Tokuri (Nihon)",
+        "zh": "日本酒 德利",
+        "ja": "日本盛半酌 徳利",
+        "vi": "Sake Nhat tokuri",
+        "th": "สาเกญี่ปุ่น โทคุริ",
+        "ne": "जापानी साके तोकुरी",
+        "ru": "Японское сакэ токкури"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "packsake-ganbare",
+      "category": "sake",
+      "sort": 10,
+      "price": 35000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "간바래오또상 (900ml)",
+        "en": "Ganbare Otousan (900ml)",
+        "zh": "加油大叔 (900ml)",
+        "ja": "がんばれおとうさん (900ml)",
+        "vi": "Ganbare Otousan (900ml)",
+        "th": "กันบาเระ (900ml)",
+        "ne": "गान्बारे (900ml)",
+        "ru": "Ганбарэ (900мл)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "packsake-hakutsumaru",
+      "category": "sake",
+      "sort": 11,
+      "price": 35000,
+      "active": true,
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "하쿠쯔마루 (900ml)",
+        "en": "Hakutsumaru (900ml)",
+        "zh": "白鹤丸 (900ml)",
+        "ja": "白鶴まる (900ml)",
+        "vi": "Hakutsumaru (900ml)",
+        "th": "ฮากุสึมารุ (900ml)",
+        "ne": "हाकुत्सुमारु (900ml)",
+        "ru": "Хакуцумару (900мл)"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "extras-udon-noodle",
+      "category": "extras",
+      "sort": 1,
+      "price": 2000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "우동면 사리",
+        "en": "Extra Udon Noodles",
+        "zh": "加乌冬面",
+        "ja": "うどん玉追加",
+        "vi": "Them mi udon",
+        "th": "เพิ่มเส้นอุด้ง",
+        "ne": "उडोन नुडल थप",
+        "ru": "Доп. удон"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "extras-corn-butter",
+      "category": "extras",
+      "sort": 2,
+      "price": 1000,
+      "active": true,
+      "updated_at": "2026-03-05T00:48:59Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "콘버터 추가",
+        "en": "Extra Corn Butter",
+        "zh": "加玉米黄油",
+        "ja": "コーンバター追加",
+        "vi": "Them bo bap",
+        "th": "เพิ่มข้าวโพดเนย",
+        "ne": "कर्न बटर थप",
+        "ru": "Доп. корн-баттер"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "extras-rice",
+      "category": "extras",
+      "sort": 3,
+      "price": 1000,
+      "active": true,
+      "updated_at": "2026-03-06T00:00:00Z",
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "공기밥 추가",
+        "en": "Extra Rice",
+        "zh": "加米饭",
+        "ja": "ご飯追加",
+        "vi": "Them com",
+        "th": "เพิ่มข้าว",
+        "ne": "भात थप",
+        "ru": "Доп. рис"
+      },
+      "description": {},
+      "recommended": false
+    },
+    {
+      "id": "lunch-donkatsu",
+      "category": "lunch",
+      "sort": 1,
+      "active": true,
+      "recommended": true,
+      "price": 10000,
+      "image": "images/placeholder.webp",
+      "available_time": {
+        "start": "11:00",
+        "end": "15:00"
+      },
+      "name": {
+        "ko": "돈까스백반",
+        "en": "Tonkatsu Set Meal",
+        "zh": "猪排定食",
+        "ja": "とんかつ定食",
+        "vi": "Com Tonkatsu",
+        "th": "ข้าวทงคัตสึ",
+        "ne": "टोन्काट्सु सेट",
+        "ru": "Тонкацу обед"
+      },
+      "description": {
+        "ko": "돈까스 + 비빔국수 + 된장찌개 + 샐러드 + 밥 + 반찬",
+        "en": "Tonkatsu + Bibim Noodles + Doenjang Soup + Salad + Rice + Side",
+        "zh": "猪排+拌面+大酱汤+沙拉+饭+小菜",
+        "ja": "とんかつ+ビビン麺+テンジャンチゲ+サラダ+ご飯+おかず",
+        "vi": "Tonkatsu + Mi tron + Canh tuong + Salad + Com + Mon phu",
+        "th": "ทงคัตสึ+บะหมี่+ซุปเต้าเจี้ยว+สลัด+ข้าว+เครื่องเคียง",
+        "ne": "टोन्काट्सु+बिबिम नुडल्स+दोएन्जाङ सुप+सलाद+भात+साइड",
+        "ru": "Тонкацу+Лапша+Суп+Салат+Рис+Гарнир"
+      },
+      "updated_at": "2026-03-07T02:55:59Z"
+    },
+    {
+      "id": "set-menu-a",
+      "category": "set",
+      "sort": 5,
+      "active": true,
+      "recommended": false,
+      "price": 15000,
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "세트 A",
+        "en": "Set A",
+        "zh": "A套餐 (寿司7个+乌冬)",
+        "ja": "Aセット (寿司7貫+うどん)",
+        "vi": "Set A (Sushi 7 + Udon)",
+        "th": "เซ็ต A (ซูชิ 7 + อุด้ง)",
+        "ne": "सेट A (सुशी ७ + उडोन)",
+        "ru": "Сет A (Суши 7шт + Удон)"
+      },
+      "description": {
+        "ko": "초밥7pcs + 유부우동",
+        "en": "Sushi 7pcs + Inari Udon",
+        "zh": "寿司7个+乌冬面",
+        "ja": "寿司7貫+うどん",
+        "vi": "Sushi 7 mieng + Udon",
+        "th": "ซูชิ 7 ชิ้น + อุด้ง",
+        "ne": "सुशी ७ पिस + उडोन",
+        "ru": "Суши 7шт + Удон"
+      },
+      "updated_at": "2026-03-07T03:07:50Z"
+    },
+    {
+      "id": "set-menu-b",
+      "category": "set",
+      "sort": 6,
+      "active": true,
+      "recommended": true,
+      "price": 15000,
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "세트 B",
+        "en": "Set B",
+        "zh": "B套餐 (猪排+寿司6个+半乌冬)",
+        "ja": "Bセット (とんかつ+寿司6貫+半うどん)",
+        "vi": "Set B (Tonkatsu + Sushi 6 + Udon nho)",
+        "th": "เซ็ต B (ทงคัตสึ+ซูชิ 6+อุด้งเล็ก)",
+        "ne": "सेट B (टोन्काट्सु+सुशी ६+आधा उडोन)",
+        "ru": "Сет B (Тонкацу+Суши 6шт+Удон)"
+      },
+      "description": {
+        "ko": "돈까스 + 초밥6pcs + 소우동",
+        "en": "Tonkatsu + Sushi 6pcs + Small Udon",
+        "zh": "猪排+寿司6个+半碗乌冬面",
+        "ja": "とんかつ+寿司6貫+半うどん",
+        "vi": "Tonkatsu + Sushi 6 + Udon nho",
+        "th": "ทงคัตสึ + ซูชิ 6 ชิ้น + อุด้งเล็ก",
+        "ne": "टोन्काट्सु + सुशी ६ + आधा उडोन",
+        "ru": "Тонкацу + Суши 6шт + Удон (половина)"
+      },
+      "updated_at": "2026-03-07T03:07:50Z"
+    },
+    {
+      "id": "set-menu-c",
+      "category": "set",
+      "sort": 7,
+      "active": true,
+      "recommended": false,
+      "price": 15000,
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "세트 C",
+        "en": "Set C",
+        "zh": "C套餐 (加州卷+寿司5个)",
+        "ja": "Cセット (カリフォルニアロール+寿司5貫)",
+        "vi": "Set C (California Roll + Sushi 5)",
+        "th": "เซ็ต C (แคลิฟอร์เนียโรล+ซูชิ 5)",
+        "ne": "सेट C (क्यालिफोर्निया रोल+सुशी ५)",
+        "ru": "Сет C (Калифорния+Суши 5шт)"
+      },
+      "description": {
+        "ko": "켈리포니아롤 + 초밥5pcs",
+        "en": "California Roll + Sushi 5pcs",
+        "zh": "加州卷+寿司5个",
+        "ja": "カリフォルニアロール+寿司5貫",
+        "vi": "California Roll + Sushi 5 mieng",
+        "th": "แคลิฟอร์เนียโรล + ซูชิ 5 ชิ้น",
+        "ne": "क्यालिफोर्निया रोल + सुशी ५",
+        "ru": "Калифорния ролл + Суши 5шт"
+      },
+      "updated_at": "2026-03-07T03:07:50Z"
+    },
+    {
+      "id": "set-menu-d",
+      "category": "set",
+      "sort": 8,
+      "active": true,
+      "recommended": false,
+      "price": 15000,
+      "image": "images/placeholder.webp",
+      "name": {
+        "ko": "세트 D",
+        "en": "Set D",
+        "zh": "D套餐 (脆卷+寿司5个)",
+        "ja": "Dセット (クランチロール+寿司5貫)",
+        "vi": "Set D (Crunch Roll + Sushi 5)",
+        "th": "เซ็ต D (ครันช์โรล+ซูชิ 5)",
+        "ne": "सेट D (क्रन्च रोल+सुशी ५)",
+        "ru": "Сет D (Кранч+Суши 5шт)"
+      },
+      "description": {
+        "ko": "크런치롤 + 초밥5pcs",
+        "en": "Crunch Roll + Sushi 5pcs",
+        "zh": "脆卷+寿司5个",
+        "ja": "クランチロール+寿司5貫",
+        "vi": "Crunch Roll + Sushi 5 mieng",
+        "th": "ครันช์โรล + ซูชิ 5 ชิ้น",
+        "ne": "क्रन्च रोल + सुशी ५",
+        "ru": "Кранч ролл + Суши 5шт"
+      },
+      "updated_at": "2026-03-07T03:07:50Z"
+    },
+    {
+      "id": "sushi-tobiko-maki",
+      "category": "sushi",
+      "sort": 10,
+      "active": true,
+      "recommended": false,
+      "price": 6000,
+      "name": {
+        "ko": "날치알마끼 (4pcs)",
+        "en": "Tobiko Maki (4pcs)",
+        "zh": "飞鱼籽卷 (4个)",
+        "ja": "とびこ巻き (4個)",
+        "vi": "Maki trung ca chuon (4)",
+        "th": "โทบิโกะมากิ (4)",
+        "ne": "तोबिको माकी (४)",
+        "ru": "Тобико маки (4шт)"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "meal-sakedon",
+      "category": "meal",
+      "sort": 5,
+      "active": true,
+      "recommended": true,
+      "price": 15000,
+      "name": {
+        "ko": "사케동 (일식연어덮밥:간장소스)",
+        "en": "Sakedon (Salmon Rice Bowl)",
+        "zh": "三文鱼盖饭 (酱油)",
+        "ja": "サケ丼 (醤油ソース)",
+        "vi": "Com ca hoi (sot tuong)",
+        "th": "ซาเกะด้ง (ซอสโชยุ)",
+        "ne": "साकेडन (सोया सस)",
+        "ru": "Сакэдон (соевый соус)"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "meal-chirashi",
+      "category": "meal",
+      "sort": 6,
+      "active": true,
+      "recommended": false,
+      "price": 15000,
+      "name": {
+        "ko": "지라시스시 (일식회덮밥:간장소스)",
+        "en": "Chirashi Sushi (Sashimi Rice Bowl)",
+        "zh": "散寿司 (刺身盖饭)",
+        "ja": "ちらし寿司 (醤油ソース)",
+        "vi": "Chirashi Sushi (com sashimi)",
+        "th": "จิราชิซูชิ (ซาชิมิด้ง)",
+        "ne": "चिराशी सुशी (साशिमी भात)",
+        "ru": "Тирасидзуси (сашими дон)"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "meal-fish-katsu",
+      "category": "meal",
+      "sort": 7,
+      "active": true,
+      "recommended": false,
+      "price": 13000,
+      "name": {
+        "ko": "광어 생선까스",
+        "en": "Flatfish Katsu",
+        "zh": "比目鱼排",
+        "ja": "ヒラメフライ",
+        "vi": "Ca bon chien xu",
+        "th": "ปลากวางอคัตสึ",
+        "ne": "फ्ल्याटफिश काट्सु",
+        "ru": "Камбала кацу"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "meal-seodeori",
+      "category": "meal",
+      "sort": 12,
+      "active": true,
+      "recommended": false,
+      "price": 10000,
+      "name": {
+        "ko": "뚝배기 서더리탕",
+        "en": "Stone Pot Seodeori Soup",
+        "zh": "砂锅鱼杂汤",
+        "ja": "土鍋ソドリスープ",
+        "vi": "Canh ca seodeori noi dat",
+        "th": "ซุปซอดอรีหม้อดิน",
+        "ne": "ढुंगे भाँडामा सियोदोरी सुप",
+        "ru": "Суп содори в горшочке"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "hotpot-daegu-jiri",
+      "category": "hotpot",
+      "sort": 6,
+      "active": true,
+      "recommended": false,
+      "price": 15000,
+      "name": {
+        "ko": "대구지리탕 (1인)",
+        "en": "Cod Clear Soup (1p)",
+        "zh": "鳕鱼清汤 (1人)",
+        "ja": "タラちり鍋 (1人前)",
+        "vi": "Canh ca tuyet trong (1)",
+        "th": "ซุปปลาค็อดใส (1 คน)",
+        "ne": "कड क्लियर सुप (१)",
+        "ru": "Прозрачный суп из трески (1)"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "drink-cheongha",
+      "category": "drink",
+      "sort": 3,
+      "active": true,
+      "recommended": false,
+      "price": 7000,
+      "name": {
+        "ko": "청하",
+        "en": "Cheongha (Rice Wine)",
+        "zh": "清河清酒",
+        "ja": "チョンハ",
+        "vi": "Cheongha",
+        "th": "ชองฮา",
+        "ne": "चियोङहा",
+        "ru": "Чхонха"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "drink-sprite",
+      "category": "drink",
+      "sort": 5,
+      "active": true,
+      "recommended": false,
+      "price": 2000,
+      "name": {
+        "ko": "스프라이트",
+        "en": "Sprite",
+        "zh": "雪碧",
+        "ja": "スプライト",
+        "vi": "Sprite",
+        "th": "สไปรท์",
+        "ne": "स्प्राइट",
+        "ru": "Спрайт"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "extras-small-udon",
+      "category": "extras",
+      "sort": 2,
+      "active": true,
+      "recommended": false,
+      "price": 2500,
+      "name": {
+        "ko": "소우동 추가",
+        "en": "Add Small Udon",
+        "zh": "加小乌冬",
+        "ja": "小うどん追加",
+        "vi": "Them udon nho",
+        "th": "เพิ่มอุด้งเล็ก",
+        "ne": "सानो उडोन थप",
+        "ru": "Доп. мини удон"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    },
+    {
+      "id": "extras-rice-bowl",
+      "category": "extras",
+      "sort": 4,
+      "active": true,
+      "recommended": false,
+      "price": 1000,
+      "name": {
+        "ko": "공기밥 추가",
+        "en": "Add Rice Bowl",
+        "zh": "加米饭",
+        "ja": "ご飯追加",
+        "vi": "Them com",
+        "th": "เพิ่มข้าว",
+        "ne": "भात थप",
+        "ru": "Доп. рис"
+      },
+      "description": {},
+      "updated_at": "2026-03-07T03:07:50Z",
+      "image": "images/placeholder.webp"
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+"use client";
+// 에이전트 상태 실시간 구독 훅
+// WebSocket으로 에이전트 상태 변경, 파일 변경, 토큰 사용량 이벤트를 수신합니다.
+// WebSocket 연결 실패 시 HTTP 폴링으로 자동 폴백합니다.
+
+import { useEffect, useState, useRef } from "react";
+import { io, Socket } from "socket.io-client";
+import { Agent, ConnectionStatus } from "@/types";
+
+// 에이전트 상태 변경 이벤트 타입 (서버에서 수신)
+interface AgentStatusEvent {
+  agentId: string;
+  status: "idle" | "active" | "done" | "error";
+  currentTask?: string;
+  timestamp: number;
+}
+
+// 파일 변경 이벤트 타입 (서버에서 수신)
+interface FileChangedEvent {
+  path: string;
+  action: "create" | "modify" | "delete";
+  agentId: string;
+  timestamp: number;
+}
+
+// 토큰 사용량 이벤트 타입 (서버에서 수신)
+interface TokenUsageEvent {
+  agentId: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalCost: number;
+  timestamp: number;
+}
+
+/**
+ * 실시간 에이전트 로그 항목 타입 (RightPanel 로그 탭에 표시)
+ * 에이전트 상태 변경, 파일 수정, 토큰 사용량 이벤트를 통합합니다.
+ */
+export interface AgentLogEntry {
+  id: string;           // React key용 고유 ID
+  timestamp: number;    // Unix ms
+  time: string;         // "HH:MM:SS" 포맷
+  level: "INFO" | "CMD" | "COST" | "SYS";
+  msg: string;          // 로그 메시지
+  agentId?: string;     // 에이전트 색상 조회용 (RightPanel에서 agents 배열과 대조)
+}
+
+// 로그 최대 보관 개수 (100→50: 메모리 절감, 렌더링 부하 감소)
+const MAX_LOGS = 50;
+
+/**
+ * 로그 배열에 새 항목을 추가하는 헬퍼 (중복 코드 제거 + 조건부 slice)
+ * 최대치 미달 시 slice 생략으로 불필요한 배열 복사를 줄입니다.
+ */
+function addLog(prev: AgentLogEntry[], entry: AgentLogEntry): AgentLogEntry[] {
+  const next = [entry, ...prev];
+  return next.length > MAX_LOGS ? next.slice(0, MAX_LOGS) : next;
+}
+
+/**
+ * timestamp를 "HH:MM:SS" 문자열로 변환합니다.
+ */
+function formatTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString("ko-KR", { hour12: false });
+}
+
+/**
+ * 에이전트 상태를 실시간으로 구독하는 훅
+ * @param initialAgents - 초기 에이전트 목록 (SSR 또는 초기 fetch에서 받아온 값)
+ * @returns 실시간 업데이트되는 에이전트 목록, 연결 상태, 파일 변경 이력, 로그
+ */
+export function useAgentStatus(initialAgents: Agent[]) {
+  // 실시간으로 업데이트되는 에이전트 목록
+  const [agents, setAgents] = useState<Agent[]>(initialAgents);
+  // WebSocket 연결 상태
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>("connecting");
+  // 최근 파일 변경 이력 (최대 50개 유지)
+  const [changedFiles, setChangedFiles] = useState<FileChangedEvent[]>([]);
+  // 실시간 에이전트 로그 (최대 100개, RightPanel 로그 탭에 표시)
+  const [agentLogs, setAgentLogs] = useState<AgentLogEntry[]>([]);
+  // socket 인스턴스를 ref로 보관 (리렌더링 방지)
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    // /agents 네임스페이스에 WebSocket 연결 시도
+    const socket = io("/agents", {
+      path: "/socket.io",
+      // WebSocket 우선, 불가능 시 long-polling으로 폴백
+      transports: ["websocket", "polling"],
+      // 재연결 설정: 최대 5회 시도
+      reconnection: true,
+      reconnectionAttempts: 5,
+    });
+
+    socketRef.current = socket;
+
+    // 연결 성공 시 상태 업데이트 + SYS 로그 추가
+    socket.on("connect", () => {
+      setConnectionStatus("connected");
+      setAgentLogs((prev) =>
+        addLog(prev, {
+          id: `sys-connect-${Date.now()}`,
+          timestamp: Date.now(),
+          time: formatTime(Date.now()),
+          level: "SYS",
+          msg: "WebSocket 연결 완료",
+        })
+      );
+    });
+
+    // 연결 해제 시 상태 업데이트 + SYS 로그
+    socket.on("disconnect", () => {
+      setConnectionStatus("disconnected");
+      setAgentLogs((prev) =>
+        addLog(prev, {
+          id: `sys-disconnect-${Date.now()}`,
+          timestamp: Date.now(),
+          time: formatTime(Date.now()),
+          level: "SYS",
+          msg: "WebSocket 연결 해제",
+        })
+      );
+    });
+
+    // 연결 오류 시 상태 업데이트 (서버 미가동 등)
+    socket.on("connect_error", () => {
+      setConnectionStatus("error");
+    });
+
+    // 에이전트 상태 변경 이벤트 처리
+    socket.on("agent:status-change", (event: AgentStatusEvent) => {
+      // 에이전트 상태 업데이트
+      setAgents((prev) =>
+        prev.map((agent) => {
+          if (agent.id !== event.agentId) return agent;
+
+          // 서버 상태값을 클라이언트 Agent 타입에 맞게 매핑
+          let mappedStatus: Agent["status"];
+          switch (event.status) {
+            case "active":
+              mappedStatus = "active";
+              break;
+            case "done":
+              mappedStatus = "done";
+              break;
+            case "error":
+              mappedStatus = "error";
+              break;
+            default:
+              mappedStatus = "idle";
+          }
+
+          return {
+            ...agent,
+            status: mappedStatus,
+            currentTask: event.currentTask ?? agent.currentTask,
+          };
+        })
+      );
+
+      // INFO 로그 추가
+      const statusLabel =
+        event.status === "active"
+          ? "작업 시작"
+          : event.status === "done"
+          ? "작업 완료"
+          : event.status === "error"
+          ? "오류 발생"
+          : "대기 중";
+      const taskNote = event.currentTask ? `: ${event.currentTask}` : "";
+
+      setAgentLogs((prev) =>
+        addLog(prev, {
+          id: `status-${event.agentId}-${event.timestamp}`,
+          timestamp: event.timestamp,
+          time: formatTime(event.timestamp),
+          level: "INFO",
+          msg: `${event.agentId} ${statusLabel}${taskNote}`,
+          agentId: event.agentId,
+        })
+      );
+    });
+
+    // 파일 변경 이벤트 처리 — 최근 50개만 유지
+    socket.on("file:changed", (event: FileChangedEvent) => {
+      setChangedFiles((prev) => [event, ...prev].slice(0, 50));
+
+      // CMD 로그 추가
+      const actionLabel =
+        event.action === "create"
+          ? "생성"
+          : event.action === "delete"
+          ? "삭제"
+          : "수정";
+      const fileName = event.path.split(/[/\\]/).pop() || event.path;
+
+      setAgentLogs((prev) =>
+        addLog(prev, {
+          id: `file-${event.timestamp}`,
+          timestamp: event.timestamp,
+          time: formatTime(event.timestamp),
+          level: "CMD",
+          msg: `파일 ${actionLabel}: ${fileName}`,
+          agentId: event.agentId,
+        })
+      );
+    });
+
+    // 토큰 사용량 이벤트 처리
+    socket.on("agent:token-usage", (event: TokenUsageEvent) => {
+      // COST 로그 추가
+      setAgentLogs((prev) =>
+        addLog(prev, {
+          id: `token-${event.agentId}-${event.timestamp}`,
+          timestamp: event.timestamp,
+          time: formatTime(event.timestamp),
+          level: "COST",
+          msg: `${event.agentId}: $${event.totalCost.toFixed(4)} (입력 ${event.inputTokens.toLocaleString()}, 출력 ${event.outputTokens.toLocaleString()})`,
+          agentId: event.agentId,
+        })
+      );
+    });
+
+    // 컴포넌트 언마운트 시 소켓 연결 정리
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  // 부모 컴포넌트에서 initialAgents가 변경될 때 로컬 상태와 동기화
+  useEffect(() => {
+    setAgents(initialAgents);
+  }, [initialAgents]);
+
+  // WebSocket 연결 실패 시 지수 백오프 HTTP 폴링으로 폴백
+  // 5초 → 10초 → 20초 → 30초(상한) 순으로 간격 증가, 성공 시 5초로 리셋
+  useEffect(() => {
+    // 연결 중이거나 정상 연결된 경우 폴링 불필요
+    if (connectionStatus !== "error" && connectionStatus !== "disconnected") {
+      return;
+    }
+
+    const INITIAL_DELAY = 5_000;
+    const MAX_DELAY = 30_000;
+    let delay = INITIAL_DELAY;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/agents");
+        if (!res.ok) throw new Error("응답 오류");
+        const data = await res.json();
+        // API 응답에 agents 배열이 있으면 상태 업데이트
+        if (data.agents) setAgents(data.agents);
+        // 성공 시 delay 초기화
+        delay = INITIAL_DELAY;
+      } catch {
+        // 실패 시 지수 증가 (최대 30초)
+        delay = Math.min(delay * 2, MAX_DELAY);
+      } finally {
+        // 다음 폴링 예약 (clearTimeout으로 취소 가능)
+        timeoutId = setTimeout(poll, delay);
+      }
+    };
+
+    // 최초 폴링 실행
+    timeoutId = setTimeout(poll, delay);
+
+    // 연결 상태 변경 또는 컴포넌트 언마운트 시 폴링 중단
+    return () => clearTimeout(timeoutId);
+  }, [connectionStatus]);
+
+  return { agents, setAgents, connectionStatus, changedFiles, agentLogs };
+}
+
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

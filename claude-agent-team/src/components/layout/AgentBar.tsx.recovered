@@ -1,0 +1,182 @@
+"use client";
+
+import { Agent, ConnectionStatus } from "@/types";
+
+interface AgentBarProps {
+  agents: Agent[];
+  // WebSocket 연결 상태 (선택적 — 없으면 인디케이터 숨김)
+  connectionStatus?: ConnectionStatus;
+}
+
+export default function AgentBar({ agents, connectionStatus }: AgentBarProps) {
+  const activeCount = agents.filter((a) => a.status === "active").length;
+
+  // 연결 상태별 표시 설정
+  const connectionIndicator = (() => {
+    switch (connectionStatus) {
+      case "connected":
+        return { color: "#22C55E", glow: "0 0 6px #22C55E80", label: "실시간 연결" };
+      case "connecting":
+        return { color: "#F59E0B", glow: "0 0 6px #F59E0B80", label: "연결 중..." };
+      case "disconnected":
+      case "error":
+        return { color: "#EF4444", glow: "none", label: "폴링 모드" };
+      default:
+        return null;
+    }
+  })();
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "10px 20px",
+        background: "rgba(0,0,0,0.3)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        overflowX: "auto",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          color: "#6B7280",
+          fontWeight: 600,
+          marginRight: 8,
+          flexShrink: 0,
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+        }}
+      >
+        에이전트
+      </span>
+
+      {agents.map((agent) => (
+        <div
+          key={agent.id}
+          title={agent.description}
+          // 활성 에이전트: agent-chip-active 글로우 펄스 클래스 적용
+          className={agent.status === "active" ? "agent-chip-active" : ""}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "4px 10px",  // 세로 컴팩트
+            borderRadius: 20,
+            background:
+              agent.status === "active"
+                ? `${agent.color}1A`
+                : "rgba(255,255,255,0.04)",
+            border: `1px solid ${
+              agent.status === "active"
+                ? agent.color + "50"
+                : "rgba(255,255,255,0.07)"
+            }`,
+            cursor: "pointer",
+            flexShrink: 0,
+            transition: "all 0.2s",
+          }}
+        >
+          <span style={{ fontSize: 12 }}>{agent.icon}</span>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: agent.status === "active" ? 600 : 400,
+              color: agent.status === "active" ? "#F5F5F5" : "#6B7280",
+            }}
+          >
+            {agent.name}
+          </span>
+          {/* 상태 점: active 시 ring shadow 포함 */}
+          <div
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background:
+                agent.status === "active"
+                  ? "#22C55E"
+                  : agent.status === "error"
+                  ? "#EF4444"
+                  : "#374151",
+              boxShadow:
+                agent.status === "active"
+                  ? "0 0 6px #22C55E, 0 0 0 2px rgba(34,197,94,0.2)"
+                  : agent.status === "error"
+                  ? "0 0 4px #EF444480"
+                  : "none",
+              animation:
+                agent.status === "active"
+                  ? "pulse-glow 2s ease-in-out infinite"
+                  : "none",
+            }}
+          />
+        </div>
+      ))}
+
+      {/* 활성 에이전트 수 표시 */}
+      <span
+        style={{
+          marginLeft: "auto",
+          fontSize: 10,
+          fontWeight: 600,
+          color: "#F59E0B",
+          background: "rgba(245,158,11,0.1)",
+          padding: "3px 10px",
+          borderRadius: 12,
+          flexShrink: 0,
+        }}
+      >
+        에이전트 {activeCount}/{agents.length} 활성
+      </span>
+
+      {/* WebSocket 연결 상태 인디케이터 — connectionStatus prop이 있을 때만 표시 */}
+      {connectionIndicator && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "3px 10px",
+            borderRadius: 12,
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            flexShrink: 0,
+          }}
+        >
+          {/* 연결 상태 색상 점 */}
+          <div
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: connectionIndicator.color,
+              boxShadow: connectionIndicator.glow,
+              // "연결 중..." 상태는 점을 깜빡이게 처리
+              animation:
+                connectionStatus === "connecting"
+                  ? "pulse 1.5s ease-in-out infinite"
+                  : "none",
+            }}
+          />
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              color: connectionIndicator.color,
+            }}
+          >
+            {connectionIndicator.label}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

@@ -1,0 +1,15 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // Node.js 내장 모듈 사용 허용 (child_process, fs 등)
+  serverExternalPackages: ["child_process", "fs", "path"],
+  // preview_* 툴 및 127.0.0.1 접근 허용 (Cross-origin 경고 제거)
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
+};
+
+export default nextConfig;
+
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

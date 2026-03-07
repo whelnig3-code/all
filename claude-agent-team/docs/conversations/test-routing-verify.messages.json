@@ -1,0 +1,29 @@
+[
+  {
+    "role": "user",
+    "content": "���� ���� ����"
+  },
+  {
+    "role": "assistant",
+    "content": "메시지가 깨진 것 같습니다. 다시 입력해 주시겠어요?",
+    "agentId": "developer"
+  },
+  {
+    "role": "user",
+    "content": "���� ���� ����"
+  },
+  {
+    "role": "assistant",
+    "content": "메시지가 인코딩 오류로 깨져 보입니다. 다시 입력해 주시겠어요?",
+    "agentId": "developer"
+  },
+  {
+    "role": "user",
+    "content": "���� ���� ����"
+  },
+  {
+    "role": "assistant",
+    "content": "메시지가 계속 깨져서 보입니다. 인코딩 문제인 것 같습니다.\n\n다음 방법으로 다시 시도해 주세요:\n\n1. **영어로 입력** 후 한국어 번역 요청\n2. **복사/붙여넣기 대신 직접 타이핑**\n3. **터미널 재시작** 후 재시도\n\n무엇을 도와드릴까요?",
+    "agentId": "developer"
+  }
+]

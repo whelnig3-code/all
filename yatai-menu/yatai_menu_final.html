@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>YATAI Menu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Noto+Serif+KR:wght@700;900&display=swap');
+
+  :root {
+    --red: #A1161A;
+    --gold: #E6B800;
+    --text: #222;
+    --sub: #444;
+    --gray: #888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: 420mm 297mm; margin: 0; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { page-break-after: always; margin: 0 !important; }
+    .page:last-child { page-break-after: auto; }
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text);
+    background: #e0e0e0;
+    line-height: 1.22;
+  }
+
+  .page {
+    width: 420mm;
+    height: 297mm;
+    background: #fff;
+    margin: 5mm auto;
+    padding: 5.5mm 10mm 5mm;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1mm;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 26pt;
+    font-weight: 900;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+  .hdr-r {
+    text-align: right;
+    font-size: 8.5pt;
+    color: var(--sub);
+    line-height: 1.3;
+  }
+  .hdr-r .closed { font-weight: 700; color: var(--red); }
+  .hdr-sub {
+    font-size: 8.5pt;
+    color: var(--gray);
+    letter-spacing: 2px;
+  }
+
+  /* BEST MENU */
+  .best-bar {
+    background: var(--red);
+    color: var(--gold);
+    font-size: 9pt;
+    font-weight: 900;
+    padding: 0.7mm 4mm;
+    margin-bottom: 1mm;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+  .best-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 3mm;
+    margin-bottom: 1mm;
+    flex-shrink: 0;
+  }
+  .best-item { text-align: center; }
+  .best-img {
+    width: 100%;
+    height: 26mm;
+    background: linear-gradient(135deg, #444, #666);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 8pt;
+  }
+  .best-nm {
+    font-size: 9.5pt;
+    font-weight: 700;
+    margin-top: 0.5mm;
+  }
+  .best-nm .g { color: var(--gold); }
+  .best-pr {
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--sub);
+  }
+
+  /* 3-COL GRID */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 5mm;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4mm;
+  }
+
+  /* CATEGORY TITLE */
+  .ct {
+    font-size: 16px;
+    font-weight: 900;
+    padding-bottom: 0.6mm;
+    margin-bottom: 0.4mm;
+    border-bottom: 2.5px solid var(--red);
+    display: flex;
+    align-items: baseline;
+    gap: 2mm;
+  }
+  .ct .en {
+    font-size: 7pt;
+    font-weight: 400;
+    color: var(--gray);
+  }
+  .ct .nt {
+    font-size: 7pt;
+    font-weight: 400;
+    color: var(--gray);
+    margin-left: auto;
+  }
+
+  /* MENU ITEM ROW */
+  .mi {
+    display: flex;
+    align-items: baseline;
+    line-height: 1.2;
+    margin-bottom: 0.1mm;
+  }
+  .mi .n {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .mi .s {
+    font-size: 7pt;
+    color: var(--gray);
+    margin-left: 1mm;
+    white-space: nowrap;
+  }
+  .mi .d {
+    flex: 1;
+    border-bottom: 1px dotted #ccc;
+    margin: 0 1.5mm;
+    min-width: 3mm;
+    align-self: center;
+    margin-bottom: 2px;
+  }
+  .mi .p {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .g { color: var(--gold); }
+
+  .desc {
+    font-size: 10px;
+    color: var(--gray);
+    line-height: 1.15;
+    margin-bottom: 0.1mm;
+    padding-left: 0.5mm;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    font-size: 7pt;
+    font-weight: 700;
+    padding: 0 1.5mm;
+    border-radius: 1mm;
+    margin-right: 1mm;
+  }
+
+  .pg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 4mm;
+  }
+
+  .sk {
+    font-size: 8.5pt;
+    font-weight: 600;
+    margin-top: 0.6mm;
+    margin-bottom: 0.1mm;
+  }
+
+  .accent { color: var(--red); font-weight: 500; }
+
+  /* LUNCH BOX */
+  .lunch {
+    background: #A11B1B;
+    color: #fff;
+    padding: 1.5mm 3mm;
+    text-align: center;
+    margin-top: 1mm;
+  }
+  .lunch .lt { font-size: 7.5pt; opacity: 0.85; }
+  .lunch .ln { font-size: 11pt; font-weight: 900; }
+  .lunch .ld { font-size: 7.5pt; opacity: 0.9; }
+  .lunch .lp { font-size: 13pt; font-weight: 900; color: var(--gold); }
+
+  /* QR - inline in column */
+  .qr-row {
+    display: flex;
+    gap: 22mm;
+    align-items: flex-start;
+    padding-top: 2mm;
+  }
+  .qr-box { text-align: center; }
+  .qr-lbl {
+    font-size: 7pt;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 0.3mm;
+  }
+  .qr-img {
+    width: 26mm;
+    height: 26mm;
+    display: block;
+    margin: 0 auto;
+  }
+  .qr-dsc {
+    font-size: 6pt;
+    color: var(--sub);
+    margin-top: 0.3mm;
+  }
+
+  /* BOTTOM BAR - origin + review */
+  .btm {
+    flex-shrink: 0;
+    padding-top: 1mm;
+    display: flex;
+    align-items: baseline;
+    gap: 3mm;
+    flex-wrap: wrap;
+  }
+  .origin {
+    font-size: 6.5pt;
+    color: var(--sub);
+    line-height: 1.2;
+  }
+  .origin b { font-size: 7pt; }
+  .rev { display: inline; }
+  .rev .rt {
+    font-size: 9pt;
+    font-weight: 900;
+    color: var(--red);
+  }
+  .rev .rd { font-size: 7.5pt; }
+  .rev .rs { color: var(--gold); }
+  .rev .rn { font-size: 6.5pt; color: var(--gray); }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<div class="page" id="page1">
+
+  <div class="hdr">
+    <div class="logo">YATAI</div>
+    <div class="hdr-r">
+      11:00 ~ 23:00 (Last Order 22:00)<br>
+      <span class="closed">정기휴무: 매주 화요일</span>
+    </div>
+  </div>
+
+  <div class="best-bar">&#9733; BEST MENU</div>
+  <div class="best-row">
+    <div class="best-item">
+      <div class="best-img">PHOTO</div>
+      <div class="best-nm"><span class="g">&#9733;</span> 회정식 A</div>
+      <div class="best-pr">&#8361;32,000</div>
+    </div>
+    <div class="best-item">
+      <div class="best-img">PHOTO</div>
+      <div class="best-nm"><span class="g">&#9733;</span> 연어초밥</div>
+      <div class="best-pr">&#8361;20,000</div>
+    </div>
+    <div class="best-item">
+      <div class="best-img">PHOTO</div>
+      <div class="best-nm"><span class="g">&#9733;</span> 크런치롤</div>
+      <div class="best-pr">&#8361;9,000</div>
+    </div>
+    <div class="best-item">
+      <div class="best-img">PHOTO</div>
+      <div class="best-nm"><span class="g">&#9733;</span> 라이언킹롤</div>
+      <div class="best-pr">&#8361;14,000</div>
+    </div>
+    <div class="best-item">
+      <div class="best-img">PHOTO</div>
+      <div class="best-nm"><span class="g">&#9733;</span> 돈까스</div>
+      <div class="best-pr">&#8361;10,000</div>
+    </div>
+  </div>
+
+  <div class="cols">
+
+    <!-- LEFT -->
+    <div class="col">
+      <div>
+        <div class="ct"><span class="g">&#9733;</span> 야타이 스페샬 <span class="en">YATAI Special</span></div>
+        <div class="desc">죽, 콘버터, 부침개, 샐러드, 모듬튀김, 초밥(8pcs), 퓨전롤(8pcs), 시샤모구이(4), 닭날개데리야끼(4pcs), 매운탕, 날치알마끼, 닭고기, 은행</div>
+        <div class="pg">
+          <div class="mi"><span class="n">3인</span><span class="d"></span><span class="p">&#8361;90,000</span></div>
+          <div class="mi"><span class="n">4인</span><span class="d"></span><span class="p">&#8361;108,000</span></div>
+          <div class="mi"><span class="n">5인</span><span class="d"></span><span class="p">&#8361;135,000</span></div>
+          <div class="mi"><span class="n">6인</span><span class="d"></span><span class="p">&#8361;162,000</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="ct">회정식 <span class="en">Sashimi Course</span><span class="nt">2인이상 주문가능</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 회정식 A</span><span class="s">1인</span><span class="d"></span><span class="p">&#8361;32,000</span></div>
+        <div class="desc">죽, 콘버터, 샐러드, 버섯구이, 우동, 3종 사시미(광어/우럭/연어), 초밥(3pcs), 튀김(3pcs), 은행, 홍합구이, 매운탕, 알밥, 마끼</div>
+        <div class="mi"><span class="n">회정식 B</span><span class="s">1인</span><span class="d"></span><span class="p">&#8361;38,000</span></div>
+        <div class="desc">A코스 + 닭날개 데리야끼, 우삼겹 숙주볶음</div>
+      </div>
+
+      <div>
+        <div class="ct">단품 회 <span class="en">Raw Fish</span></div>
+        <div class="mi"><span class="n">광어회</span><span class="d"></span><span class="p">&#8361;49,000</span></div>
+        <div class="mi"><span class="n">우럭회</span><span class="d"></span><span class="p">&#8361;49,000</span></div>
+        <div class="mi"><span class="n">연어회 (300g)</span><span class="d"></span><span class="p">&#8361;36,000</span></div>
+        <div class="mi"><span class="n">광어물회 (1인)</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+        <div class="mi"><span class="n">매운탕 추가</span><span class="d"></span><span class="p">&#8361;7,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">세트메뉴 <span class="en">Set Menu</span></div>
+        <div class="mi"><span class="n"><span class="badge">A</span>초밥7pcs + 우동</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> <span class="badge">B</span>돈까스 + 초밥6pcs + 반우동</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n"><span class="badge">C</span>캘리포니아롤 + 초밥5pcs</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n"><span class="badge">D</span>크런치롤 + 초밥5pcs</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+      </div>
+
+      <div class="lunch">
+        <span class="lt">11:00 ~ 15:00</span>&ensp;
+        <span class="ln">점심특선 LUNCH SPECIAL</span><br>
+        <span class="ld">돈까스백반 (돈까스 + 비빔국수 + 된장찌개 + 샐러드 + 밥 + 반찬)</span>&ensp;
+        <span class="lp">&#8361;10,000</span>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="col">
+      <div>
+        <div class="ct">초밥류 (12pcs) <span class="en">Sushi</span></div>
+        <div class="desc">구성은 가게사정에 의해 변경될 수 있습니다</div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 모듬초밥</span><span class="d"></span><span class="p">&#8361;16,000</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 연어초밥</span><span class="s">양파추가가능</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">우럭초밥</span><span class="d"></span><span class="p">&#8361;24,000</span></div>
+        <div class="mi"><span class="n">간장새우초밥</span><span class="d"></span><span class="p">&#8361;19,000</span></div>
+        <div class="mi"><span class="n">광어초밥</span><span class="d"></span><span class="p">&#8361;19,000</span></div>
+        <div class="mi"><span class="n">유부초밥</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n">바다장어초밥</span><span class="s">페루산</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+        <div class="mi"><span class="n">새우초밥</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n">계란초밥 (10pcs)</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">날치알마끼 (4pcs)</span><span class="d"></span><span class="p">&#8361;6,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">초밥 낱개 (1pcs) <span class="en">Sushi Single</span><span class="nt">포장 10pcs 단위</span></div>
+        <div class="mi"><span class="n">광어</span><span class="d"></span><span class="p">&#8361;1,800</span></div>
+        <div class="mi"><span class="n">간장새우</span><span class="d"></span><span class="p">&#8361;1,800</span></div>
+        <div class="mi"><span class="n">계란초밥</span><span class="d"></span><span class="p">&#8361;1,200</span></div>
+        <div class="mi"><span class="n">연어</span><span class="s">양파추가가능</span><span class="d"></span><span class="p">&#8361;1,800</span></div>
+        <div class="mi"><span class="n">광어지느러미</span><span class="d"></span><span class="p">&#8361;2,000</span></div>
+        <div class="mi"><span class="n">우럭</span><span class="d"></span><span class="p">&#8361;2,500</span></div>
+        <div class="mi"><span class="n">새우</span><span class="d"></span><span class="p">&#8361;1,500</span></div>
+        <div class="mi"><span class="n">유부</span><span class="d"></span><span class="p">&#8361;1,000</span></div>
+        <div class="mi"><span class="n">바다장어</span><span class="d"></span><span class="p">&#8361;1,700</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col">
+      <div>
+        <div class="ct">롤초밥류 <span class="en">Roll</span></div>
+        <div class="mi"><span class="n">캘리포니아롤</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="desc">게맛살 + 오이 + 날치알</div>
+        <div class="mi"><span class="n">타이거롤</span><span class="d"></span><span class="p">&#8361;14,000</span></div>
+        <div class="desc">새우튀김 + 새우 + 오이</div>
+        <div class="mi"><span class="n">베이아일랜드롤</span><span class="d"></span><span class="p">&#8361;14,000</span></div>
+        <div class="desc">바다장어(페루산) + 새우 + 오이 + 날치알 + 스페샬소스</div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 크런치롤</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="desc">새우튀김 + 게맛살 + 오이 + 무순</div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 라이언킹롤</span><span class="s accent">구운연어</span><span class="d"></span><span class="p">&#8361;14,000</span></div>
+        <div class="desc">구운연어 + 맛살 + 오이 + 양파 + 날치알 + 스페샬소스</div>
+        <div class="mi"><span class="n">알레스카롤</span><span class="s accent">생연어</span><span class="d"></span><span class="p">&#8361;13,000</span></div>
+        <div class="desc">생연어 + 게맛살 + 오이 + 양파 + 날치알 + 스페샬소스</div>
+        <div class="mi"><span class="n">드래곤롤</span><span class="d"></span><span class="p">&#8361;14,000</span></div>
+        <div class="desc">바다장어(페루산) + 게맛살 + 오이 + 스페샬소스</div>
+      </div>
+
+      <div>
+        <div class="ct">일품요리 <span class="en">Signature</span></div>
+        <div class="mi"><span class="n">홍합칠리구이</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+        <div class="mi"><span class="n">우삼겹숙주볶음</span><span class="s">미국산</span><span class="d"></span><span class="p">&#8361;24,000</span></div>
+        <div class="mi"><span class="n">명란계란말이</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="mi"><span class="n">사천 닭날개</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+        <div class="mi"><span class="n">새우장 (10pcs)</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n">돈까스안주</span><span class="s">+감자튀김+샐러드</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">전어구이</span><span class="s">계절메뉴, 5마리</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">쭈꾸미볶음 + 소면</span><span class="d"></span><span class="p">&#8361;28,000</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 연어사라다</span><span class="d"></span><span class="p">&#8361;25,000</span></div>
+      </div>
+
+      <!-- QR inside right column -->
+      <div class="qr-row">
+        <div class="qr-box">
+          <div class="qr-lbl">Review</div>
+          <img class="qr-img" src="qr/review.png" alt="Review QR">
+          <div class="qr-dsc">네이버 리뷰 작성</div>
+        </div>
+        <div class="qr-box">
+          <div class="qr-lbl">Menu Photos</div>
+          <img class="qr-img" src="qr/gallery.png" alt="Gallery QR">
+          <div class="qr-dsc">음식 사진 보기</div>
+        </div>
+        <div class="qr-box">
+          <div class="qr-lbl">Mobile Menu</div>
+          <img class="qr-img" src="qr/mobile-menu.png" alt="Mobile QR">
+          <div class="qr-dsc">모바일 메뉴 보기</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Origin + review bar -->
+  <div class="btm">
+    <div class="origin">
+      <b>원산지 표시</b>&ensp;광어-국내산 | 우럭-국내산 | 연어-노르웨이산 | 참치-원양산 | 우삼겹-미국산 | 닭고기-브라질산 | 바다장어-페루산 | 쭈꾸미-베트남산 | 알탕재료-러시아산
+    </div>
+    <div class="rev">
+      <span class="rt">리뷰 이벤트</span>
+      <span class="rd"> 네이버 리뷰 <span class="rs">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 작성 시 음료 1병 무료</span>
+      <span class="rn"> ※ 1테이블당 1회</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ PAGE 2 ============ -->
+<div class="page" id="page2">
+
+  <div class="hdr">
+    <div class="logo">YATAI</div>
+    <div class="hdr-sub">JAPANESE RESTAURANT &middot; MENU</div>
+  </div>
+
+  <div class="cols">
+
+    <!-- LEFT -->
+    <div class="col">
+      <div>
+        <div class="ct">구이 <span class="en">Grilled</span></div>
+        <div class="mi"><span class="n">청어구이</span><span class="d"></span><span class="p">&#8361;13,000</span></div>
+        <div class="mi"><span class="n">메로구이 (200g)</span><span class="d"></span><span class="p">&#8361;23,000</span></div>
+        <div class="mi"><span class="n">시사모구이 (5마리)</span><span class="d"></span><span class="p">&#8361;16,000</span></div>
+        <div class="mi"><span class="n">삼치구이</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">튀김류 <span class="en">Fried</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 새우튀김</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">토리가라아게</span><span class="s">닭다리살-브라질산</span><span class="d"></span><span class="p">&#8361;16,000</span></div>
+        <div class="mi"><span class="n">새우튀김 (튀김가루)</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+        <div class="mi"><span class="n">까스새우튀김 (빵가루)</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">오다리가라아게</span><span class="d"></span><span class="p">&#8361;19,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">전골 / 탕류 <span class="en">Hot Pot / Soup</span></div>
+        <div class="mi"><span class="n">알탕</span><span class="s">러시아산</span><span class="d"></span><span class="p">&#8361;12,000</span></div>
+        <div class="mi"><span class="n">알+고니전골</span><span class="d"></span><span class="p">&#8361;35,000</span></div>
+        <div class="mi"><span class="n">서더리전골</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">백합두부탕</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">어묵탕</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+      </div>
+
+      <!-- Lunch banner under 전골/탕류 -->
+      <div class="lunch" style="height:26mm;display:flex;flex-direction:column;justify-content:center;">
+        <div><span class="lt">11:00 ~ 15:00</span>&ensp;<span class="ln">점심특선 LUNCH SPECIAL</span></div>
+        <div><span class="ld">돈까스백반 (돈까스 + 비빔국수 + 된장찌개 + 샐러드 + 밥 + 반찬)</span>&ensp;<span class="lp">&#8361;10,000</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="col">
+      <div>
+        <div class="ct">돈부리 (일식덮밥) <span class="en">Donburi</span></div>
+        <div class="mi"><span class="n">가쯔동 (돈까스덮밥)</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 규동 (소고기덮밥)</span><span class="s">우삼겹-미국산</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">김치돈까스나베</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">에비동 (새우덮밥)</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">사케동 (연어덮밥)</span><span class="s">+간장소스</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n">돈까스카레 덮밥</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n">치킨가라케동</span><span class="s">닭-브라질산</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="mi"><span class="n">지라시스시 (모듬사시미)</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">식사류 <span class="en">Meals</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 돈까스</span><span class="s">소스뿌려져있고 잘려서</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n">수제 일식돈가스</span><span class="s">잘려져있고 소스찍어</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n">광어 생선까스</span><span class="d"></span><span class="p">&#8361;13,000</span></div>
+        <div class="mi"><span class="n">뚝배기 알밥</span><span class="d"></span><span class="p">&#8361;8,000</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 광어회덮밥</span><span class="d"></span><span class="p">&#8361;14,000</span></div>
+        <div class="mi"><span class="n">우럭회덮밥</span><span class="d"></span><span class="p">&#8361;18,000</span></div>
+        <div class="mi"><span class="n">참치회덮밥</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">뚝배기 알탕</span><span class="s">러시아산</span><span class="d"></span><span class="p">&#8361;12,000</span></div>
+        <div class="mi"><span class="n">서더리 탕</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="mi"><span class="n">대구고니탕</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+        <div class="mi"><span class="n">대구지리탕</span><span class="d"></span><span class="p">&#8361;15,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">면류 <span class="en">Noodles</span></div>
+        <div class="mi"><span class="n">유부우동</span><span class="d"></span><span class="p">&#8361;7,000</span></div>
+        <div class="mi"><span class="n"><span class="g">&#9733;</span> 어묵우동</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="mi"><span class="n">왕새우튀김 우동</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n">돈코츠라멘</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">매콤탄탄멘</span><span class="d"></span><span class="p">&#8361;11,000</span></div>
+        <div class="mi"><span class="n">냉모밀</span><span class="s">곱빼기 +2,000</span><span class="d"></span><span class="p">&#8361;8,000</span></div>
+        <div class="mi"><span class="n">판모밀</span><span class="s">곱빼기 +2,000</span><span class="d"></span><span class="p">&#8361;8,000</span></div>
+        <div class="mi"><span class="n">비빔모밀국수</span><span class="d"></span><span class="p">&#8361;9,000</span></div>
+        <div class="mi"><span class="n">야끼우동</span><span class="d"></span><span class="p">&#8361;12,000</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col">
+      <div>
+        <div class="ct">주류 / 음료 <span class="en">Drinks</span></div>
+        <div class="mi"><span class="n">소주</span><span class="d"></span><span class="p">&#8361;5,000</span></div>
+        <div class="mi"><span class="n">맥주</span><span class="d"></span><span class="p">&#8361;5,000</span></div>
+        <div class="mi"><span class="n">음료수</span><span class="d"></span><span class="p">&#8361;2,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">사케 <span class="en">Sake</span></div>
+        <div class="sk">국산 (백화수복)</div>
+        <div class="mi"><span class="n">주전자</span><span class="d"></span><span class="p">&#8361;20,000</span></div>
+        <div class="mi"><span class="n">대포</span><span class="d"></span><span class="p">&#8361;7,000</span></div>
+        <div class="mi"><span class="n">도쿠리</span><span class="d"></span><span class="p">&#8361;7,000</span></div>
+        <div class="sk">일본산 (니혼사카리반샤쿠)</div>
+        <div class="mi"><span class="n">주전자</span><span class="d"></span><span class="p">&#8361;29,000</span></div>
+        <div class="mi"><span class="n">대포</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+        <div class="mi"><span class="n">도쿠리</span><span class="d"></span><span class="p">&#8361;10,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">팩사케 <span class="en">Pack Sake</span></div>
+        <div class="mi"><span class="n">간바래오또상 (900ml)</span><span class="d"></span><span class="p">&#8361;35,000</span></div>
+        <div class="mi"><span class="n">하쿠쯔마루 (900ml)</span><span class="d"></span><span class="p">&#8361;35,000</span></div>
+      </div>
+
+      <div>
+        <div class="ct">추가 / 사이드 <span class="en">Extras</span></div>
+        <div class="mi"><span class="n">우동면 사리</span><span class="d"></span><span class="p">&#8361;2,000</span></div>
+        <div class="mi"><span class="n">소우동 추가</span><span class="d"></span><span class="p">&#8361;2,500</span></div>
+        <div class="mi"><span class="n">콘버터 추가</span><span class="d"></span><span class="p">&#8361;1,000</span></div>
+      </div>
+
+      <!-- QR inside right column -->
+      <div class="qr-row">
+        <div class="qr-box">
+          <div class="qr-lbl">Review</div>
+          <img class="qr-img" src="qr/review.png" alt="Review QR">
+          <div class="qr-dsc">네이버 리뷰 작성</div>
+        </div>
+        <div class="qr-box">
+          <div class="qr-lbl">Menu Photos</div>
+          <img class="qr-img" src="qr/gallery.png" alt="Gallery QR">
+          <div class="qr-dsc">음식 사진 보기</div>
+        </div>
+        <div class="qr-box">
+          <div class="qr-lbl">Mobile Menu</div>
+          <img class="qr-img" src="qr/mobile-menu.png" alt="Mobile QR">
+          <div class="qr-dsc">모바일 메뉴 보기</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btm">
+    <div class="origin">
+      <b>원산지 표시</b>&ensp;광어-국내산 | 우럭-국내산 | 연어-노르웨이산 | 참치-원양산 | 우삼겹-미국산 | 닭고기-브라질산 | 바다장어-페루산 | 쭈꾸미-베트남산 | 알탕재료-러시아산
+    </div>
+    <div class="rev">
+      <span class="rt">리뷰 이벤트</span>
+      <span class="rd"> 네이버 리뷰 <span class="rs">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 작성 시 음료 1병 무료</span>
+      <span class="rn"> ※ 1테이블당 1회</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

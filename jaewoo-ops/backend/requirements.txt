@@ -1,0 +1,23 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.0
+
+# Excel
+openpyxl>=3.1.2
+
+# 캘린더 (.ics 생성)
+icalendar>=5.0.12
+
+# HTTP 클라이언트 (알림 발송)
+httpx>=0.27.0
+
+# JWT (완료 토큰)
+python-jose[cryptography]>=3.3.0
+
+# 스케줄러
+apscheduler>=3.10.4
+
+# 유틸리티
+python-dateutil>=2.9.0

@@ -666,7 +666,8 @@ export function createRegistrationWorker(): Worker {
           })
           .catch((err) => logger.error('알림 전송 실패', err))
 
-        // 6. 블로그 글 자동 생성 + DB 저장 (대시보드 복사용)
+        // 6. 블로그 글 자동 생성 + DB 저장 (대시보드 복사용, 템플릿 전용)
+        //    LLM 블로그 글은 step 7의 blogPostingQueue에서 별도 생성 (BLOG_POSTING_ENABLED=true 시)
         try {
           const blogPost = buildBlogPostWithSections({
             productName: product.name,

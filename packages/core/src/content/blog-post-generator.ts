@@ -213,8 +213,8 @@ export function buildBlogPostWithSections(input: BlogPostInput): BlogPostWithSec
   const plainText = sections
     .map((s) => {
       const text = s.content
-        .replace(/<\/?(?:ul|li|p|strong|br)>/g, '')
         .replace(/<li>/g, '- ')
+        .replace(/<\/?(?:ul|li|p|strong|br)>/g, '')
         .replace(/\n\s*\n/g, '\n')
         .trim()
       return `## ${s.heading}\n${text}`

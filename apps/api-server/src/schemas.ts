@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 /** POST /products — 상품 수동 등록 */
 export const createProductSchema = z.object({
-  source: z.string().min(1, '소스 필수'),
+  source: z.enum(['domaegguk', 'ownerclan', 'onchannel'], { message: '지원하는 소스: domaegguk, ownerclan, onchannel' }),
   sourceProductId: z.string().min(1, '소스 상품 ID 필수'),
   name: z.string().min(1, '상품명 필수').max(200, '상품명 200자 이하'),
   wholesalePrice: z.number().positive('도매가는 양수'),

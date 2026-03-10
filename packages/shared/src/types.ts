@@ -16,7 +16,7 @@ export type ProductStatus =
   | 'deleted'      // 삭제됨
 
 /** 도매 공급처 */
-export type WholesaleSource = 'domaegguk' | 'ownerclan'
+export type WholesaleSource = 'domaegguk' | 'ownerclan' | 'onchannel'
 
 /** 원시 크롤링 상품 데이터 */
 export interface RawProduct {

@@ -216,7 +216,7 @@ export async function pollAndSyncInventory(
     const products = await prisma.product.findMany({
       where: {
         status: { in: ['active', 'registered'] },
-        source: { in: ['domaegguk', 'ownerclan'] },
+        source: { in: ['domaegguk', 'ownerclan', 'onchannel'] },
       },
       select: {
         id: true,

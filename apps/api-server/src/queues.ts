@@ -96,7 +96,7 @@ export interface PriceMonitorJobData {
 
 export interface InventorySyncJobData {
   productId: string
-  source: 'domaegguk' | 'ownerclan'
+  source: 'domaegguk' | 'ownerclan' | 'onchannel'
   sourceProductId: string
 }
 

@@ -33,13 +33,19 @@ import {
   getOriginMarginAdjustment,
   classifyNicheCategory,
   isProductAllowedForAccount,
+  optimizeProductTitle,
+  generateSearchTags,
+  shouldRetry,
+  calculateRetryPrice,
+  getMaxRetryCount,
+  type RejectionReason,
 } from '@smartstore/core'
 import { naverShoppingCrawler } from '@smartstore/crawlers'
 import { fetchCompetitorCountLimited } from './competitor-limiter'
 import { registerProductToNaver, uploadProductImages } from '@smartstore/integrations'
 import { notificationAdapter } from '@smartstore/adapters'
 import { prisma } from '@smartstore/db'
-import { QUEUE_NAMES, redisConnection, blogPostingQueue, type RegistrationJobData, type BlogPostingJobData } from '../queues'
+import { QUEUE_NAMES, redisConnection, registrationQueue, blogPostingQueue, type RegistrationJobData, type BlogPostingJobData } from '../queues'
 import { checkCredentialGate, gateSkipResult } from '../credential-gate'
 import { getSetting } from '../settings-cache'
 import axios from 'axios'
@@ -48,6 +54,60 @@ import path from 'path'
 import { buildDetailHtml, fetchDomeggookDetail } from './detail-content-builder'
 
 const logger = createLogger('registration-job')
+
+/**
+ * 거부된 상품을 가격 조정 후 재등록 큐에 추가 (스마트 재시도)
+ * - 재시도 가능 사유만 처리 (exposure_blocked, price_not_competitive)
+ * - 최대 재시도 횟수 초과 시 무시
+ * - 30초 딜레이 후 큐에 추가 (즉시 재시도 방지)
+ */
+async function enqueueRetryIfEligible(
+  productId: string,
+  reason: string,
+  currentPrice: number,
+  competitorPrice?: number,
+  currentRetryCount = 0,
+): Promise<boolean> {
+  const rejectionReason = reason as RejectionReason
+  if (!shouldRetry(rejectionReason)) return false
+
+  const maxRetries = getMaxRetryCount(rejectionReason)
+  const nextAttempt = currentRetryCount + 1
+  if (nextAttempt > maxRetries) {
+    logger.info('retry_max_exceeded', { productId, reason, attempts: currentRetryCount })
+    return false
+  }
+
+  const retryResult = calculateRetryPrice({
+    reason: rejectionReason,
+    currentPrice,
+    competitorPrice,
+    attemptNumber: nextAttempt,
+  })
+
+  if (!retryResult) return false
+
+  await registrationQueue.add(
+    'register-product-retry',
+    {
+      productId,
+      retryCount: nextAttempt,
+      retryReason: reason,
+      retryPrice: retryResult.adjustedPrice,
+    } satisfies RegistrationJobData,
+    { delay: 30_000 }, // 30초 후 재시도
+  )
+
+  logger.info('retry_enqueued', {
+    productId,
+    reason,
+    attempt: nextAttempt,
+    adjustedPrice: retryResult.adjustedPrice,
+    discountRate: `${(retryResult.discountRate * 100).toFixed(1)}%`,
+  })
+
+  return true
+}
 
 /**
  * 상품 등록 워커
@@ -100,12 +160,31 @@ export function createRegistrationWorker(): Worker {
         }
 
         // 2. 가격 계산 (안전장치 자동 적용)
-        const priceResult = calculateWholesalePrice({
+        const rawPriceResult = calculateWholesalePrice({
           wholesalePrice: product.wholesalePrice,
           shippingFee: product.shippingFee,
           naverFeeRate: product.naverFeeRate,
           targetMarginRate: product.targetMarginRate,
         })
+
+        // 재시도 가격이 있으면 오버라이드 (마진 최저선 이상일 때만)
+        const priceResult = job.data.retryPrice && job.data.retryPrice < rawPriceResult.salePrice
+          ? {
+              ...rawPriceResult,
+              salePrice: job.data.retryPrice,
+              marginRate: (job.data.retryPrice - rawPriceResult.cost) / job.data.retryPrice,
+            }
+          : rawPriceResult
+
+        if (job.data.retryCount && job.data.retryCount > 0) {
+          logger.info('retry_price_applied', {
+            productId,
+            attempt: job.data.retryCount,
+            originalPrice: rawPriceResult.salePrice,
+            retryPrice: priceResult.salePrice,
+            reason: job.data.retryReason,
+          })
+        }
 
         logger.info('가격 계산 완료', {
           productId,
@@ -225,6 +304,14 @@ export function createRegistrationWorker(): Worker {
               completedAt: new Date(),
             },
           })
+          // 스마트 재시도: 경쟁가 기준으로 가격 조정 후 재등록
+          await enqueueRetryIfEligible(
+            productId,
+            'price_not_competitive',
+            priceResult.salePrice,
+            lowestPrice ?? undefined,
+            job.data.retryCount ?? 0,
+          )
           return { skipped: true, reason: 'price_not_competitive', ourPrice: priceResult.salePrice, naverLowest: lowestPrice }
         }
 
@@ -298,6 +385,14 @@ export function createRegistrationWorker(): Worker {
                 completedAt: new Date(),
               },
             })
+            // 스마트 재시도: 가격 인하 후 재등록 시도
+            await enqueueRetryIfEligible(
+              productId,
+              'exposure_blocked',
+              priceResult.salePrice,
+              undefined,
+              job.data.retryCount ?? 0,
+            )
             return { skipped: true, reason: 'exposure_blocked', exposureScore }
           }
 
@@ -461,9 +556,25 @@ export function createRegistrationWorker(): Worker {
           })
         }
 
+        // 3-4. SEO 최적화 (상품명 정리 + 검색 태그 생성)
+        const optimizedName = optimizeProductTitle({
+          originalName: product.name,
+          category: product.category,
+        })
+        const searchTags = generateSearchTags(product.name)
+
+        if (optimizedName !== product.name) {
+          logger.info('seo_title_optimized', {
+            productId,
+            original: product.name,
+            optimized: optimizedName,
+            tagCount: searchTags.length,
+          })
+        }
+
         // 4. 네이버 상품 등록 (내부에서 1초 sleep 자동 적용)
         const registrationResult = await registerProductToNaver({
-          name: product.name,
+          name: optimizedName || product.name,
           salePrice: priceResult.salePrice,
           category: {
             id: product.naverCategoryId ?? '',
@@ -499,6 +610,8 @@ export function createRegistrationWorker(): Worker {
               salePrice: priceResult.salePrice,
               productType,
               nicheCategory: classifyNicheCategory(product.name),
+              optimizedName: optimizedName !== product.name ? optimizedName : undefined,
+              searchTags,
               registeredAt: new Date(),
               ...(origin ? { origin } : {}),
             },

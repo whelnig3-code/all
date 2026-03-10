@@ -124,6 +124,11 @@ jest.mock('@smartstore/core', () => ({
   getOriginMarginAdjustment: jest.fn().mockReturnValue(0),
   classifyNicheCategory: jest.fn().mockReturnValue('기타'),
   isProductAllowedForAccount: jest.fn().mockReturnValue({ allowed: true, category: '드릴비트', group: '전동공구 소모품' }),
+  optimizeProductTitle: jest.fn().mockImplementation(({ originalName }: { originalName: string }) => originalName),
+  generateSearchTags: jest.fn().mockReturnValue(['공구', '드라이버', '세트']),
+  shouldRetry: jest.fn().mockReturnValue(false),
+  calculateRetryPrice: jest.fn().mockReturnValue(null),
+  getMaxRetryCount: jest.fn().mockReturnValue(0),
 }))
 
 jest.mock('@smartstore/integrations', () => ({
@@ -174,6 +179,10 @@ jest.mock('../credential-gate', () => ({
 // queues.ts 직접 대체 (Queue 인스턴스 생성 방지)
 jest.mock('../queues', () => ({
   QUEUE_NAMES: { PRODUCT_REGISTRATION: 'product-registration' },
+  registrationQueue: {
+    add: jest.fn().mockResolvedValue({}),
+    close: jest.fn().mockResolvedValue(undefined),
+  },
   blogPostingQueue: {
     add: jest.fn().mockResolvedValue({}),
     close: jest.fn().mockResolvedValue(undefined),

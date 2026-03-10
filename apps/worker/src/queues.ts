@@ -119,6 +119,12 @@ export const QUEUE_NAMES = {
 export interface RegistrationJobData {
   productId: string   // DB 내부 상품 ID
   priority?: number
+  /** 재시도 횟수 (0 = 최초 등록) */
+  retryCount?: number
+  /** 이전 거부 사유 */
+  retryReason?: string
+  /** 재시도 시 조정된 가격 (원) */
+  retryPrice?: number
 }
 
 /** 주문 처리 작업 데이터 */

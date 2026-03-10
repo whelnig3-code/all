@@ -224,6 +224,88 @@ export const analyticsRouter: FastifyPluginAsync = async (fastify) => {
     })
   })
 
+  // GET /analytics/category-performance — 카테고리별 성과 분석
+  fastify.get('/category-performance', async (request, reply) => {
+    const { days = '30' } = request.query as { days?: string }
+    const daysNum = Math.min(parseInt(days, 10) || 30, 365)
+    const since = new Date()
+    since.setDate(since.getDate() - daysNum)
+
+    // 등록된 상품별 매출 데이터 집계
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'registered',
+        registeredAt: { gte: since },
+        nicheCategory: { not: null },
+      },
+      select: {
+        id: true,
+        nicheCategory: true,
+        salePrice: true,
+        registeredAt: true,
+        orders: {
+          select: { totalAmount: true },
+        },
+      },
+    })
+
+    // 카테고리별 집계
+    const categoryMap = new Map<string, {
+      category: string
+      productCount: number
+      totalRevenue: number
+      totalOrders: number
+      avgPrice: number
+    }>()
+
+    for (const p of products) {
+      const cat = p.nicheCategory ?? '기타'
+      const existing = categoryMap.get(cat) ?? {
+        category: cat,
+        productCount: 0,
+        totalRevenue: 0,
+        totalOrders: 0,
+        avgPrice: 0,
+      }
+
+      const orderRevenue = p.orders.reduce((sum, o) => sum + o.totalAmount, 0)
+
+      categoryMap.set(cat, {
+        ...existing,
+        productCount: existing.productCount + 1,
+        totalRevenue: existing.totalRevenue + orderRevenue,
+        totalOrders: existing.totalOrders + p.orders.length,
+        avgPrice: 0, // 아래에서 계산
+      })
+    }
+
+    // 평균가 계산 + 정렬
+    const results = [...categoryMap.values()]
+      .map((c) => ({
+        ...c,
+        avgPrice: c.productCount > 0
+          ? Math.round(products
+              .filter((p) => (p.nicheCategory ?? '기타') === c.category)
+              .reduce((sum, p) => sum + (p.salePrice ?? 0), 0) / c.productCount)
+          : 0,
+        revenuePerProduct: c.productCount > 0
+          ? Math.round(c.totalRevenue / c.productCount)
+          : 0,
+      }))
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
+
+    return reply.send({
+      days: daysNum,
+      categories: results,
+      summary: {
+        totalCategories: results.length,
+        totalRevenue: results.reduce((s, c) => s + c.totalRevenue, 0),
+        totalOrders: results.reduce((s, c) => s + c.totalOrders, 0),
+        topCategory: results[0]?.category ?? '없음',
+      },
+    })
+  })
+
   // POST /analytics/check-product — 상품이 계정에 등록 가능한지 검사
   fastify.post('/check-product', async (request, reply) => {
     const { accountId, productName } = request.body as {

@@ -97,6 +97,9 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
           orderBy: { checkedAt: 'desc' },
           take: 5,
         },
+        options: {
+          orderBy: { sortOrder: 'asc' },
+        },
       },
     })
 
@@ -328,5 +331,102 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
       generatedAt: hasCached ? product.blogGeneratedAt : new Date().toISOString(),
       source: hasCached ? 'cached' : 'generated',
     })
+  })
+
+  // =============================================
+  // 상품 옵션 (SKU) CRUD
+  // =============================================
+
+  // GET /products/:id/options
+  fastify.get('/:id/options', async (request, reply) => {
+    const { id } = request.params as { id: string }
+
+    const options = await prisma.productOption.findMany({
+      where: { productId: id },
+      orderBy: { sortOrder: 'asc' },
+    })
+
+    return reply.send({ options })
+  })
+
+  // POST /products/:id/options — 옵션 추가
+  fastify.post('/:id/options', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
+    const { id } = request.params as { id: string }
+    const { optionName, optionValue, sku, additionalPrice, stockQuantity } = request.body as {
+      optionName: string
+      optionValue: string
+      sku?: string
+      additionalPrice?: number
+      stockQuantity?: number
+    }
+
+    if (!optionName || !optionValue) {
+      return reply.code(400).send({ error: 'optionName, optionValue 필수' })
+    }
+
+    const product = await prisma.product.findUnique({ where: { id } })
+    if (!product) {
+      return reply.code(404).send({ error: '상품을 찾을 수 없습니다' })
+    }
+
+    const maxSort = await prisma.productOption.aggregate({
+      where: { productId: id },
+      _max: { sortOrder: true },
+    })
+
+    const option = await prisma.productOption.create({
+      data: {
+        productId: id,
+        optionName,
+        optionValue,
+        sku: sku ?? null,
+        additionalPrice: additionalPrice ?? 0,
+        stockQuantity: stockQuantity ?? 0,
+        sortOrder: (maxSort._max.sortOrder ?? 0) + 1,
+      },
+    })
+
+    return reply.code(201).send({ option })
+  })
+
+  // PUT /products/:id/options/:optionId — 옵션 수정
+  fastify.put('/:id/options/:optionId', async (request, reply) => {
+    const { optionId } = request.params as { id: string; optionId: string }
+    const updates = request.body as {
+      optionName?: string
+      optionValue?: string
+      sku?: string
+      additionalPrice?: number
+      stockQuantity?: number
+      isActive?: boolean
+      sortOrder?: number
+    }
+
+    const existing = await prisma.productOption.findUnique({ where: { id: optionId } })
+    if (!existing) {
+      return reply.code(404).send({ error: '옵션을 찾을 수 없습니다' })
+    }
+
+    const option = await prisma.productOption.update({
+      where: { id: optionId },
+      data: updates,
+    })
+
+    return reply.send({ option })
+  })
+
+  // DELETE /products/:id/options/:optionId — 옵션 삭제
+  fastify.delete('/:id/options/:optionId', async (request, reply) => {
+    const { optionId } = request.params as { id: string; optionId: string }
+
+    const existing = await prisma.productOption.findUnique({ where: { id: optionId } })
+    if (!existing) {
+      return reply.code(404).send({ error: '옵션을 찾을 수 없습니다' })
+    }
+
+    await prisma.productOption.delete({ where: { id: optionId } })
+    return reply.send({ message: '옵션 삭제 완료' })
   })
 }

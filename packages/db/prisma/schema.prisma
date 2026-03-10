@@ -105,6 +105,7 @@ model Product {
   competitorPrices     CompetitorPrice[]
   wholesalePriceWatches WholesalePriceWatch[]
   inventoryEvents      InventoryEvent[]
+  options              ProductOption[]
 
   @@unique([source, sourceProductId])
   @@index([uniqueKey])
@@ -116,6 +117,34 @@ model Product {
   @@index([descriptionGeneratedAt]) // 콘텐츠 미생성 상품 조회 최적화
   @@index([blogPostedAt])           // 일일 포스팅 한도 조회 최적화
   @@map("products")
+}
+
+// --- 상품 옵션 (SKU) 테이블 ---
+model ProductOption {
+  id              String    @id @default(cuid())
+
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // 옵션 정보
+  optionName      String    // 옵션명 (e.g. "색상", "사이즈")
+  optionValue     String    // 옵션값 (e.g. "블랙", "XL")
+  sku             String?   // SKU 코드
+
+  // 가격/재고
+  additionalPrice Int       @default(0) // 추가 금액 (원)
+  stockQuantity   Int       @default(0) // 옵션별 재고
+  isActive        Boolean   @default(true) // 활성 여부
+
+  // 정렬
+  sortOrder       Int       @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([productId])
+  @@index([sku])
+  @@map("product_options")
 }
 
 // --- 주문 테이블 ---

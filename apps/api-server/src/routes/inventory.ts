@@ -188,7 +188,7 @@ export const inventoryRouter: FastifyPluginAsync = async (fastify) => {
     const result = await pauseListing(productId, '수동 판매 중지')
 
     if (!result.ok) {
-      return reply.code(400).send({ error: result.error.message })
+      return reply.code(400).send({ error: '판매 중지 처리 실패' })
     }
 
     return { message: '판매 중지 완료', productId }
@@ -203,7 +203,7 @@ export const inventoryRouter: FastifyPluginAsync = async (fastify) => {
     const result = await resumeListing(productId, '수동 판매 재개')
 
     if (!result.ok) {
-      return reply.code(400).send({ error: result.error.message })
+      return reply.code(400).send({ error: '판매 재개 처리 실패' })
     }
 
     return { message: '판매 재개 완료', productId }

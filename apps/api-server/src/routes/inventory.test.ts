@@ -373,7 +373,7 @@ describe('Inventory API', () => {
       })
 
       expect(res.statusCode).toBe(400)
-      expect(res.json().error).toBe('이미 중지된 상품입니다')
+      expect(res.json().error).toBe('판매 중지 처리 실패')
     })
   })
 

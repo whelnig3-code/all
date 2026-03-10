@@ -8,7 +8,10 @@
 
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@smartstore/db'
+import { createLogger } from '@smartstore/shared'
 import { verifyBasicAuth } from '../lib/auth'
+
+const logger = createLogger('report')
 
 export const reportRouter: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('onRequest', async (req, reply) => {
@@ -148,8 +151,8 @@ export const reportRouter: FastifyPluginAsync = async (fastify) => {
         },
       })
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      return reply.code(500).send({ error: '리포트 조회 실패', detail: message })
+      logger.error('리포트 조회 실패', { error: error instanceof Error ? error.message : String(error) })
+      return reply.code(500).send({ error: '리포트 조회 실패' })
     }
   })
 }

@@ -71,7 +71,9 @@ async function main() {
 
     const statusCode = error.statusCode ?? 500
     return reply.code(statusCode).send({
-      error: statusCode >= 500 ? '내부 서버 오류' : error.message,
+      error: statusCode >= 500
+        ? '내부 서버 오류'
+        : error.validation ? '입력 검증 실패' : error.message,
       requestId: request.id,
     })
   })

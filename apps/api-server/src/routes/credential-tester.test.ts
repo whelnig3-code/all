@@ -67,7 +67,7 @@ describe('testServiceConnection', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Network error')
+      expect(result.error).toBe('auth_error')
     })
 
     it('토큰 없는 응답 → success: false', async () => {
@@ -206,7 +206,7 @@ describe('testServiceConnection', () => {
       })
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('ECONNREFUSED')
+      expect(result.error).toBe('login_error')
     })
   })
 })

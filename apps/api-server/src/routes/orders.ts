@@ -163,7 +163,7 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
     const result = await approveOrder(orderId, approvalToken)
 
     if (!result.ok) {
-      return reply.code(400).send({ error: result.error.message })
+      return reply.code(400).send({ error: '주문 승인 처리 실패' })
     }
 
     // 도매 자동 발주 (승인 후)
@@ -224,7 +224,7 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
     const result = await rejectOrder(orderId, approvalToken, reason)
 
     if (!result.ok) {
-      return reply.code(400).send({ error: result.error.message })
+      return reply.code(400).send({ error: '주문 거부 처리 실패' })
     }
 
     return { message: '주문 거부 완료', orderId }

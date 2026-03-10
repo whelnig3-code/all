@@ -37,9 +37,8 @@ export async function testServiceConnection(
   try {
     return await tester(creds)
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    logger.error('연결 테스트 예외', { service, error: errMsg })
-    return { success: false, message: '연결 테스트 실패', error: errMsg }
+    logger.error('연결 테스트 예외', { service, error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: '연결 테스트 실패', error: 'connection_error' }
   }
 }
 
@@ -77,10 +76,10 @@ async function testNaverCommerce(creds: Record<string, string>): Promise<TestRes
     if (response.data?.access_token) {
       return { success: true, message: 'OAuth 토큰 발급 성공' }
     }
-    return { success: false, message: '토큰 응답 이상', error: JSON.stringify(response.data) }
+    return { success: false, message: '토큰 응답 이상', error: 'invalid_token_response' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: 'OAuth 토큰 발급 실패', error: errMsg }
+    logger.error('OAuth 토큰 발급 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: 'OAuth 토큰 발급 실패', error: 'auth_error' }
   }
 }
 
@@ -105,10 +104,10 @@ async function testNaverTalkTalk(creds: Record<string, string>): Promise<TestRes
     if (response.status === 200) {
       return { success: true, message: '톡톡 API 연결 성공' }
     }
-    return { success: false, message: '톡톡 API 응답 이상', error: `status: ${response.status}` }
+    return { success: false, message: '톡톡 API 응답 이상', error: 'unexpected_status' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: '톡톡 API 연결 실패', error: errMsg }
+    logger.error('톡톡 API 연결 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: '톡톡 API 연결 실패', error: 'connection_error' }
   }
 }
 
@@ -130,10 +129,10 @@ async function testNaverBlog(creds: Record<string, string>): Promise<TestResult>
     if (response.status === 200) {
       return { success: true, message: '블로그 API 인증 성공' }
     }
-    return { success: false, message: '블로그 API 응답 이상', error: `status: ${response.status}` }
+    return { success: false, message: '블로그 API 응답 이상', error: 'unexpected_status' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: '블로그 API 인증 실패', error: errMsg }
+    logger.error('블로그 API 인증 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: '블로그 API 인증 실패', error: 'auth_error' }
   }
 }
 
@@ -156,10 +155,10 @@ async function testTelegram(creds: Record<string, string>): Promise<TestResult> 
       const botName = response.data.result?.username ?? 'unknown'
       return { success: true, message: `봇 연결 성공: @${botName}` }
     }
-    return { success: false, message: 'Telegram API 응답 이상', error: JSON.stringify(response.data) }
+    return { success: false, message: 'Telegram API 응답 이상', error: 'invalid_response' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: 'Telegram 봇 인증 실패', error: errMsg }
+    logger.error('Telegram 봇 인증 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: 'Telegram 봇 인증 실패', error: 'auth_error' }
   }
 }
 
@@ -191,8 +190,8 @@ async function testDomaegguk(creds: Record<string, string>): Promise<TestResult>
     }
     return { success: false, message: '로그인 실패 (쿠키 없음)', error: 'no_session_cookie' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: '도매꾹 로그인 실패', error: errMsg }
+    logger.error('도매꾹 로그인 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: '도매꾹 로그인 실패', error: 'login_error' }
   }
 }
 
@@ -223,8 +222,8 @@ async function testOwnerclan(creds: Record<string, string>): Promise<TestResult>
     }
     return { success: false, message: '로그인 실패 (쿠키 없음)', error: 'no_session_cookie' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: '오너클랜 로그인 실패', error: errMsg }
+    logger.error('오너클랜 로그인 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: '오너클랜 로그인 실패', error: 'login_error' }
   }
 }
 
@@ -255,7 +254,7 @@ async function testOnchannel(creds: Record<string, string>): Promise<TestResult>
     }
     return { success: false, message: '로그인 실패 (쿠키 없음)', error: 'no_session_cookie' }
   } catch (error) {
-    const errMsg = error instanceof Error ? error.message : String(error)
-    return { success: false, message: '온채널 로그인 실패', error: errMsg }
+    logger.error('온채널 로그인 실패', { error: error instanceof Error ? error.message : String(error) })
+    return { success: false, message: '온채널 로그인 실패', error: 'login_error' }
   }
 }

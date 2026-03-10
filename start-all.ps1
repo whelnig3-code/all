@@ -224,16 +224,24 @@ try {
     Write-Warn "Prisma generate 실패. 계속 진행합니다."
 }
 
-Write-Step "[DB] 스키마 동기화 중 (db:push)..."
+Write-Step "[DB] 스키마 동기화 중..."
 try {
-    $pushOutput = npm run db:push 2>&1
+    # migrations 폴더가 있으면 migrate deploy, 없으면 db:push
+    $migrationsDir = "packages/db/prisma/migrations"
+    if (Test-Path $migrationsDir) {
+        Write-Host "  → prisma migrate deploy (마이그레이션 모드)" -ForegroundColor Cyan
+        $pushOutput = npm run db:migrate:deploy 2>&1
+    } else {
+        Write-Host "  → prisma db push (개발 모드)" -ForegroundColor Cyan
+        $pushOutput = npm run db:push 2>&1
+    }
     if ($LASTEXITCODE -eq 0) {
         Write-Ok "DB 스키마 동기화 완료"
     } else {
-        Write-Warn "db:push 경고 발생. 계속 진행합니다."
+        Write-Warn "DB 동기화 경고 발생. 계속 진행합니다."
     }
 } catch {
-    Write-Warn "db:push 실패. 계속 진행합니다."
+    Write-Warn "DB 동기화 실패. 계속 진행합니다."
 }
 
 # --- 6. 포트 충돌 방지 ---

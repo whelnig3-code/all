@@ -78,6 +78,10 @@ function mockMarginStats() {
   }
 }
 
+const TEST_USER = 'admin'
+const TEST_PASS = 'test-pass-1234!'
+const AUTH_HEADER = 'Basic ' + Buffer.from(`${TEST_USER}:${TEST_PASS}`).toString('base64')
+
 /** Fastify 앱 빌드 헬퍼 */
 async function buildApp() {
   const app = Fastify({ logger: false })
@@ -92,8 +96,16 @@ async function buildApp() {
 describe('GET /report/revenue', () => {
   let app: Awaited<ReturnType<typeof buildApp>>
 
+  /** inject with auth header */
+  function authInject(opts: Parameters<typeof app.inject>[0]) {
+    const o = typeof opts === 'string' ? { url: opts, method: 'GET' as const } : opts
+    return app.inject({ ...o, headers: { ...o.headers, Authorization: AUTH_HEADER } })
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
+    process.env['ADMIN_USER'] = TEST_USER
+    process.env['ADMIN_PASS'] = TEST_PASS
 
     // 기본 목 설정
     mockOrderGroupBy
@@ -115,7 +127,7 @@ describe('GET /report/revenue', () => {
   // ---- 정상 응답 형태 ----
 
   it('파라미터 없음 → 200 + 올바른 응답 형태', async () => {
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
 
     expect(res.statusCode).toBe(200)
     const body = res.json<{
@@ -139,7 +151,7 @@ describe('GET /report/revenue', () => {
   })
 
   it('period.since / period.until이 ISO 날짜 문자열', async () => {
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ period: { since: string; until: string } }>()
 
     expect(() => new Date(body.period.since)).not.toThrow()
@@ -148,7 +160,7 @@ describe('GET /report/revenue', () => {
   })
 
   it('revenueByAccount 배열에 accountId/totalRevenue/totalMargin/orderCount/avgMarginRate 포함', async () => {
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ revenueByAccount: { accountId: string; totalRevenue: number; avgMarginRate: number | null }[] }>()
 
     expect(Array.isArray(body.revenueByAccount)).toBe(true)
@@ -158,7 +170,7 @@ describe('GET /report/revenue', () => {
   })
 
   it('topProducts 배열에 productId/name/category/totalAmount/orderCount/totalQuantity 포함', async () => {
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{
       topProducts: { productId: string; name: string; category: string; totalAmount: number }[]
     }>()
@@ -179,7 +191,7 @@ describe('GET /report/revenue', () => {
       { id: 'prod-1', name: '스테인리스 렌치 세트', category: '공구/DIY' },
     ] as any)
 
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ topProducts: { productId: string; name: string }[] }>()
 
     const missing = body.topProducts.find((p) => p.productId === 'prod-2')
@@ -187,7 +199,7 @@ describe('GET /report/revenue', () => {
   })
 
   it('summary.avgMarginRate가 소수점 1자리 %로 변환됨', async () => {
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ summary: { avgMarginRate: number | null } }>()
 
     // avgMarginRate: 0.27 → 27.0
@@ -201,14 +213,14 @@ describe('GET /report/revenue', () => {
       _count: { id: 0 },
     } as any)
 
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ summary: { avgMarginRate: number | null } }>()
 
     expect(body.summary.avgMarginRate).toBeNull()
   })
 
   it('competitorFallback.ratio = count/total × 100 (소수점 1자리)', async () => {
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ competitorFallback: { count: number; total: number; ratio: number } }>()
 
     // 3/10 = 30.0
@@ -223,7 +235,7 @@ describe('GET /report/revenue', () => {
       .mockResolvedValueOnce(0) // fallback
       .mockResolvedValueOnce(0) // total
 
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     const body = res.json<{ competitorFallback: { ratio: number } }>()
 
     expect(body.competitorFallback.ratio).toBe(0)
@@ -232,7 +244,7 @@ describe('GET /report/revenue', () => {
   // ---- since 파라미터 ----
 
   it('since 유효한 ISO 날짜 → 200', async () => {
-    const res = await app.inject({
+    const res = await authInject({
       method: 'GET',
       url: '/report/revenue?since=2026-01-01T00:00:00.000Z',
     })
@@ -240,7 +252,7 @@ describe('GET /report/revenue', () => {
   })
 
   it('since 유효하지 않은 날짜 → 400', async () => {
-    const res = await app.inject({
+    const res = await authInject({
       method: 'GET',
       url: '/report/revenue?since=not-a-date',
     })
@@ -250,7 +262,7 @@ describe('GET /report/revenue', () => {
   })
 
   it('since "2026-13-99" 유효하지 않은 날짜 → 400', async () => {
-    const res = await app.inject({
+    const res = await authInject({
       method: 'GET',
       url: '/report/revenue?since=2026-13-99',
     })
@@ -261,7 +273,7 @@ describe('GET /report/revenue', () => {
 
   it('accountId 100자 이하 → 200', async () => {
     const validId = 'a'.repeat(100)
-    const res = await app.inject({
+    const res = await authInject({
       method: 'GET',
       url: `/report/revenue?accountId=${validId}`,
     })
@@ -270,7 +282,7 @@ describe('GET /report/revenue', () => {
 
   it('accountId 101자 이상 → 400', async () => {
     const longId = 'a'.repeat(101)
-    const res = await app.inject({
+    const res = await authInject({
       method: 'GET',
       url: `/report/revenue?accountId=${longId}`,
     })
@@ -285,7 +297,7 @@ describe('GET /report/revenue', () => {
     mockOrderGroupBy.mockReset()
     mockOrderGroupBy.mockRejectedValue(new Error('DB 연결 실패'))
 
-    const res = await app.inject({ method: 'GET', url: '/report/revenue' })
+    const res = await authInject({ method: 'GET', url: '/report/revenue' })
     expect(res.statusCode).toBe(500)
     const body = res.json<{ error: string }>()
     expect(body.error).toBe('리포트 조회 실패')

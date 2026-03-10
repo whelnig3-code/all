@@ -14,6 +14,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
+  apiCall,
   fetchCategoryPerformance,
   fetchRejectionAnalysis,
   type CategoryPerformanceResponse,
@@ -81,11 +82,8 @@ function pct(n: number | null): string {
 
 async function fetchReport(days: number): Promise<RevenueReport | null> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
-  const apiBase = process.env['NEXT_PUBLIC_API_BASE'] ?? 'http://localhost:3001'
   try {
-    const res = await fetch(`${apiBase}/report/revenue?since=${encodeURIComponent(since)}`)
-    if (!res.ok) return null
-    return res.json() as Promise<RevenueReport>
+    return await apiCall<RevenueReport>(`/report/revenue?since=${encodeURIComponent(since)}`)
   } catch {
     return null
   }

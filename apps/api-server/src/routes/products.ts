@@ -7,8 +7,17 @@ import { prisma } from '@smartstore/db'
 import { calculateWholesalePrice, buildBlogPostWithSections } from '@smartstore/core'
 import { registrationQueue } from '../queues'
 import { createProductSchema } from '../schemas'
+import { verifyBasicAuth } from '../lib/auth'
 
 export const productsRouter: FastifyPluginAsync = async (fastify) => {
+  fastify.addHook('onRequest', async (req, reply) => {
+    if (!verifyBasicAuth(req.headers['authorization'])) {
+      return reply
+        .code(401)
+        .header('WWW-Authenticate', 'Basic realm="Smartstore Admin"')
+        .send({ error: 'Unauthorized' })
+    }
+  })
   // GET /products - 상품 목록 조회
   fastify.get('/', async (request, reply) => {
     const { status, nicheCategory, page = '1', limit = '20' } = request.query as {

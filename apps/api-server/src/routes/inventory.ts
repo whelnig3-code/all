@@ -12,8 +12,17 @@ import {
   resumeListing,
 } from '@smartstore/core'
 import { inventorySyncQueue } from '../queues'
+import { verifyBasicAuth } from '../lib/auth'
 
 export const inventoryRouter: FastifyPluginAsync = async (fastify) => {
+  fastify.addHook('onRequest', async (req, reply) => {
+    if (!verifyBasicAuth(req.headers['authorization'])) {
+      return reply
+        .code(401)
+        .header('WWW-Authenticate', 'Basic realm="Smartstore Admin"')
+        .send({ error: 'Unauthorized' })
+    }
+  })
   // GET /inventory/status — 전체 재고 현황
   fastify.get('/status', async (request) => {
     const { page = '1', limit = '20', filter } = request.query as {

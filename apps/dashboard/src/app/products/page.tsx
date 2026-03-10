@@ -10,6 +10,7 @@
 // =============================================
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiCall } from '@/lib/api'
 
 // =============================================
 // 블로그 타입
@@ -93,8 +94,6 @@ export default function ProductsPage() {
   const [blogData, setBlogData] = useState<BlogData | null>(null)
   const [blogLoading, setBlogLoading] = useState(false)
 
-  const apiBase = process.env['NEXT_PUBLIC_API_BASE'] ?? 'http://localhost:3100'
-
   const fetchProducts = useCallback(async (page: number, status: StatusFilter) => {
     setLoading(true)
     setError(null)
@@ -105,10 +104,7 @@ export default function ProductsPage() {
       })
       if (status) params.set('status', status)
 
-      const res = await fetch(`${apiBase}/products?${params}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-      const data: ProductsResponse = await res.json()
+      const data = await apiCall<ProductsResponse>(`/products?${params}`)
       setProducts(data.data)
       setPagination(data.pagination)
     } catch (err) {
@@ -116,7 +112,7 @@ export default function ProductsPage() {
     } finally {
       setLoading(false)
     }
-  }, [apiBase])
+  }, [])
 
   useEffect(() => {
     fetchProducts(pagination.page, statusFilter)
@@ -308,12 +304,9 @@ export default function ProductsPage() {
               onClick={async () => {
                 setBlogLoading(true)
                 try {
-                  const res = await fetch(`${apiBase}/products/${selectedProduct.id}/blog`)
-                  if (res.ok) {
-                    const data: BlogData = await res.json()
-                    setBlogData(data)
-                    setSelectedProduct(null)
-                  }
+                  const data = await apiCall<BlogData>(`/products/${selectedProduct.id}/blog`)
+                  setBlogData(data)
+                  setSelectedProduct(null)
                 } catch { /* ignore */ }
                 setBlogLoading(false)
               }}

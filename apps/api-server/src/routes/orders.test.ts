@@ -64,6 +64,10 @@ const { orderQueue, shippingNotificationQueue } = jest.requireMock('../queues') 
   shippingNotificationQueue: { add: jest.Mock }
 }
 
+const TEST_USER = 'admin'
+const TEST_PASS = 'test-pass-1234!'
+const AUTH_HEADER = 'Basic ' + Buffer.from(`${TEST_USER}:${TEST_PASS}`).toString('base64')
+
 async function buildApp() {
   const app = Fastify({ logger: false })
   await app.register(ordersRouter, { prefix: '/orders' })
@@ -73,8 +77,16 @@ async function buildApp() {
 describe('Orders API', () => {
   let app: Awaited<ReturnType<typeof buildApp>>
 
+  /** inject with auth header */
+  function authInject(opts: Parameters<typeof app.inject>[0]) {
+    const o = typeof opts === 'string' ? { url: opts, method: 'GET' as const } : opts
+    return app.inject({ ...o, headers: { ...o.headers, Authorization: AUTH_HEADER } })
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
+    process.env['ADMIN_USER'] = TEST_USER
+    process.env['ADMIN_PASS'] = TEST_PASS
     app = await buildApp()
   })
 
@@ -92,7 +104,7 @@ describe('Orders API', () => {
       prisma.order.findMany.mockResolvedValue(mockOrders)
       prisma.order.count.mockResolvedValue(1)
 
-      const res = await app.inject({ method: 'GET', url: '/orders' })
+      const res = await authInject({ method: 'GET', url: '/orders' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -109,7 +121,7 @@ describe('Orders API', () => {
       prisma.order.findMany.mockResolvedValue([])
       prisma.order.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/orders?status=paid' })
+      await authInject({ method: 'GET', url: '/orders?status=paid' })
 
       const whereArg = prisma.order.findMany.mock.calls[0][0].where
       expect(whereArg.status).toBe('paid')
@@ -119,7 +131,7 @@ describe('Orders API', () => {
       prisma.order.findMany.mockResolvedValue([])
       prisma.order.count.mockResolvedValue(0)
 
-      await app.inject({
+      await authInject({
         method: 'GET',
         url: '/orders?from=2026-01-01&to=2026-03-01',
       })
@@ -134,7 +146,7 @@ describe('Orders API', () => {
       prisma.order.findMany.mockResolvedValue([])
       prisma.order.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/orders?limit=200' })
+      await authInject({ method: 'GET', url: '/orders?limit=200' })
 
       const takeArg = prisma.order.findMany.mock.calls[0][0].take
       expect(takeArg).toBe(100)
@@ -144,7 +156,7 @@ describe('Orders API', () => {
       prisma.order.findMany.mockResolvedValue([])
       prisma.order.count.mockResolvedValue(50)
 
-      await app.inject({ method: 'GET', url: '/orders?page=2&limit=20' })
+      await authInject({ method: 'GET', url: '/orders?page=2&limit=20' })
 
       const skipArg = prisma.order.findMany.mock.calls[0][0].skip
       expect(skipArg).toBe(20)
@@ -162,7 +174,7 @@ describe('Orders API', () => {
         product: { name: '테스트 상품' },
       })
 
-      const res = await app.inject({ method: 'GET', url: '/orders/order-1' })
+      const res = await authInject({ method: 'GET', url: '/orders/order-1' })
 
       expect(res.statusCode).toBe(200)
       expect(res.json().id).toBe('order-1')
@@ -171,7 +183,7 @@ describe('Orders API', () => {
     it('존재하지 않는 주문 → 404', async () => {
       prisma.order.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({ method: 'GET', url: '/orders/not-found' })
+      const res = await authInject({ method: 'GET', url: '/orders/not-found' })
 
       expect(res.statusCode).toBe(404)
       expect(res.json().error).toContain('찾을 수 없습니다')
@@ -182,7 +194,7 @@ describe('Orders API', () => {
 
   describe('POST /orders/poll', () => {
     it('수동 폴링 트리거 → 200 + 큐 추가', async () => {
-      const res = await app.inject({ method: 'POST', url: '/orders/poll' })
+      const res = await authInject({ method: 'POST', url: '/orders/poll' })
 
       expect(res.statusCode).toBe(200)
       expect(res.json().message).toContain('트리거')
@@ -211,7 +223,7 @@ describe('Orders API', () => {
       })
       prisma.order.update.mockResolvedValue({})
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/orders/order-1/ship',
         headers: { 'content-type': 'application/json' },
@@ -243,7 +255,7 @@ describe('Orders API', () => {
     it('주문 없음 → 404', async () => {
       prisma.order.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/orders/not-found/ship',
         headers: { 'content-type': 'application/json' },
@@ -260,7 +272,7 @@ describe('Orders API', () => {
         product: { name: '상품' },
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/orders/order-1/ship',
         headers: { 'content-type': 'application/json' },
@@ -281,7 +293,7 @@ describe('Orders API', () => {
       })
       prisma.order.update.mockResolvedValue({})
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/orders/order-1/ship',
         headers: { 'content-type': 'application/json' },
@@ -305,7 +317,7 @@ describe('Orders API', () => {
         _count: 8,
       })
 
-      const res = await app.inject({ method: 'GET', url: '/orders/stats' })
+      const res = await authInject({ method: 'GET', url: '/orders/stats' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -322,7 +334,7 @@ describe('Orders API', () => {
         _count: 0,
       })
 
-      await app.inject({ method: 'GET', url: '/orders/stats?from=2026-01-01' })
+      await authInject({ method: 'GET', url: '/orders/stats?from=2026-01-01' })
 
       const groupByWhere = prisma.order.groupBy.mock.calls[0][0].where
       expect(groupByWhere.orderedAt).toBeDefined()
@@ -336,7 +348,7 @@ describe('Orders API', () => {
         _count: 0,
       })
 
-      const res = await app.inject({ method: 'GET', url: '/orders/stats' })
+      const res = await authInject({ method: 'GET', url: '/orders/stats' })
 
       expect(res.json().revenue.total).toBe(0)
     })

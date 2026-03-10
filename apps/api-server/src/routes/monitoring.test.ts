@@ -91,6 +91,10 @@ const { notificationAdapter } = jest.requireMock('@smartstore/adapters') as {
   notificationAdapter: { healthCheck: jest.Mock }
 }
 
+const TEST_USER = 'admin'
+const TEST_PASS = 'test-pass-1234!'
+const AUTH_HEADER = 'Basic ' + Buffer.from(`${TEST_USER}:${TEST_PASS}`).toString('base64')
+
 async function buildApp() {
   const app = Fastify({ logger: false })
   await app.register(monitoringRouter, { prefix: '/monitoring' })
@@ -100,8 +104,16 @@ async function buildApp() {
 describe('Monitoring API', () => {
   let app: Awaited<ReturnType<typeof buildApp>>
 
+  /** inject with auth header */
+  function authInject(opts: Parameters<typeof app.inject>[0]) {
+    const o = typeof opts === 'string' ? { url: opts, method: 'GET' as const } : opts
+    return app.inject({ ...o, headers: { ...o.headers, Authorization: AUTH_HEADER } })
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
+    process.env['ADMIN_USER'] = TEST_USER
+    process.env['ADMIN_PASS'] = TEST_PASS
     app = await buildApp()
   })
 
@@ -171,7 +183,7 @@ describe('Monitoring API', () => {
 
   describe('GET /monitoring/queues', () => {
     it('큐 상태 조회 → 200 + 4개 큐 통계', async () => {
-      const res = await app.inject({ method: 'GET', url: '/monitoring/queues' })
+      const res = await authInject({ method: 'GET', url: '/monitoring/queues' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -193,7 +205,7 @@ describe('Monitoring API', () => {
       ])
       prisma.jobLog.count.mockResolvedValue(1)
 
-      const res = await app.inject({ method: 'GET', url: '/monitoring/jobs' })
+      const res = await authInject({ method: 'GET', url: '/monitoring/jobs' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -206,7 +218,7 @@ describe('Monitoring API', () => {
       prisma.jobLog.findMany.mockResolvedValue([])
       prisma.jobLog.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/monitoring/jobs?type=registration' })
+      await authInject({ method: 'GET', url: '/monitoring/jobs?type=registration' })
 
       const whereArg = prisma.jobLog.findMany.mock.calls[0][0].where
       expect(whereArg.jobType).toBe('registration')
@@ -216,7 +228,7 @@ describe('Monitoring API', () => {
       prisma.jobLog.findMany.mockResolvedValue([])
       prisma.jobLog.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/monitoring/jobs?status=failed' })
+      await authInject({ method: 'GET', url: '/monitoring/jobs?status=failed' })
 
       const whereArg = prisma.jobLog.findMany.mock.calls[0][0].where
       expect(whereArg.status).toBe('failed')
@@ -226,7 +238,7 @@ describe('Monitoring API', () => {
       prisma.jobLog.findMany.mockResolvedValue([])
       prisma.jobLog.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/monitoring/jobs?limit=500' })
+      await authInject({ method: 'GET', url: '/monitoring/jobs?limit=500' })
 
       const takeArg = prisma.jobLog.findMany.mock.calls[0][0].take
       expect(takeArg).toBe(100)
@@ -247,7 +259,7 @@ describe('Monitoring API', () => {
         { jobType: 'registration', status: 'completed', startedAt: new Date() },
       ])
 
-      const res = await app.inject({ method: 'GET', url: '/monitoring/summary' })
+      const res = await authInject({ method: 'GET', url: '/monitoring/summary' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -266,7 +278,7 @@ describe('Monitoring API', () => {
       prisma.order.aggregate.mockResolvedValue({ _sum: { totalAmount: null } })
       prisma.jobLog.findMany.mockResolvedValue([])
 
-      const res = await app.inject({ method: 'GET', url: '/monitoring/summary' })
+      const res = await authInject({ method: 'GET', url: '/monitoring/summary' })
 
       expect(res.json().today.revenue).toBe(0)
     })

@@ -98,6 +98,23 @@ async function adminProxy<T>(
 }
 
 // =============================================
+// 범용 API 호출 (인증 필요한 모든 경로)
+// =============================================
+
+/**
+ * admin-proxy를 통해 인증이 필요한 API 호출
+ * - /products, /orders, /inventory, /report, /analytics, /monitoring 등
+ * - ADMIN_PASS는 서버 측에서만 사용됨
+ */
+export async function apiCall<T>(
+  path: string,
+  method: string = 'GET',
+  body?: unknown
+): Promise<T> {
+  return adminProxy<T>(path, method, body)
+}
+
+// =============================================
 // API 함수
 // =============================================
 

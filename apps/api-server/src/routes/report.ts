@@ -8,8 +8,17 @@
 
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@smartstore/db'
+import { verifyBasicAuth } from '../lib/auth'
 
 export const reportRouter: FastifyPluginAsync = async (fastify) => {
+  fastify.addHook('onRequest', async (req, reply) => {
+    if (!verifyBasicAuth(req.headers['authorization'])) {
+      return reply
+        .code(401)
+        .header('WWW-Authenticate', 'Basic realm="Smartstore Admin"')
+        .send({ error: 'Unauthorized' })
+    }
+  })
   // GET /report/revenue - 매출 리포트
   fastify.get('/revenue', async (request, reply) => {
     const query = request.query as {

@@ -60,6 +60,10 @@ const { calculateWholesalePrice } = jest.requireMock('@smartstore/core') as {
   calculateWholesalePrice: jest.Mock
 }
 
+const TEST_USER = 'admin'
+const TEST_PASS = 'test-pass-1234!'
+const AUTH_HEADER = 'Basic ' + Buffer.from(`${TEST_USER}:${TEST_PASS}`).toString('base64')
+
 async function buildApp() {
   const app = Fastify({ logger: false })
   await app.register(productsRouter, { prefix: '/products' })
@@ -69,8 +73,16 @@ async function buildApp() {
 describe('Products API', () => {
   let app: Awaited<ReturnType<typeof buildApp>>
 
+  /** inject with auth header */
+  function authInject(opts: Parameters<typeof app.inject>[0]) {
+    const o = typeof opts === 'string' ? { url: opts, method: 'GET' as const } : opts
+    return app.inject({ ...o, headers: { ...o.headers, Authorization: AUTH_HEADER } })
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
+    process.env['ADMIN_USER'] = TEST_USER
+    process.env['ADMIN_PASS'] = TEST_PASS
     app = await buildApp()
   })
 
@@ -87,7 +99,7 @@ describe('Products API', () => {
       ])
       prisma.product.count.mockResolvedValue(1)
 
-      const res = await app.inject({ method: 'GET', url: '/products' })
+      const res = await authInject({ method: 'GET', url: '/products' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -100,7 +112,7 @@ describe('Products API', () => {
       prisma.product.findMany.mockResolvedValue([])
       prisma.product.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/products?status=active' })
+      await authInject({ method: 'GET', url: '/products?status=active' })
 
       const whereArg = prisma.product.findMany.mock.calls[0][0].where
       expect(whereArg.status).toBe('active')
@@ -110,7 +122,7 @@ describe('Products API', () => {
       prisma.product.findMany.mockResolvedValue([])
       prisma.product.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/products?limit=300' })
+      await authInject({ method: 'GET', url: '/products?limit=300' })
 
       expect(prisma.product.findMany.mock.calls[0][0].take).toBe(100)
     })
@@ -127,7 +139,7 @@ describe('Products API', () => {
         competitorPrices: [],
       })
 
-      const res = await app.inject({ method: 'GET', url: '/products/prod-1' })
+      const res = await authInject({ method: 'GET', url: '/products/prod-1' })
 
       expect(res.statusCode).toBe(200)
       expect(res.json().id).toBe('prod-1')
@@ -136,7 +148,7 @@ describe('Products API', () => {
     it('존재하지 않는 상품 → 404', async () => {
       prisma.product.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({ method: 'GET', url: '/products/not-found' })
+      const res = await authInject({ method: 'GET', url: '/products/not-found' })
 
       expect(res.statusCode).toBe(404)
     })
@@ -168,7 +180,7 @@ describe('Products API', () => {
         salePrice: 19240,
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products',
         headers: { 'content-type': 'application/json' },
@@ -185,7 +197,7 @@ describe('Products API', () => {
     })
 
     it('Zod 검증 실패 (마진율 15% 미만) → 400', async () => {
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products',
         headers: { 'content-type': 'application/json' },
@@ -199,7 +211,7 @@ describe('Products API', () => {
     it('필수 필드 누락 → 400', async () => {
       const { name: _, ...noName } = validPayload
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products',
         headers: { 'content-type': 'application/json' },
@@ -214,7 +226,7 @@ describe('Products API', () => {
         throw new Error('마진율이 너무 낮음')
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products',
         headers: { 'content-type': 'application/json' },
@@ -235,7 +247,7 @@ describe('Products API', () => {
         status: 'pending',
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products/prod-1/register',
       })
@@ -251,7 +263,7 @@ describe('Products API', () => {
     it('존재하지 않는 상품 → 404', async () => {
       prisma.product.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products/not-found/register',
       })
@@ -265,7 +277,7 @@ describe('Products API', () => {
         status: 'active',
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/products/prod-1/register',
       })
@@ -290,7 +302,7 @@ describe('Products API', () => {
         marginRate: 0.3,
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'GET',
         url: '/products/prod-1/price-simulation',
       })
@@ -303,7 +315,7 @@ describe('Products API', () => {
     it('상품 없음 → 404', async () => {
       prisma.product.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'GET',
         url: '/products/not-found/price-simulation',
       })

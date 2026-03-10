@@ -7,6 +7,7 @@
 
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@smartstore/db'
+import { verifyBasicAuth } from '../lib/auth'
 import {
   analyzeRejections,
   isNicheProduct,
@@ -87,6 +88,15 @@ export function getSeoPreview(originalName: string, category?: string) {
  * Analytics 라우터
  */
 export const analyticsRouter: FastifyPluginAsync = async (fastify) => {
+  fastify.addHook('onRequest', async (req, reply) => {
+    if (!verifyBasicAuth(req.headers['authorization'])) {
+      return reply
+        .code(401)
+        .header('WWW-Authenticate', 'Basic realm="Smartstore Admin"')
+        .send({ error: 'Unauthorized' })
+    }
+  })
+
   // GET /analytics/rejections?days=7
   fastify.get('/rejections', async (request, reply) => {
     const { days = '7' } = request.query as { days?: string }

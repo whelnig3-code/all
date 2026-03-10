@@ -2,7 +2,7 @@
 // 주문 관련 API 엔드포인트
 // =============================================
 
-import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
+import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@smartstore/db'
 import { approveOrder, rejectOrder, decryptPhone } from '@smartstore/core'
 import { config } from '@smartstore/shared'
@@ -10,17 +10,15 @@ import { orderQueue, shippingNotificationQueue, wholesaleOrderQueue } from '../q
 import type { ShippingNotificationJobData } from '../queues'
 import { verifyBasicAuth } from '../lib/auth'
 
-/** 승인/거부 엔드포인트용 인증 훅 */
-async function requireAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  if (!verifyBasicAuth(req.headers['authorization'])) {
-    reply
-      .code(401)
-      .header('WWW-Authenticate', 'Basic realm="Smartstore Orders"')
-      .send({ error: 'Unauthorized' })
-  }
-}
-
 export const ordersRouter: FastifyPluginAsync = async (fastify) => {
+  fastify.addHook('onRequest', async (req, reply) => {
+    if (!verifyBasicAuth(req.headers['authorization'])) {
+      return reply
+        .code(401)
+        .header('WWW-Authenticate', 'Basic realm="Smartstore Admin"')
+        .send({ error: 'Unauthorized' })
+    }
+  })
   // GET /orders - 주문 목록
   fastify.get('/', async (request, reply) => {
     const {
@@ -154,7 +152,7 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // POST /orders/:orderId/approve — 주문 승인 (Phase 4.5, Basic Auth 필수)
-  fastify.post('/:orderId/approve', { onRequest: requireAuth }, async (request, reply) => {
+  fastify.post('/:orderId/approve', async (request, reply) => {
     const { orderId } = request.params as { orderId: string }
     const { approvalToken } = request.body as { approvalToken: string }
 
@@ -212,7 +210,7 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // POST /orders/:orderId/reject — 주문 거부 (Phase 4.5, Basic Auth 필수)
-  fastify.post('/:orderId/reject', { onRequest: requireAuth }, async (request, reply) => {
+  fastify.post('/:orderId/reject', async (request, reply) => {
     const { orderId } = request.params as { orderId: string }
     const { approvalToken, reason } = request.body as {
       approvalToken: string
@@ -233,7 +231,7 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // GET /orders/pending-approvals — 대기 중 승인 요청 목록 (Phase 4.5, Basic Auth 필수)
-  fastify.get('/pending-approvals', { onRequest: requireAuth }, async () => {
+  fastify.get('/pending-approvals', async () => {
     const approvals = await prisma.orderApproval.findMany({
       where: { status: 'pending' },
       include: {

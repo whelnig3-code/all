@@ -80,12 +80,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // 허용된 경로만 프록시 (화이트리스트)
-  const ALLOWED_PATHS = ['/admin/system', '/admin/metrics', '/admin/control', '/admin/alerts']
-  const ALLOWED_PREFIXES = ['/admin/credentials']
-  if (
-    !ALLOWED_PATHS.some((allowed) => path === allowed) &&
-    !ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix))
-  ) {
+  const ALLOWED_PREFIXES = [
+    '/admin/',
+    '/products',
+    '/orders',
+    '/inventory',
+    '/report',
+    '/analytics',
+    '/monitoring',
+  ]
+  if (!ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix))) {
     return NextResponse.json({ error: 'forbidden path' }, { status: 403 })
   }
 

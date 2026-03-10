@@ -115,6 +115,10 @@ const mockEvent = {
   createdAt: new Date('2026-03-09T09:00:00Z'),
 }
 
+const TEST_USER = 'admin'
+const TEST_PASS = 'test-pass-1234!'
+const AUTH_HEADER = 'Basic ' + Buffer.from(`${TEST_USER}:${TEST_PASS}`).toString('base64')
+
 async function buildApp() {
   const app = Fastify({ logger: false })
   await app.register(inventoryRouter, { prefix: '/inventory' })
@@ -124,8 +128,16 @@ async function buildApp() {
 describe('Inventory API', () => {
   let app: Awaited<ReturnType<typeof buildApp>>
 
+  /** inject with auth header */
+  function authInject(opts: Parameters<typeof app.inject>[0]) {
+    const o = typeof opts === 'string' ? { url: opts, method: 'GET' as const } : opts
+    return app.inject({ ...o, headers: { ...o.headers, Authorization: AUTH_HEADER } })
+  }
+
   beforeEach(async () => {
     jest.clearAllMocks()
+    process.env['ADMIN_USER'] = TEST_USER
+    process.env['ADMIN_PASS'] = TEST_PASS
 
     // 기본 mock 반환값 설정
     getAvailableStock.mockReturnValue(4)
@@ -146,7 +158,7 @@ describe('Inventory API', () => {
       prisma.product.findMany.mockResolvedValue([mockProduct])
       prisma.product.count.mockResolvedValue(1)
 
-      const res = await app.inject({ method: 'GET', url: '/inventory/status' })
+      const res = await authInject({ method: 'GET', url: '/inventory/status' })
 
       expect(res.statusCode).toBe(200)
       const body = res.json()
@@ -161,7 +173,7 @@ describe('Inventory API', () => {
       prisma.product.findMany.mockResolvedValue([])
       prisma.product.count.mockResolvedValue(0)
 
-      await app.inject({ method: 'GET', url: '/inventory/status?filter=low' })
+      await authInject({ method: 'GET', url: '/inventory/status?filter=low' })
 
       const whereArg = prisma.product.findMany.mock.calls[0][0].where
       expect(whereArg.cachedStock).toEqual({ lte: 2 })
@@ -171,7 +183,7 @@ describe('Inventory API', () => {
       prisma.product.findMany.mockResolvedValue([])
       prisma.product.count.mockResolvedValue(0)
 
-      await app.inject({
+      await authInject({
         method: 'GET',
         url: '/inventory/status?filter=paused',
       })
@@ -187,7 +199,7 @@ describe('Inventory API', () => {
       getSellableStock.mockReturnValue(7)
       isStockCacheFresh.mockReturnValue(false)
 
-      const res = await app.inject({ method: 'GET', url: '/inventory/status' })
+      const res = await authInject({ method: 'GET', url: '/inventory/status' })
       const body = res.json()
       const item = body.items[0]
 
@@ -205,7 +217,7 @@ describe('Inventory API', () => {
       prisma.product.findMany.mockResolvedValue([])
       prisma.product.count.mockResolvedValue(30)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'GET',
         url: '/inventory/status?page=2&limit=5',
       })
@@ -228,7 +240,7 @@ describe('Inventory API', () => {
       prisma.product.findUnique.mockResolvedValue(mockProductDetail)
       prisma.inventoryEvent.findMany.mockResolvedValue([mockEvent])
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'GET',
         url: '/inventory/prod-1',
       })
@@ -246,7 +258,7 @@ describe('Inventory API', () => {
     it('존재하지 않는 상품 → 404', async () => {
       prisma.product.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'GET',
         url: '/inventory/unknown-id',
       })
@@ -266,7 +278,7 @@ describe('Inventory API', () => {
         sourceProductId: 'src-123',
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/inventory/prod-1/sync',
       })
@@ -284,7 +296,7 @@ describe('Inventory API', () => {
     it('존재하지 않는 상품 → 404', async () => {
       prisma.product.findUnique.mockResolvedValue(null)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/inventory/unknown-id/sync',
       })
@@ -305,7 +317,7 @@ describe('Inventory API', () => {
       prisma.inventoryEvent.findMany.mockResolvedValue([eventWithProduct])
       prisma.inventoryEvent.count.mockResolvedValue(1)
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'GET',
         url: '/inventory/events',
       })
@@ -322,7 +334,7 @@ describe('Inventory API', () => {
       prisma.inventoryEvent.findMany.mockResolvedValue([])
       prisma.inventoryEvent.count.mockResolvedValue(0)
 
-      await app.inject({
+      await authInject({
         method: 'GET',
         url: '/inventory/events?type=sync',
       })
@@ -338,7 +350,7 @@ describe('Inventory API', () => {
     it('판매 중지 성공 → 200', async () => {
       pauseListing.mockResolvedValue({ ok: true })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/inventory/prod-1/pause',
       })
@@ -355,7 +367,7 @@ describe('Inventory API', () => {
         error: { message: '이미 중지된 상품입니다' },
       })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/inventory/prod-1/pause',
       })
@@ -371,7 +383,7 @@ describe('Inventory API', () => {
     it('판매 재개 성공 → 200', async () => {
       resumeListing.mockResolvedValue({ ok: true })
 
-      const res = await app.inject({
+      const res = await authInject({
         method: 'POST',
         url: '/inventory/prod-1/resume',
       })

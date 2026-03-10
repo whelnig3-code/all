@@ -11,6 +11,7 @@
 // =============================================
 
 import { useState, useEffect, useCallback } from 'react'
+import { apiCall } from '@/lib/api'
 
 // =============================================
 // 타입 정의
@@ -95,8 +96,6 @@ export default function OrdersPage() {
   const [courierInput, setCourierInput] = useState('CJ대한통운')
   const [shippingLoading, setShippingLoading] = useState(false)
 
-  const apiBase = process.env['NEXT_PUBLIC_API_BASE'] ?? 'http://localhost:3100'
-
   const fetchOrders = useCallback(async (page: number, status: StatusFilter) => {
     setLoading(true)
     setError(null)
@@ -107,10 +106,7 @@ export default function OrdersPage() {
       })
       if (status) params.set('status', status)
 
-      const res = await fetch(`${apiBase}/orders?${params}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-      const data: OrdersResponse = await res.json()
+      const data = await apiCall<OrdersResponse>(`/orders?${params}`)
       setOrders(data.data)
       setPagination(data.pagination)
     } catch (err) {
@@ -118,7 +114,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false)
     }
-  }, [apiBase])
+  }, [])
 
   useEffect(() => {
     fetchOrders(pagination.page, statusFilter)
@@ -139,16 +135,10 @@ export default function OrdersPage() {
 
     setShippingLoading(true)
     try {
-      const res = await fetch(`${apiBase}/orders/${shippingModal.id}/ship`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          trackingNumber: trackingInput.trim(),
-          courier: courierInput,
-        }),
+      await apiCall(`/orders/${shippingModal.id}/ship`, 'POST', {
+        trackingNumber: trackingInput.trim(),
+        courier: courierInput,
       })
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
       setShippingModal(null)
       setTrackingInput('')

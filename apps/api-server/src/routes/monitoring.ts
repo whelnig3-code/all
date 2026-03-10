@@ -5,7 +5,7 @@
 // - 큐 상태 조회
 // =============================================
 
-import type { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from 'fastify'
 import { prisma } from '@smartstore/db'
 import {
   registrationQueue,
@@ -15,6 +15,16 @@ import {
 } from '../queues'
 import { naverCommerceApi } from '@smartstore/integrations'
 import { notificationAdapter } from '@smartstore/adapters'
+import { verifyBasicAuth } from '../lib/auth'
+
+async function requireAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (!verifyBasicAuth(req.headers['authorization'])) {
+    reply
+      .code(401)
+      .header('WWW-Authenticate', 'Basic realm="Smartstore Admin"')
+      .send({ error: 'Unauthorized' })
+  }
+}
 
 export const monitoringRouter: FastifyPluginAsync = async (fastify) => {
   // GET /monitoring/health - 시스템 헬스체크
@@ -43,7 +53,7 @@ export const monitoringRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // GET /monitoring/queues - 큐 상태
-  fastify.get('/queues', async (request, reply) => {
+  fastify.get('/queues', { onRequest: requireAuth }, async (request, reply) => {
     const queues = [
       { name: '상품등록', queue: registrationQueue },
       { name: '주문처리', queue: orderQueue },
@@ -68,7 +78,7 @@ export const monitoringRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // GET /monitoring/jobs - 작업 로그 조회
-  fastify.get('/jobs', async (request, reply) => {
+  fastify.get('/jobs', { onRequest: requireAuth }, async (request, reply) => {
     const {
       type,
       status,
@@ -114,7 +124,7 @@ export const monitoringRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // GET /monitoring/summary - 대시보드 요약
-  fastify.get('/summary', async (request, reply) => {
+  fastify.get('/summary', { onRequest: requireAuth }, async (request, reply) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 

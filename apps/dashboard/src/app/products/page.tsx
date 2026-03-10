@@ -144,6 +144,39 @@ export default function ProductsPage() {
     fetchProducts(1, statusFilter, searchQuery, newSort)
   }
 
+  const handleExportCsv = async () => {
+    try {
+      const params = new URLSearchParams({ limit: '100' })
+      if (statusFilter) params.set('status', statusFilter)
+      if (searchQuery) params.set('search', searchQuery)
+      if (sortBy !== 'createdAt_desc') params.set('sort', sortBy)
+
+      const data = await apiCall<ProductsResponse>(`/products?${params}`)
+      const header = '상품명,소스,상태,도매가,판매가,재고,등록일'
+      const rows = data.data.map(p =>
+        [
+          `"${p.name.replace(/"/g, '""')}"`,
+          p.source,
+          p.status,
+          p.wholesalePrice ?? '',
+          p.salePrice ?? '',
+          p.stockQuantity ?? '',
+          p.registeredAt ? new Date(p.registeredAt).toLocaleDateString('ko-KR') : '',
+        ].join(',')
+      )
+      const csv = '\uFEFF' + [header, ...rows].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `products_${new Date().toISOString().slice(0, 10)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('CSV 내보내기 실패')
+    }
+  }
+
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
@@ -182,9 +215,17 @@ export default function ProductsPage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">상품 관리</h1>
-        <span className="text-sm text-gray-500">
-          총 {pagination.total.toLocaleString()}개
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleExportCsv}
+            className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+          >
+            CSV 내보내기
+          </button>
+          <span className="text-sm text-gray-500">
+            총 {pagination.total.toLocaleString()}개
+          </span>
+        </div>
       </div>
 
       {/* 검색 + 필터 */}

@@ -23,7 +23,9 @@ export const reportRouter: FastifyPluginAsync = async (fastify) => {
     }
   })
   // GET /report/revenue - 매출 리포트
-  fastify.get('/revenue', async (request, reply) => {
+  fastify.get('/revenue', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const query = request.query as {
       since?: string // ISO 날짜 (기본: 30일 전)
       accountId?: string

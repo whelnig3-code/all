@@ -95,7 +95,7 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
     return reply.send(product)
   })
 
-  // POST /products - 상품 수동 등록 큐에 추가
+  // POST /products - 상품 수동 등록 큐에 추가 (분당 20회)
   fastify.post<{
     Body: {
       source: string
@@ -110,7 +110,9 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
       description?: string
       stockQuantity?: number
     }
-  }>('/', async (request, reply) => {
+  }>('/', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     // Zod 입력 검증
     const parsed = createProductSchema.safeParse(request.body)
     if (!parsed.success) {
@@ -169,7 +171,9 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // POST /products/:id/register - 특정 상품 즉시 등록 큐에 추가
-  fastify.post('/:id/register', async (request, reply) => {
+  fastify.post('/:id/register', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { id } = request.params as { id: string }
 
     const product = await prisma.product.findUnique({ where: { id } })

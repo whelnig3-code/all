@@ -93,7 +93,9 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // POST /orders/poll - 수동 주문 폴링 트리거
-  fastify.post('/poll', async (request, reply) => {
+  fastify.post('/poll', {
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     await orderQueue.add('poll-orders', { trigger: 'manual', naverOrderId: 'poll' })
     return reply.send({ message: '주문 폴링이 트리거되었습니다' })
   })
@@ -152,7 +154,9 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // POST /orders/:orderId/approve — 주문 승인 (Phase 4.5, Basic Auth 필수)
-  fastify.post('/:orderId/approve', async (request, reply) => {
+  fastify.post('/:orderId/approve', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { orderId } = request.params as { orderId: string }
     const { approvalToken } = request.body as { approvalToken: string }
 
@@ -210,7 +214,9 @@ export const ordersRouter: FastifyPluginAsync = async (fastify) => {
   })
 
   // POST /orders/:orderId/reject — 주문 거부 (Phase 4.5, Basic Auth 필수)
-  fastify.post('/:orderId/reject', async (request, reply) => {
+  fastify.post('/:orderId/reject', {
+    config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { orderId } = request.params as { orderId: string }
     const { approvalToken, reason } = request.body as {
       approvalToken: string

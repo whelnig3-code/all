@@ -83,7 +83,7 @@ jest.mock('../credential-gate', () => ({
   gateSkipResult: jest.fn(),
 }))
 
-import { runImagePipeline } from '../jobs/registration.job'
+import { runImagePipeline } from '../jobs/registration-image-pipeline'
 import { buildDetailHtml } from '../jobs/detail-content-builder'
 
 jest.mock('axios')

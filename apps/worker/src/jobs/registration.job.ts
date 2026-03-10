@@ -10,29 +10,10 @@ import { Worker, Job } from 'bullmq'
 import { createLogger } from '@smartstore/shared'
 import {
   calculateWholesalePrice,
-  calculateProductScore,
-  isCategoryAllowed,
-  isCategoryAllowedForSellerType,
-  getAccountStrategy,
-  classifyProductType,
-  isPortfolioRatioExceeded,
-  getPortfolioPhase,
-  assertProductUniqueKey,
-  calculateExposureScore,
-  EXPOSURE_SCORE_THRESHOLD,
-  ocrExtract,
-  translateToKorean,
-  sanitizeMarketingPhrases,
-  redesignImage,
-  filterCompetitorPrices,
-  extractSearchKeyword,
-  validateTieredMargin,
-  getMinMarginRate,
   isNicheProduct,
   calculateNicheScore,
   getOriginMarginAdjustment,
   classifyNicheCategory,
-  isProductAllowedForAccount,
   optimizeProductTitle,
   generateSearchTags,
   shouldRetry,
@@ -43,18 +24,24 @@ import {
   calculateDiscountDisplay,
   buildBlogPostWithSections,
 } from '@smartstore/core'
-import { naverShoppingCrawler } from '@smartstore/crawlers'
-import { fetchCompetitorCountLimited } from './competitor-limiter'
-import { registerProductToNaver, uploadProductImages } from '@smartstore/integrations'
+import { registerProductToNaver } from '@smartstore/integrations'
 import { notificationAdapter } from '@smartstore/adapters'
 import { prisma } from '@smartstore/db'
 import { QUEUE_NAMES, redisConnection, registrationQueue, blogPostingQueue, type RegistrationJobData, type BlogPostingJobData } from '../queues'
 import { checkCredentialGate, gateSkipResult } from '../credential-gate'
 import { getSetting } from '../settings-cache'
-import axios from 'axios'
-import fs from 'fs'
-import path from 'path'
 import { buildDetailHtml, fetchDomeggookDetail } from './detail-content-builder'
+import { runImagePipeline } from './registration-image-pipeline'
+import {
+  checkTieredMargin,
+  checkAccountStrategy,
+  checkPriceCompetitiveness,
+  checkCompetitorCount,
+  checkExposureScore,
+  checkCategoryGuards,
+  checkPortfolioRatio,
+  checkDuplicateProduct,
+} from './registration-guards'
 
 const logger = createLogger('registration-job')
 
@@ -200,339 +187,50 @@ export function createRegistrationWorker(): Worker {
         const storeReviewCount = reviewSetting ? parseInt(reviewSetting, 10) : 0
         const isBoostMode = storeReviewCount < 50
 
-        // 2-0-2. 가격대별 동적 마진 검증 (tiered-margin 연결)
-        const minRate = getMinMarginRate(priceResult.salePrice, { boostMode: isBoostMode })
-        if (priceResult.marginRate < minRate) {
-          logger.info('tiered_margin_blocked', {
-            productId,
-            marginRate: priceResult.marginRate,
-            minRate,
-            salePrice: priceResult.salePrice,
-            boostMode: isBoostMode,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'tiered_margin_blocked', marginRate: priceResult.marginRate, minRate },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'tiered_margin_blocked' }
-        }
+        // 2-0-2. 가격대별 동적 마진 검증
+        const tieredResult = await checkTieredMargin(jobLog.id, productId, priceResult.salePrice, priceResult.marginRate, isBoostMode)
+        if (tieredResult) return tieredResult
 
-        // 2-0-3. 니치 상품 점수 (로깅, 향후 우선순위 활용)
-        const nicheScore = calculateNicheScore({
-          productName: product.name,
-          wholesalePrice: product.wholesalePrice,
-          category: product.category,
-        })
-        const isNiche = isNicheProduct(product.name)
-        if (isNiche) {
+        // 2-0-3. 니치 상품 점수 (로깅)
+        const nicheScore = calculateNicheScore({ productName: product.name, wholesalePrice: product.wholesalePrice, category: product.category })
+        if (isNicheProduct(product.name)) {
           logger.info('niche_product_detected', { productId, nicheScore })
         }
 
-        // 2-1. 계정 전략 검사 (스코어 / 마진율 / 경쟁사 수)
-        const strategy = getAccountStrategy(accountId)
-        const scoreResult = calculateProductScore({
-          marginRate: priceResult.marginRate,
-          hasNaverCategory: product.naverCategoryId != null,
-        })
+        // 2-1. 계정 전략 검사 (스코어 / 마진율)
+        const strategyResult = await checkAccountStrategy(jobLog.id, productId, accountId, priceResult.marginRate, product.naverCategoryId != null)
+        if (strategyResult) return strategyResult
 
-        if (scoreResult.totalScore < strategy.minScore) {
-          logger.info('상품 스코어 부족으로 등록 제외', {
-            productId,
-            accountId,
-            score: scoreResult.totalScore,
-            minScore: strategy.minScore,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, score: scoreResult.totalScore, reason: 'score_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'score_blocked', score: scoreResult.totalScore }
+        // 2-1-1. 가격 경쟁력 검사
+        const priceCheck = await checkPriceCompetitiveness(jobLog.id, productId, product.name, priceResult.salePrice)
+        if (priceCheck.skip) {
+          await enqueueRetryIfEligible(productId, 'price_not_competitive', priceResult.salePrice, priceCheck.lowestPrice ?? undefined, job.data.retryCount ?? 0)
+          return priceCheck.skip
         }
 
-        if (priceResult.marginRate < strategy.minMarginRate) {
-          logger.info('margin_blocked', {
-            productId,
-            accountId,
-            marginRate: priceResult.marginRate,
-            minMarginRate: strategy.minMarginRate,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'margin_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'margin_blocked' }
+        // 2-1-2. 경쟁사 수 검사
+        const competitorResult = await checkCompetitorCount(jobLog.id, product.id, accountId, product.name)
+        if (competitorResult) return competitorResult
+
+        // 2-2. 노출 가능성 점수 검사
+        const exposureResult = await checkExposureScore(jobLog.id, productId, accountId, product.name, priceResult.salePrice)
+        if (exposureResult) {
+          await enqueueRetryIfEligible(productId, 'exposure_blocked', priceResult.salePrice, undefined, job.data.retryCount ?? 0)
+          return exposureResult
         }
 
-        // 2-1-1. 가격 경쟁력 검사 (네이버 최저가 비교, 키워드 정밀화 + 이상치 필터 적용)
-        const searchQuery = extractSearchKeyword(product.name)
-        const lowestPrice = await Promise.race([
-          naverShoppingCrawler.fetchCompetitorPrices(searchQuery, 5)
-            .then((prices) => {
-              if (prices.length === 0) return null
-              const { filtered } = filterCompetitorPrices(prices)
-              return filtered.length > 0 ? Math.min(...filtered.map((p) => p.price)) : null
-            }),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
-        ]).catch(() => null)
+        // 2-3. 카테고리 가드
+        const categoryResult = await checkCategoryGuards(jobLog.id, productId, accountId, product.name, product.category)
+        if (categoryResult) return categoryResult
 
-        if (lowestPrice !== null && priceResult.salePrice > lowestPrice) {
-          logger.info('price_not_competitive', {
-            productId,
-            ourPrice: priceResult.salePrice,
-            naverLowest: lowestPrice,
-            diff: priceResult.salePrice - lowestPrice,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: {
-                skipped: true,
-                reason: 'price_not_competitive',
-                ourPrice: priceResult.salePrice,
-                naverLowest: lowestPrice,
-              },
-              completedAt: new Date(),
-            },
-          })
-          // 스마트 재시도: 경쟁가 기준으로 가격 조정 후 재등록
-          await enqueueRetryIfEligible(
-            productId,
-            'price_not_competitive',
-            priceResult.salePrice,
-            lowestPrice ?? undefined,
-            job.data.retryCount ?? 0,
-          )
-          return { skipped: true, reason: 'price_not_competitive', ourPrice: priceResult.salePrice, naverLowest: lowestPrice }
-        }
+        // 2-4. 포트폴리오 비율 검사
+        const portfolioResult = await checkPortfolioRatio(jobLog.id, productId, accountId, priceResult.marginRate)
+        if (portfolioResult.skip) return portfolioResult.skip
+        const productType = portfolioResult.productType
 
-        if (lowestPrice !== null) {
-          logger.info('price_competitive_passed', {
-            productId,
-            ourPrice: priceResult.salePrice,
-            naverLowest: lowestPrice,
-          })
-        } else {
-          // 타임아웃/오류 → fail-open (가격 정보 없으면 등록 진행)
-          logger.warn('price_check_skipped (timeout/error) — fail-open', { productId })
-        }
-
-        let competitorCount = await prisma.competitorPrice.count({
-          where: { productId: product.id },
-        })
-
-        // DB에 경쟁사 데이터가 없으면 실시간 조회 시도 (동시 1개 제한, 5초 타임아웃)
-        if (competitorCount === 0) {
-          competitorCount = await fetchCompetitorCountLimited(product.name)
-          logger.info('competitor_real_check_applied', { productId, competitorCount })
-        }
-
-        if (competitorCount > strategy.maxCompetitors) {
-          logger.info('competitor_blocked', {
-            productId,
-            accountId,
-            competitorCount,
-            maxCompetitors: strategy.maxCompetitors,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'competitor_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'competitor_blocked' }
-        }
-
-        // 2-2. 노출 가능성 점수 검사 (5초 타임아웃 — fail-open)
-        // Promise.race: 5초 내 응답 없으면 null 반환 → 점수 체크 건너뜀 (competitor-limiter.ts와 동일 패턴)
-        const top20 = await Promise.race([
-          naverShoppingCrawler.fetchTop20Products(product.name),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-        ]).catch(() => null)
-
-        if (top20 !== null) {
-          const exposureScore = calculateExposureScore({
-            adCount: top20.adCount,
-            avgReview: top20.avgReview,
-            brandCountTop10: top20.brandCountTop10,
-            avgTopPrice: top20.avgTopPrice,
-            myPrice: priceResult.salePrice,
-          })
-
-          if (exposureScore < EXPOSURE_SCORE_THRESHOLD) {
-            logger.info('exposure_blocked', {
-              productId,
-              accountId,
-              exposureScore,
-              threshold: EXPOSURE_SCORE_THRESHOLD,
-            })
-            await prisma.jobLog.update({
-              where: { id: jobLog.id },
-              data: {
-                status: 'completed',
-                result: { skipped: true, reason: 'exposure_blocked', exposureScore },
-                completedAt: new Date(),
-              },
-            })
-            // 스마트 재시도: 가격 인하 후 재등록 시도
-            await enqueueRetryIfEligible(
-              productId,
-              'exposure_blocked',
-              priceResult.salePrice,
-              undefined,
-              job.data.retryCount ?? 0,
-            )
-            return { skipped: true, reason: 'exposure_blocked', exposureScore }
-          }
-
-          logger.info('exposure_score_passed', { productId, exposureScore })
-        } else {
-          // 타임아웃 또는 크롤링 오류 → fail-open (등록 진행)
-          logger.warn('exposure_check_skipped (timeout/error) — fail-open', { productId })
-        }
-
-        // 2-3-0. 계정별 카테고리 그룹 가드 (상품명 기반 자동 분류)
-        const accountCategoryCheck = isProductAllowedForAccount({
-          accountId,
-          productName: product.name,
-        })
-        if (!accountCategoryCheck.allowed) {
-          logger.info('account_category_blocked', {
-            productId,
-            accountId,
-            category: accountCategoryCheck.category,
-            group: accountCategoryCheck.group,
-            reason: accountCategoryCheck.reason,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: {
-                skipped: true,
-                reason: 'account_category_blocked',
-                category: accountCategoryCheck.category,
-                group: accountCategoryCheck.group,
-              },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'account_category_blocked' }
-        }
-
-        // 2-3. 카테고리 가드 (계정별 허용 카테고리 검사)
-        if (!isCategoryAllowed(accountId, product.category)) {
-          logger.info('category_blocked', {
-            productId,
-            accountId,
-            category: product.category,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'category_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'category_blocked' }
-        }
-
-        // 2-3-2. 셀러 유형 가드 (개인 셀러 → 사업자 전용 카테고리 차단)
-        const sellerType = getSetting('SELLER_TYPE') === 'business' ? 'business' : 'individual'
-        if (!isCategoryAllowedForSellerType(product.category, sellerType)) {
-          logger.info('business_category_blocked', {
-            productId,
-            category: product.category,
-            sellerType,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'business_category_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'business_category_blocked' }
-        }
-
-        // 2-4. 포트폴리오 비율 검사 (상품 유형별 계정 비율 제어)
-        const productType = classifyProductType(priceResult.marginRate)
-        const [typeCount, totalCount] = await Promise.all([
-          prisma.product.count({ where: { accountId, productType, status: 'registered' } }),
-          prisma.product.count({ where: { accountId, status: 'registered' } }),
-        ])
-
-        // Phase 1/2 특수 규칙 적용 시 로그 (Phase 3은 일반 비율 규칙이므로 생략)
-        const portfolioPhase = getPortfolioPhase(totalCount)
-        if (portfolioPhase < 3) {
-          logger.info('portfolio_phase_control_applied', {
-            productId,
-            portfolioPhase,
-            totalCount,
-            productType,
-          })
-        }
-
-        if (isPortfolioRatioExceeded(productType, typeCount, totalCount)) {
-          logger.info('portfolio_ratio_blocked', {
-            productId,
-            accountId,
-            productType,
-            typeCount,
-            totalCount,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'portfolio_ratio_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'portfolio_ratio_blocked' }
-        }
-
-        // 2-5. 계정 간 상품 중복 등록 차단 (등록 직전 최종 검사)
-        // uniqueKey는 크롤러가 Product 저장 시 반드시 세팅 (base-crawler.ts 참고)
-        // 비어있으면 Error throw → BullMQ failed 처리 (데이터 품질 문제, skip 아님)
-        assertProductUniqueKey(product.uniqueKey)
-
-        const existing = await prisma.product.findFirst({
-          where: { uniqueKey: product.uniqueKey, NOT: { id: product.id } },
-        })
-
-        if (existing) {
-          logger.info('cross_account_duplicate_blocked', {
-            productId,
-            uniqueKey: product.uniqueKey,
-            duplicateId: existing.id,
-          })
-          await prisma.jobLog.update({
-            where: { id: jobLog.id },
-            data: {
-              status: 'completed',
-              result: { skipped: true, reason: 'cross_account_duplicate_blocked' },
-              completedAt: new Date(),
-            },
-          })
-          return { skipped: true, reason: 'cross_account_duplicate_blocked' }
-        }
+        // 2-5. 계정 간 상품 중복 등록 차단
+        const duplicateResult = await checkDuplicateProduct(jobLog.id, productId, product.uniqueKey)
+        if (duplicateResult) return duplicateResult
 
         // 3. 이미지 파이프라인 (OCR → 번역 → 필터 → 리디자인 → 업로드)
         //    실패 시 등록 중단 금지 — 원본 이미지로 degrade
@@ -773,162 +471,4 @@ export async function enqueuePendingProducts(
   return pendingProducts.length
 }
 
-// =============================================
-// 이미지 파이프라인 헬퍼 함수
-// =============================================
-
-/** 이미지 다운로드 (로컬 파일로 저장) */
-async function downloadImage(url: string, destPath: string): Promise<boolean> {
-  try {
-    const response = await axios.get(url, {
-      responseType: 'stream',
-      timeout: 30000,
-    })
-    await new Promise<void>((resolve, reject) => {
-      const writer = fs.createWriteStream(destPath)
-      response.data.pipe(writer)
-      writer.on('finish', resolve)
-      writer.on('error', reject)
-    })
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * 상품명에서 제목 추출 (최대 22자, 특수문자 제거)
- */
-function extractTitleKo(productName: string): string {
-  return productName
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')  // 특수문자 → 공백
-    .replace(/\s+/g, ' ')
-    .trim()
-    .substring(0, 22)
-}
-
-/**
- * 이미지 파이프라인 실행
- * OCR → 번역 → 금칙어 필터 → 리디자인 → 네이버 업로드
- * 각 단계 실패 시 원본으로 degrade (등록 중단 금지)
- *
- * @param productId 상품 ID
- * @param originalImages 원본 이미지 URL 배열 (JSON 문자열 또는 배열)
- * @param productName 상품명 (제목 생성용)
- * @param log 로거 인스턴스
- * @returns 최종 이미지 URL 배열 (업로드 성공 시 네이버 URL, 실패 시 원본 URL)
- */
-export async function runImagePipeline(
-  productId: string,
-  originalImages: string | string[],
-  productName: string,
-  log: ReturnType<typeof createLogger>
-): Promise<string[]> {
-  // 원본 이미지 URL 파싱
-  let imageUrls: string[]
-  if (typeof originalImages === 'string') {
-    try {
-      imageUrls = JSON.parse(originalImages) as string[]
-    } catch {
-      imageUrls = originalImages ? [originalImages] : []
-    }
-  } else {
-    imageUrls = originalImages
-  }
-
-  if (imageUrls.length === 0) {
-    log.warn('이미지 없음 — 파이프라인 건너뜀', { productId })
-    return []
-  }
-
-  // 대표 1장 + 서브 최대 2장 (총 최대 3장)
-  const targetUrls = imageUrls.slice(0, 3)
-
-  // 로컬 임시 디렉토리 생성
-  const outputDir = process.env['IMAGE_OUTPUT_DIR'] ?? './data/generated'
-  const rawDir = path.join(outputDir, productId)
-  try {
-    fs.mkdirSync(rawDir, { recursive: true })
-  } catch {
-    log.warn('이미지 디렉토리 생성 실패 — 원본 URL 사용', { productId, rawDir })
-    return imageUrls
-  }
-
-  const finalPaths: string[] = []
-
-  for (let i = 0; i < targetUrls.length; i++) {
-    const url = targetUrls[i]!
-    const rawPath = path.join(rawDir, `raw_${i}.jpg`)
-    const cleanedPath = path.join(rawDir, `cleaned_${i}.jpg`)
-
-    // A) 이미지 다운로드
-    const downloaded = await downloadImage(url, rawPath)
-    if (!downloaded) {
-      log.warn('이미지 다운로드 실패 — 원본 URL 사용', { productId, url })
-      finalPaths.push(rawPath) // 이후 단계에서 원본 URL로 fallback
-      continue
-    }
-
-    // B-1) OCR 추출
-    let texts: string[] = []
-    try {
-      texts = await ocrExtract(rawPath)
-    } catch {
-      log.warn('ocr_failed', { productId, rawPath })
-      // degrade: OCR 없이 계속
-    }
-
-    // B-2) 번역
-    let translated: string[] = texts
-    if (texts.length > 0) {
-      try {
-        translated = await translateToKorean(texts)
-      } catch {
-        log.warn('translate_failed', { productId })
-        translated = texts // 원문 유지
-      }
-    }
-
-    // B-3) 금칙어 필터 → 불릿 추출
-    const bulletsKo = sanitizeMarketingPhrases(translated)
-
-    // B-4) 제목 추출
-    const titleKo = extractTitleKo(productName)
-
-    // B-5) 이미지 리디자인
-    const redesigned = await redesignImage({
-      inputPath: rawPath,
-      outputPath: cleanedPath,
-      titleKo,
-      bulletsKo,
-    })
-
-    if (redesigned) {
-      finalPaths.push(cleanedPath)
-    } else {
-      log.warn('redesign_failed — raw 이미지 사용', { productId, rawPath })
-      finalPaths.push(rawPath)
-    }
-  }
-
-  // C) 네이버 이미지 업로드
-  let uploadedUrls: string[] = []
-  try {
-    uploadedUrls = await uploadProductImages(finalPaths)
-  } catch {
-    log.warn('naver_upload_failed — 원본 URL 사용', { productId })
-  }
-
-  // 업로드 성공 시 네이버 URL, 실패 시 원본 URL (degrade)
-  if (uploadedUrls.length > 0) {
-    log.info('이미지 파이프라인 완료 (네이버 URL)', {
-      productId,
-      count: uploadedUrls.length,
-    })
-    return uploadedUrls
-  }
-
-  log.warn('이미지 업로드 전체 실패 — 원본 URL 사용', { productId })
-  return imageUrls
-}
 

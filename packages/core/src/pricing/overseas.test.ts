@@ -83,8 +83,9 @@ describe('calculateOverseasPrice', () => {
       exchangeRate: 2000,
     }
     const result = calculateOverseasPrice(params)
-    const remainder = result.salePrice % 1000
-    expect(remainder === 900 || remainder === 0).toBe(true)
+    // 저가(< 10,000원)는 100원 단위, 고가(>= 10,000원)는 1,000원 단위 (만원 경계 -100원)
+    const remainder100 = result.salePrice % 100
+    expect(remainder100).toBe(0)
   })
 
   // ---- 마진율 안전장치 ----

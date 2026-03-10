@@ -17,7 +17,7 @@ import {
   pauseListing,
   resumeListing,
 } from '@smartstore/core'
-import { DomaeggukCrawler, OwnerclanCrawler } from '@smartstore/crawlers'
+import { DomaeggukCrawler, OwnerclanCrawler, OnchannelCrawler } from '@smartstore/crawlers'
 import { notificationAdapter } from '@smartstore/adapters'
 import { prisma } from '@smartstore/db'
 import { QUEUE_NAMES, redisConnection, type InventorySyncJobData } from '../queues'
@@ -181,9 +181,7 @@ async function fetchSupplierStock(
   source: string,
   sourceProductId: string
 ): Promise<number> {
-  const crawler = source === 'domaegguk'
-    ? new DomaeggukCrawler({ headless: true })
-    : new OwnerclanCrawler({ headless: true })
+  const crawler = createCrawlerForSource(source)
 
   try {
     const product = await crawler.crawlProductDetail(sourceProductId)
@@ -237,7 +235,7 @@ export async function pollAndSyncInventory(
         name: 'sync-stock',
         data: {
           productId: p.id,
-          source: p.source as 'domaegguk' | 'ownerclan',
+          source: p.source as 'domaegguk' | 'ownerclan' | 'onchannel',
           sourceProductId: p.sourceProductId,
         } satisfies InventorySyncJobData,
       }))
@@ -248,5 +246,19 @@ export async function pollAndSyncInventory(
   } catch (error) {
     logger.error('재고 동기화 폴링 실패', error)
     return 0
+  }
+}
+
+/** source별 크롤러 팩토리 */
+function createCrawlerForSource(source: string) {
+  switch (source) {
+    case 'domaegguk':
+      return new DomaeggukCrawler({ headless: true })
+    case 'ownerclan':
+      return new OwnerclanCrawler({ headless: true })
+    case 'onchannel':
+      return new OnchannelCrawler({ headless: true })
+    default:
+      throw new Error(`Unknown source: ${source}`)
   }
 }

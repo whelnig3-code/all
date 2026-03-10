@@ -22,6 +22,7 @@ export type ServiceType =
   | 'naver_talktalk'
   | 'domaegguk'
   | 'ownerclan'
+  | 'onchannel'
   | 'telegram'
 
 export type CredentialStatus = 'configured' | 'not_configured' | 'test_failed'
@@ -54,6 +55,10 @@ export const SERVICE_ENV_MAP: Record<ServiceType, Record<string, string>> = {
   ownerclan: {
     username: 'OWNERCLAN_USERNAME',
     password: 'OWNERCLAN_PASSWORD',
+  },
+  onchannel: {
+    username: 'ONCHANNEL_USERNAME',
+    password: 'ONCHANNEL_PASSWORD',
   },
   naver_talktalk: {
     clientId: 'NAVER_CLIENT_ID',
@@ -205,6 +210,7 @@ export async function getAllServiceStatuses(): Promise<ServiceStatusInfo[]> {
     'naver_blog',
     'domaegguk',
     'ownerclan',
+    'onchannel',
     'telegram',
   ]
 

@@ -7,7 +7,7 @@
 
 import { Worker, Job } from 'bullmq'
 import { createLogger, config } from '@smartstore/shared'
-import { DomaeggukOrderer, OwnerclanOrderer } from '@smartstore/crawlers'
+import { DomaeggukOrderer, OwnerclanOrderer, OnchannelOrderer } from '@smartstore/crawlers'
 import { notificationAdapter } from '@smartstore/adapters'
 import { prisma } from '@smartstore/db'
 import {
@@ -27,18 +27,24 @@ const POLL_INTERVAL_MS = 30 * 60 * 1000 // 30분
  * 비유: 택배 조회를 할 때 CJ대한통운이면 CJ 사이트에, 로젠이면 로젠 사이트에 가듯이
  * domaegguk이면 도매꾹 크롤러, ownerclan이면 오너클랜 크롤러를 사용한다.
  */
-function createOrderer(source: 'domaegguk' | 'ownerclan') {
-  if (source === 'domaegguk') {
-    return new DomaeggukOrderer(
-      config.domeggook.username,
-      config.domeggook.password,
-    )
+function createOrderer(source: 'domaegguk' | 'ownerclan' | 'onchannel') {
+  switch (source) {
+    case 'domaegguk':
+      return new DomaeggukOrderer(
+        config.domeggook.username,
+        config.domeggook.password,
+      )
+    case 'ownerclan':
+      return new OwnerclanOrderer(
+        config.ownerclan.username,
+        config.ownerclan.password,
+      )
+    case 'onchannel':
+      return new OnchannelOrderer(
+        config.onchannel.username,
+        config.onchannel.password,
+      )
   }
-
-  return new OwnerclanOrderer(
-    config.ownerclan.username,
-    config.ownerclan.password,
-  )
 }
 
 /**

@@ -119,6 +119,10 @@ export const config = {
     username: optionalEnv('OWNERCLAN_USERNAME', ''),
     password: optionalEnv('OWNERCLAN_PASSWORD', ''),
   },
+  onchannel: {
+    username: optionalEnv('ONCHANNEL_USERNAME', ''),
+    password: optionalEnv('ONCHANNEL_PASSWORD', ''),
+  },
   autoWholesaleOrderEnabled: optionalEnv('AUTO_WHOLESALE_ORDER_ENABLED', 'true') === 'true',
 
   // 시스템

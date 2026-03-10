@@ -193,7 +193,7 @@ export interface BlogPostingJobData {
 /** 재고 동기화 작업 데이터 */
 export interface InventorySyncJobData {
   productId: string
-  source: 'domaegguk' | 'ownerclan' | 'aliexpress' | 'taobao'
+  source: 'domaegguk' | 'ownerclan' | 'onchannel' | 'aliexpress' | 'taobao'
   sourceProductId: string
 }
 
@@ -231,7 +231,7 @@ export interface ExchangeRateJobData {
 export interface WholesaleOrderJobData {
   orderId: string
   naverOrderId: string
-  source: 'domaegguk' | 'ownerclan'
+  source: 'domaegguk' | 'ownerclan' | 'onchannel'
   sourceProductId: string
   quantity: number
   shippingAddress: {
@@ -262,7 +262,7 @@ export interface ReviewMonitorJobData {
 export interface TrackingPollJobData {
   orderId: string
   wholesaleOrderId: string
-  source: 'domaegguk' | 'ownerclan'
+  source: 'domaegguk' | 'ownerclan' | 'onchannel'
   naverProductOrderId: string
   pollAttempt: number
   maxAttempts: number

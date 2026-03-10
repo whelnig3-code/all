@@ -30,6 +30,7 @@ export async function testServiceConnection(
     telegram: testTelegram,
     domaegguk: testDomaegguk,
     ownerclan: testOwnerclan,
+    onchannel: testOnchannel,
   }
 
   const tester = testers[service]
@@ -224,5 +225,37 @@ async function testOwnerclan(creds: Record<string, string>): Promise<TestResult>
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error)
     return { success: false, message: '오너클랜 로그인 실패', error: errMsg }
+  }
+}
+
+/**
+ * 온채널 — 로그인 시도 (세션 쿠키 획득)
+ */
+async function testOnchannel(creds: Record<string, string>): Promise<TestResult> {
+  const { username, password } = creds
+  if (!username || !password) {
+    return { success: false, message: 'username, password 필요', error: 'missing_fields' }
+  }
+
+  try {
+    const response = await axios.post(
+      'https://onchannel.co.kr/member/login_ok',
+      new URLSearchParams({ member_id: username, member_passwd: password }).toString(),
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        timeout: 15000,
+        maxRedirects: 0,
+        validateStatus: (s) => s >= 200 && s < 400,
+      },
+    )
+
+    const setCookie = response.headers['set-cookie']
+    if (setCookie && setCookie.length > 0) {
+      return { success: true, message: '온채널 로그인 성공' }
+    }
+    return { success: false, message: '로그인 실패 (쿠키 없음)', error: 'no_session_cookie' }
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : String(error)
+    return { success: false, message: '온채널 로그인 실패', error: errMsg }
   }
 }

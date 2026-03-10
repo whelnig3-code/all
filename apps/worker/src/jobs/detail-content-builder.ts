@@ -170,21 +170,31 @@ function buildShippingHtml(d: Record<string, unknown>): string {
     </div>`
 }
 
+/** 기본 반품 배송비 (편도) */
+const DEFAULT_RETURN_FEE = 2500
+
 /**
  * 교환/반품 HTML 생성
+ * 도매꾹 데이터 유무와 관계없이 항상 반품 택배비 안내 포함
+ *
+ * 반품: 받을 때 배송비를 이미 냈으므로 보낼 때 편도만 부담
+ * 교환: 보내는 편도 + 다시 받는 편도 = 왕복
  */
-function buildReturnHtml(d: Record<string, unknown>): string {
-  const ret = d.return as Record<string, unknown> | undefined
-  if (!ret) return ''
+function buildReturnHtml(d: Record<string, unknown> | null): string {
+  const ret = (d?.return ?? null) as Record<string, unknown> | null
+  const returnFee = ret ? (Number(ret.deliAmt) || DEFAULT_RETURN_FEE) : DEFAULT_RETURN_FEE
+  const exchangeFee = returnFee * 2
 
   return `
     <div style="padding:20px 0; border-top:1px solid #eee;">
       <h2 style="font-size:18px; font-weight:600; margin:0 0 12px;">교환/반품 안내</h2>
       <ul style="list-style:none; padding:0; margin:0;">
-        <li style="padding:4px 0; font-size:14px;">반품배송비: ${(Number(ret.deliAmt) || 2500).toLocaleString()}원</li>
-        ${ret.deliAmtDouble === 'true' ? '<li style="padding:4px 0; font-size:14px;">교환배송비: 왕복 부담</li>' : ''}
+        <li style="padding:4px 0; font-size:14px; font-weight:600; color:#e74c3c;">반품 시 반송 택배비 ${returnFee.toLocaleString()}원은 고객 부담입니다.</li>
+        <li style="padding:4px 0; font-size:14px;">반품배송비: ${returnFee.toLocaleString()}원 (반송 편도)</li>
+        <li style="padding:4px 0; font-size:14px;">교환배송비: ${exchangeFee.toLocaleString()}원 (반송 + 재발송)</li>
         <li style="padding:4px 0; font-size:14px;">수거 후 환불 처리 (영업일 기준 3~5일)</li>
         <li style="padding:4px 0; font-size:14px; color:#999;">단순변심 반품은 수령 후 7일 이내 가능</li>
+        <li style="padding:4px 0; font-size:14px; color:#999;">상품 하자 시 반품 택배비는 판매자 부담</li>
       </ul>
     </div>`
 }
@@ -235,13 +245,18 @@ export function buildDetailHtml(
   domeggookData?: Record<string, unknown> | null,
   options?: DetailHtmlOptions,
 ): string {
-  // 도매꾹 데이터 없으면 기본 fallback
+  // 도매꾹 데이터 없으면 기본 fallback (반품 안내는 항상 포함)
   if (!domeggookData) {
-    if (imageUrls.length === 0) return originalDescription
-    const imageHtml = imageUrls
-      .map((url) => `<img src="${url}" alt="상품 이미지" style="width:100%;max-width:860px;display:block;margin:0 auto 8px;" />`)
-      .join('\n')
-    return `${imageHtml}\n${originalDescription}`
+    const parts: string[] = []
+    if (imageUrls.length > 0) {
+      const imageHtml = imageUrls
+        .map((url) => `<img src="${url}" alt="상품 이미지" style="width:100%;max-width:860px;display:block;margin:0 auto 8px;" />`)
+        .join('\n')
+      parts.push(imageHtml)
+    }
+    parts.push(originalDescription)
+    parts.push(buildReturnHtml(null))
+    return parts.join('\n')
   }
 
   const sections: string[] = []

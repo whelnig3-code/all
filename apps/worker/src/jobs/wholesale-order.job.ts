@@ -16,7 +16,7 @@
 
 import { Worker, Job } from 'bullmq'
 import { config, createLogger } from '@smartstore/shared'
-import { DomaeggukOrderer, OwnerclanOrderer } from '@smartstore/crawlers'
+import { DomaeggukOrderer, OwnerclanOrderer, OnchannelOrderer } from '@smartstore/crawlers'
 import { notificationAdapter } from '@smartstore/adapters'
 import { prisma } from '@smartstore/db'
 import {
@@ -170,6 +170,8 @@ function getCredentials(source: string): { username: string; password: string } 
       return { username: config.domeggook.username, password: config.domeggook.password }
     case 'ownerclan':
       return { username: config.ownerclan.username, password: config.ownerclan.password }
+    case 'onchannel':
+      return { username: config.onchannel.username, password: config.onchannel.password }
     default:
       throw new Error(`Unknown source: ${source}`)
   }
@@ -184,6 +186,8 @@ function createOrderer(source: string, username: string, password: string) {
       return new DomaeggukOrderer(username, password)
     case 'ownerclan':
       return new OwnerclanOrderer(username, password)
+    case 'onchannel':
+      return new OnchannelOrderer(username, password)
     default:
       throw new Error(`Unknown source: ${source}`)
   }

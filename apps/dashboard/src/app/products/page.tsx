@@ -12,6 +12,26 @@
 import { useState, useEffect, useCallback } from 'react'
 
 // =============================================
+// 블로그 타입
+// =============================================
+
+interface BlogSection {
+  heading: string
+  content: string
+}
+
+interface BlogData {
+  productId: string
+  title: string
+  body: string
+  tags: string[]
+  sections: BlogSection[]
+  plainText: string
+  generatedAt: string
+  source: string
+}
+
+// =============================================
 // 타입 정의
 // =============================================
 
@@ -70,6 +90,8 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [blogData, setBlogData] = useState<BlogData | null>(null)
+  const [blogLoading, setBlogLoading] = useState(false)
 
   const apiBase = process.env['NEXT_PUBLIC_API_BASE'] ?? 'http://localhost:3100'
 
@@ -280,8 +302,36 @@ export default function ProductsPage() {
                 value={new Date(selectedProduct.createdAt).toLocaleString('ko-KR')}
               />
             </div>
+
+            {/* 블로그 글 보기 버튼 */}
+            <button
+              onClick={async () => {
+                setBlogLoading(true)
+                try {
+                  const res = await fetch(`${apiBase}/products/${selectedProduct.id}/blog`)
+                  if (res.ok) {
+                    const data: BlogData = await res.json()
+                    setBlogData(data)
+                    setSelectedProduct(null)
+                  }
+                } catch { /* ignore */ }
+                setBlogLoading(false)
+              }}
+              disabled={blogLoading}
+              className="mt-4 w-full py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {blogLoading ? '블로그 글 생성 중...' : '블로그 글 보기 / 복사'}
+            </button>
           </div>
         </div>
+      )}
+
+      {/* 블로그 복사 모달 */}
+      {blogData && (
+        <BlogCopyModal
+          data={blogData}
+          onClose={() => setBlogData(null)}
+        />
       )}
     </div>
   )
@@ -292,6 +342,142 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     <div className="flex">
       <span className="w-28 text-sm text-gray-500 flex-shrink-0">{label}</span>
       <span className="text-sm text-gray-900">{value}</span>
+    </div>
+  )
+}
+
+// =============================================
+// 블로그 복사 모달
+// =============================================
+
+function BlogCopyModal({ data, onClose }: { data: BlogData; onClose: () => void }) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
+
+  const copyToClipboard = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedKey(key)
+      setTimeout(() => setCopiedKey(null), 1500)
+    } catch {
+      // fallback
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      setCopiedKey(key)
+      setTimeout(() => setCopiedKey(null), 1500)
+    }
+  }
+
+  const CopyButton = ({ text, label, copyKey }: { text: string; label: string; copyKey: string }) => (
+    <button
+      onClick={() => copyToClipboard(text, copyKey)}
+      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+        copiedKey === copyKey
+          ? 'bg-green-100 text-green-700'
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      }`}
+    >
+      {copiedKey === copyKey ? '복사됨!' : label}
+    </button>
+  )
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[85vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 헤더 */}
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold text-gray-900">블로그 글 복사</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">
+              {data.source === 'cached' ? '캐시됨' : '새로 생성'}
+            </span>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-xl"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* 제목 */}
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-semibold text-blue-600 uppercase">제목</span>
+            <CopyButton text={data.title} label="복사" copyKey="title" />
+          </div>
+          <p className="text-sm font-medium text-gray-900">{data.title}</p>
+        </div>
+
+        {/* 꼭지 (섹션별) */}
+        <div className="space-y-3 mb-4">
+          {data.sections.map((section, idx) => (
+            <div key={idx} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-semibold text-gray-500">
+                  꼭지 {idx + 1}
+                </span>
+                <CopyButton
+                  text={`${section.heading}\n\n${section.content.replace(/<[^>]*>/g, '').replace(/\n\s*\n/g, '\n').trim()}`}
+                  label="복사"
+                  copyKey={`section-${idx}`}
+                />
+              </div>
+              <p className="text-sm font-bold text-gray-800 mb-1">{section.heading}</p>
+              <div
+                className="text-sm text-gray-600 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: section.content }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* 태그 */}
+        <div className="mb-4 p-3 bg-amber-50 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-amber-600 uppercase">태그</span>
+            <CopyButton
+              text={data.tags.map(t => `#${t}`).join(' ')}
+              label="복사"
+              copyKey="tags"
+            />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {data.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* 전체 복사 */}
+        <button
+          onClick={() => copyToClipboard(
+            `${data.title}\n\n${data.plainText}\n\n${data.tags.map(t => `#${t}`).join(' ')}`,
+            'all'
+          )}
+          className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            copiedKey === 'all'
+              ? 'bg-green-600 text-white'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          {copiedKey === 'all' ? '전체 복사 완료!' : '전체 복사 (제목 + 본문 + 태그)'}
+        </button>
+      </div>
     </div>
   )
 }

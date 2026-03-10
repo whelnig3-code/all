@@ -122,41 +122,111 @@ function buildTitle(productName: string): string {
 }
 
 /**
+ * 블로그 꼭지(섹션) 구조 — 대시보드에서 각각 복사 가능
+ */
+export interface BlogSection {
+  /** 섹션 제목 (h2/h3) */
+  heading: string
+  /** 섹션 본문 (HTML) */
+  content: string
+}
+
+/**
+ * 꼭지 포함 블로그 포스트 — 대시보드 복사용
+ */
+export interface BlogPostWithSections extends BlogPost {
+  /** 꼭지별 분리된 섹션 */
+  sections: BlogSection[]
+  /** 순수 텍스트 (네이버 에디터 붙여넣기용) */
+  plainText: string
+}
+
+/**
  * 템플릿 기반 블로그 포스트 생성 (LLM 실패 시 fallback)
  * - 동기 함수, 항상 성공해야 함
  */
 export function buildBlogPostFromTemplate(input: BlogPostInput): BlogPost {
+  const result = buildBlogPostWithSections(input)
+  return { title: result.title, body: result.body, tags: result.tags }
+}
+
+/**
+ * 꼭지 구조 포함 블로그 포스트 생성
+ * 대시보드에서 제목/꼭지/태그 각각 복사 가능하도록 sections 포함
+ */
+export function buildBlogPostWithSections(input: BlogPostInput): BlogPostWithSections {
   const { productName, category, salePrice, description } = input
 
-  // XSS 방지: 크롤러 수집 데이터는 HTML 삽입 전 반드시 이스케이프
   const safeName = escapeHtml(productName)
   const safeCategory = escapeHtml(category)
   const sanitizedDesc = description ? escapeHtml(sanitizeBlogContent(description)) : ''
+  const priceStr = salePrice.toLocaleString('ko-KR')
+  const shippingNote = salePrice >= 30000 ? '무료배송' : '빠른 배송'
 
-  const body = `<h2>${safeName} 추천 리뷰</h2>
-<p>안녕하세요! 오늘은 <strong>${safeName}</strong>을(를) 소개해드리려고 합니다.</p>
+  const sections: BlogSection[] = [
+    {
+      heading: `${safeName} 추천 리뷰`,
+      content: `<p>안녕하세요! 오늘은 <strong>${safeName}</strong>을(를) 소개해드리려고 합니다.</p>`,
+    },
+    ...(sanitizedDesc ? [{
+      heading: '상품 특징',
+      content: `<p>${sanitizedDesc}</p>`,
+    }] : []),
+    {
+      heading: '상품 정보',
+      content: [
+        '<ul>',
+        `  <li>카테고리: ${safeCategory}</li>`,
+        `  <li>판매가: <strong>${priceStr}원</strong></li>`,
+        `  <li>${shippingNote}</li>`,
+        '</ul>',
+      ].join('\n'),
+    },
+    {
+      heading: '이런 분들께 추천해요',
+      content: [
+        '<ul>',
+        '  <li>품질 좋은 제품을 합리적인 가격에 찾으시는 분</li>',
+        '  <li>빠른 배송을 원하시는 분</li>',
+        '  <li>믿을 수 있는 판매자에게 구매하고 싶으신 분</li>',
+        '</ul>',
+      ].join('\n'),
+    },
+    {
+      heading: '구매 안내',
+      content: [
+        `<p>지금 바로 네이버 스마트스토어에서 <strong>${safeName}</strong>을(를) 확인해보세요!</p>`,
+        `<p>가격: ${priceStr}원 | ${shippingNote}</p>`,
+      ].join('\n'),
+    },
+  ]
 
-${sanitizedDesc ? `<h3>상품 특징</h3>\n<p>${sanitizedDesc}</p>\n` : ''}
-<h3>상품 정보</h3>
-<ul>
-  <li>카테고리: ${safeCategory}</li>
-  <li>판매가: <strong>${salePrice.toLocaleString('ko-KR')}원</strong></li>
-  ${salePrice >= 30000 ? '<li>무료배송</li>' : '<li>빠른 배송</li>'}
-</ul>
+  // 전체 HTML 합성
+  const body = sections
+    .map((s, i) => {
+      const tag = i === 0 ? 'h2' : 'h3'
+      return `<${tag}>${s.heading}</${tag}>\n${s.content}`
+    })
+    .join('\n\n')
 
-<h3>이런 분들께 추천해요</h3>
-<ul>
-  <li>품질 좋은 제품을 합리적인 가격에 찾으시는 분</li>
-  <li>빠른 배송을 원하시는 분</li>
-  <li>믿을 수 있는 판매자에게 구매하고 싶으신 분</li>
-</ul>
-
-<p>지금 바로 네이버 스마트스토어에서 확인해보세요!</p>`
+  // 순수 텍스트 (네이버 에디터 붙여넣기용)
+  const plainText = sections
+    .map((s) => {
+      const text = s.content
+        .replace(/<\/?(?:ul|li|p|strong|br)>/g, '')
+        .replace(/<li>/g, '- ')
+        .replace(/\n\s*\n/g, '\n')
+        .trim()
+      return `## ${s.heading}\n${text}`
+    })
+    .join('\n\n')
 
   return {
     title: buildTitle(productName),
     body,
     tags: buildTagsForCategory(category, productName),
+    sections,
+    plainText,
   }
 }
 

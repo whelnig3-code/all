@@ -76,6 +76,10 @@ model Product {
   // 블로그 포스팅 (Phase 3 — 중복 포스팅 방지)
   blogPostUrl             String?   // 블로그 포스트 URL (중복 포스팅 방지)
   blogPostedAt            DateTime? // 블로그 포스트 게시 시각
+  blogTitle               String?   // 생성된 블로그 제목
+  blogContent             String?   // 생성된 블로그 본문 (HTML)
+  blogTags                String[]  // 생성된 블로그 태그
+  blogGeneratedAt         DateTime? // 블로그 글 생성 시각
 
   // 내부 관리용 니치 카테고리 (Phase C — classifyNicheCategory 자동 분류)
   nicheCategory   String?       // '드릴비트' | '그라인더 디스크' | ... | '기타'

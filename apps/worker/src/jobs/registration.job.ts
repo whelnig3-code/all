@@ -41,6 +41,7 @@ import {
   type RejectionReason,
   shouldShowDiscount,
   calculateDiscountDisplay,
+  buildBlogPostWithSections,
 } from '@smartstore/core'
 import { naverShoppingCrawler } from '@smartstore/crawlers'
 import { fetchCompetitorCountLimited } from './competitor-limiter'
@@ -665,7 +666,30 @@ export function createRegistrationWorker(): Worker {
           })
           .catch((err) => logger.error('알림 전송 실패', err))
 
-        // 6. 블로그 포스팅 큐 추가 (fire-and-forget, P3)
+        // 6. 블로그 글 자동 생성 + DB 저장 (대시보드 복사용)
+        try {
+          const blogPost = buildBlogPostWithSections({
+            productName: product.name,
+            category: product.category,
+            salePrice: priceResult.salePrice,
+            description: product.generatedDescription ?? product.description ?? undefined,
+          })
+
+          await prisma.product.update({
+            where: { id: productId },
+            data: {
+              blogTitle: blogPost.title,
+              blogContent: blogPost.body,
+              blogTags: blogPost.tags,
+              blogGeneratedAt: new Date(),
+            },
+          })
+          logger.info('블로그 글 생성 완료', { productId, title: blogPost.title })
+        } catch (err) {
+          logger.warn('블로그 글 생성 실패 (무영향)', err)
+        }
+
+        // 7. 블로그 포스팅 큐 추가 (fire-and-forget, P3)
         //    BLOG_POSTING_ENABLED=true 시에만 추가, 실패해도 등록 결과에 영향 없음
         const blogEnabled = getSetting('BLOG_POSTING_ENABLED')
         if (blogEnabled === 'true') {

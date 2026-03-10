@@ -4,7 +4,7 @@
 
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@smartstore/db'
-import { calculateWholesalePrice } from '@smartstore/core'
+import { calculateWholesalePrice, buildBlogPostWithSections } from '@smartstore/core'
 import { registrationQueue } from '../queues'
 import { createProductSchema } from '../schemas'
 
@@ -209,5 +209,81 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
     }).filter(Boolean)
 
     return reply.send({ simulations })
+  })
+
+  // GET /products/:id/blog — 블로그 글 조회 (저장된 값 또는 실시간 생성)
+  fastify.get('/:id/blog', async (request, reply) => {
+    const { id } = request.params as { id: string }
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        salePrice: true,
+        description: true,
+        generatedDescription: true,
+        blogTitle: true,
+        blogContent: true,
+        blogTags: true,
+        blogGeneratedAt: true,
+      },
+    })
+
+    if (!product) {
+      return reply.code(404).send({ error: '상품을 찾을 수 없습니다' })
+    }
+
+    // DB에 저장된 블로그 글이 있으면 반환, 없으면 실시간 생성
+    if (product.blogTitle && product.blogContent) {
+      const blogPost = buildBlogPostWithSections({
+        productName: product.name,
+        category: product.category,
+        salePrice: product.salePrice,
+        description: product.generatedDescription ?? product.description ?? undefined,
+      })
+
+      return reply.send({
+        productId: product.id,
+        title: product.blogTitle,
+        body: product.blogContent,
+        tags: product.blogTags,
+        sections: blogPost.sections,
+        plainText: blogPost.plainText,
+        generatedAt: product.blogGeneratedAt,
+        source: 'cached',
+      })
+    }
+
+    // 실시간 생성
+    const blogPost = buildBlogPostWithSections({
+      productName: product.name,
+      category: product.category,
+      salePrice: product.salePrice,
+      description: product.generatedDescription ?? product.description ?? undefined,
+    })
+
+    // DB에 저장 (다음 요청부터 캐시)
+    await prisma.product.update({
+      where: { id },
+      data: {
+        blogTitle: blogPost.title,
+        blogContent: blogPost.body,
+        blogTags: blogPost.tags,
+        blogGeneratedAt: new Date(),
+      },
+    })
+
+    return reply.send({
+      productId: product.id,
+      title: blogPost.title,
+      body: blogPost.body,
+      tags: blogPost.tags,
+      sections: blogPost.sections,
+      plainText: blogPost.plainText,
+      generatedAt: new Date().toISOString(),
+      source: 'generated',
+    })
   })
 }

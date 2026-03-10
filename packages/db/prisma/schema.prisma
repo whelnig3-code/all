@@ -1,0 +1,470 @@
+// =============================================
+// Prisma 스키마 - 위탁판매 + 구매대행(Phase 5+) 통합
+// =============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- 상품 테이블 ---
+model Product {
+  id              String        @id @default(cuid())
+
+  // 공급처 정보
+  sourceType      String        // 'wholesale' | 'overseas'
+  source          String        // 'domaegguk' | 'ownerclan' | 'aliexpress' | 'taobao'
+  sourceProductId String        // 공급처 상품 ID
+
+  // 상품 기본 정보
+  name            String
+  description     String?
+  category        String
+  naverCategoryId String?       // 네이버 카테고리 ID
+  images          String[]      // 이미지 URL 배열
+
+  // 가격 정보 (위탁판매)
+  wholesalePrice  Int?          // 도매가 (원)
+  shippingFee     Int?          // 배송비 (원)
+  salePrice       Int           // 판매가 (계산된 값)
+  naverFeeRate    Float         // 네이버 수수료율
+  targetMarginRate Float        // 목표 마진율
+
+  // 구매대행 필드 (Phase 5+, 현재 미사용)
+  overseasPrice   Float?        // 해외 원가 (달러/위안)
+  currency        String?       // 'USD' | 'CNY'
+  exchangeRate    Float?        // 적용 환율
+  customsRate     Float?        // 관세율
+  overseasShipFee Int?          // 해외 배송비
+
+  // 운영 계정 ID (다중 계정 운영 지원 — ENV ACCOUNT_ID 기반)
+  accountId       String        @default("default")
+
+  // 계정 간 중복 등록 차단 키: "{source}:{sourceProductId}" (buildProductUniqueKey)
+  // ⚠️ 마이그레이션 전 반드시: npx tsx scripts/verify-unique-key.ts 실행 후 npm run db:push
+  uniqueKey       String        @unique
+
+  // 포트폴리오 유형: 'stable' | 'growth' | 'experimental' (classifyProductType 기준)
+  productType     String        @default("stable")
+
+  // 네이버 등록 정보
+  naverProductId  String?       // 네이버 상품 ID (등록 후)
+  status          String        @default("pending") // ProductStatus
+  registeredAt    DateTime?
+
+  // 재고
+  stockQuantity   Int           @default(0)
+  supplierStock   Int           @default(0)     // 공급처 실제 재고 (폴링 결과)
+  cachedStock     Int           @default(0)     // DB 캐시 재고 = supplierStock
+  reservedStock   Int           @default(0)     // 예약 수량 (주문 대기 중)
+  reservedUntil   DateTime?                     // 예약 만료 시각 (TTL — 크래시 복구용)
+  lastStockSync   DateTime?                     // 마지막 재고 동기화 시각
+  listingPaused   Boolean       @default(false) // 재고 부족으로 판매 중지
+  listingPausedAt DateTime?                     // 판매 중지 시각
+
+  // 콘텐츠 자동 생성 (Phase 3)
+  rawDescription          String?   // 도매처 원문 설명 (크롤러 수집)
+  categoryName            String?   // 네이버 카테고리명 (표시용, naverCategoryId와 별개)
+  generatedDescription    String?   // LLM 생성 최적화 설명
+  descriptionGeneratedAt  DateTime? // 설명 생성 시각
+  descriptionModel        String?   // 사용 LLM 모델명 (e.g. llama3.2, gpt-4o-mini)
+
+  // 블로그 포스팅 (Phase 3 — 중복 포스팅 방지)
+  blogPostUrl             String?   // 블로그 포스트 URL (중복 포스팅 방지)
+  blogPostedAt            DateTime? // 블로그 포스트 게시 시각
+
+  // SEO 최적화 (Phase C — seo-optimizer 결과 저장)
+  optimizedName   String?       // SEO 최적화된 상품명
+  searchTags      String[]      // 검색 태그 배열
+
+  // 리뷰 & 부스트 모드 (Phase C — review-monitor 관리)
+  reviewCount           Int       @default(0)     // 네이버 리뷰 수
+  boostModeActivated    Boolean   @default(false) // 부스트 모드 활성화 여부
+
+  // 원산지 (도매꾹 API detail.country 기반, e.g. "중국", "대한민국")
+  origin          String?
+
+  // 메타데이터
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // 관계
+  orders               Order[]
+  priceHistory         PriceHistory[]
+  competitorPrices     CompetitorPrice[]
+  wholesalePriceWatches WholesalePriceWatch[]
+  inventoryEvents      InventoryEvent[]
+
+  @@unique([source, sourceProductId])
+  @@index([uniqueKey])
+  @@index([accountId])
+  @@index([accountId, productType])
+  @@index([status])
+  @@index([naverProductId])
+  @@index([descriptionGeneratedAt]) // 콘텐츠 미생성 상품 조회 최적화
+  @@index([blogPostedAt])           // 일일 포스팅 한도 조회 최적화
+  @@map("products")
+}
+
+// --- 주문 테이블 ---
+model Order {
+  id              String    @id @default(cuid())
+
+  // 네이버 주문 정보
+  naverOrderId    String    @unique  // 네이버 주문 ID
+  naverProductId  String              // 네이버 상품 ID
+
+  // 상품 연결
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id])
+
+  // 주문 정보
+  quantity        Int
+  salePrice       Int       // 판매가 (주문 당시)
+  totalAmount     Int       // 총 결제금액
+
+  // 주문 상태
+  status          String    // OrderStatus
+
+  // 고객 정보 (개인정보보호법 준수)
+  customerName            String
+  // 전화번호 AES-256-GCM 암호화 저장 (packages/core/src/security/encryption.ts)
+  customerPhoneCiphertext String    // 암호문 (base64)
+  customerPhoneIv         String    // 초기화 벡터 (base64, 12 bytes)
+  customerPhoneAuthTag    String    // 인증 태그 (base64, 16 bytes)
+  customerAddress         String
+  customerZipCode         String
+
+  // 발송 정보
+  trackingNumber  String?
+  courier         String?   // 택배사명
+
+  // 발주 정보 (도매처 주문)
+  purchaseOrderId String?   // 도매처 주문 ID
+
+  // 운영 계정 ID (다중 계정 운영 지원 — ENV ACCOUNT_ID 기반)
+  accountId       String    @default("default")
+
+  // 마진 데이터 (월 수익 시뮬레이션용 — analytics/revenue-simulator.ts)
+  marginAmount    Float?    // 실제 마진 금액 (원)
+  marginRate      Float?    // 실제 마진율 (0~1)
+
+  // 타임스탬프
+  orderedAt       DateTime
+  paidAt          DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 도매처 자동 주문 (Phase 6)
+  wholesaleOrderStatus  String?     // 'pending' | 'ordered' | 'failed' | 'shipped'
+  wholesaleOrderId      String?     // 도매처 주문번호
+  wholesaleSource       String?     // 'domaegguk' | 'ownerclan'
+  wholesaleOrderedAt    DateTime?   // 도매처 주문 시각
+  lastTrackingPollAt    DateTime?   // 마지막 운송장 폴링 시각
+  trackingPollCount     Int         @default(0)   // 폴링 횟수
+
+  // 승인 모드 관계 (Phase 4.5)
+  approval        OrderApproval?
+  approvalEvents  ApprovalEvent[]
+
+  // 도매처 주문 로그 관계
+  wholesaleOrderLogs    WholesaleOrderLog[]
+
+  @@index([accountId])
+  @@index([status])
+  @@index([orderedAt])
+  @@map("orders")
+}
+
+// --- 가격 히스토리 테이블 ---
+model PriceHistory {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+
+  oldPrice    Int
+  newPrice    Int
+  reason      String    // 가격 변경 이유
+
+  // 가격 변경 출처: 'competitor' = 경쟁가 기반 | 'wholesale' = 도매 원가 변동 기반
+  source      String    @default("competitor")
+
+  // 운영 계정 ID (다중 계정 운영 지원 — ENV ACCOUNT_ID 기반)
+  accountId   String    @default("default")
+
+  changedAt   DateTime  @default(now())
+
+  @@index([accountId])
+  @@index([productId])
+  @@index([changedAt])
+  @@index([source])
+  @@map("price_histories")
+}
+
+// --- 경쟁사 가격 테이블 ---
+model CompetitorPrice {
+  id              String    @id @default(cuid())
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id])
+
+  competitorName  String    // 경쟁 판매자명
+  competitorPrice Int       // 경쟁사 판매가
+  rank            Int?      // 검색 결과 순위
+
+  checkedAt       DateTime  @default(now())
+
+  @@index([productId])
+  @@index([checkedAt])
+  @@map("competitor_prices")
+}
+
+// --- 작업 로그 테이블 ---
+model JobLog {
+  id          String    @id @default(cuid())
+  jobType     String    // 'registration' | 'order' | 'shipping' | 'price_monitor'
+  jobId       String    // BullMQ Job ID
+  status      String    // 'started' | 'completed' | 'failed'
+
+  payload     Json?     // 작업 입력 데이터
+  result      Json?     // 작업 결과 데이터
+  error       String?   // 에러 메시지
+
+  startedAt   DateTime
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([jobType])
+  @@index([status])
+  @@index([startedAt])
+  @@map("job_logs")
+}
+
+// =============================================
+// 시스템 설정 모델 (Kill Switch DB화)
+// ⚠️ 기본값 삽입: npm run db:seed-settings 실행 필요
+//    (AUTO_PRICE_ENABLED / AUTO_ORDER_ENABLED / AUTO_SHIPPING_ENABLED)
+// =============================================
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// =============================================
+// 환불/교환 처리 이력 (Phase 4)
+// - 네이버 취소/반품 요청 자동 처리 결과 기록
+// =============================================
+model RefundProcessLog {
+  id              String    @id @default(cuid())
+
+  // 주문 연결
+  naverOrderId    String    // 네이버 주문 ID
+  productOrderId  String?   // 네이버 상품주문 ID
+
+  // 요청 정보
+  type            String    // 'refund' | 'exchange'
+  reason          String    // 고객 사유
+  action          String    // 'approve' | 'reject' | 'manual'
+
+  // 처리 결과
+  status          String    // 'APPROVED' | 'REJECTED' | 'PENDING_MANUAL' | 'ERROR'
+  apiResponse     String?   // 네이버 API 응답 (JSON)
+  errorMessage    String?   // 에러 메시지
+
+  // 성능 측정
+  processingTime  Int?      // 처리 시간 (ms)
+
+  processedAt     DateTime  @default(now())
+
+  @@index([naverOrderId])
+  @@index([status])
+  @@index([processedAt])
+  @@map("refund_process_logs")
+}
+
+// =============================================
+// 도매 원가 변동 감지 이력 (P2-A)
+// - 임계값(5%) 초과 변동 발생 시 기록
+// - marginRisk=true 시 Telegram 알림 발송
+// =============================================
+model WholesalePriceWatch {
+  id                  String    @id @default(cuid())
+  productId           String
+  product             Product   @relation(fields: [productId], references: [id])
+
+  // 가격 변동 데이터
+  oldPrice            Int       // 이전 도매가 (원)
+  newPrice            Int       // 신규 도매가 (원)
+  changeRate          Float     // 변화율 (예: 0.06 = 6% 상승)
+
+  // 마진 위험 판단
+  marginRisk          Boolean   @default(false)
+  estimatedMarginRate Float?    // 현재 판매가 기준 추정 마진율
+
+  detectedAt          DateTime  @default(now())
+
+  @@index([productId])
+  @@index([detectedAt])
+  @@index([marginRisk])
+  @@map("wholesale_price_watches")
+}
+
+// =============================================
+// 서비스 자격증명 (암호화 저장)
+// - 대시보드에서 각 서비스 계정/비밀번호 관리
+// - AES-256-GCM 암호화 (MASTER_ENCRYPTION_KEY)
+// - 미설정 시 워커 게이트 차단
+// =============================================
+model ServiceCredential {
+  id            String    @id @default(cuid())
+  service       String    @unique   // 'naver_commerce' | 'naver_blog' | 'domaegguk' | 'ownerclan' | 'telegram'
+  credentials   String              // AES-256-GCM 암호화된 JSON (key-value)
+  iv            String              // 초기화 벡터 (base64)
+  authTag       String              // 인증 태그 (base64)
+  lastTestedAt  DateTime?           // 마지막 연결 테스트 시각
+  testResult    String?             // 'success' | 'failed' | null
+  testError     String?             // 실패 시 에러 메시지
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+
+  @@map("service_credentials")
+}
+
+// =============================================
+// 주문 승인 (Phase 4.5 — Human Approval Mode)
+// - 운영자가 Telegram에서 승인/거부 후 발주 진행
+// - approvalToken: 콜백 위조/리플레이 방지 (UUID, unique)
+// - expiresAt: 5분 타임아웃 → 자동 취소
+// =============================================
+model OrderApproval {
+  id                String    @id @default(cuid())
+  orderId           String    @unique
+  order             Order     @relation(fields: [orderId], references: [id])
+
+  status            String    @default("pending")  // 'pending' | 'approved' | 'rejected' | 'timeout'
+  approvalToken     String    @unique              // crypto.randomUUID — 콜백 위조 방지
+  telegramMessageId Int?                           // 버튼 메시지 ID (편집용)
+
+  decidedBy         String?                        // 'operator' | 'system_timeout'
+  decidedAt         DateTime?
+  rejectReason      String?
+
+  marginRate        Float?                         // 승인 시점 마진율 스냅샷
+  supplierStock     Int?                           // 승인 시점 재고 스냅샷
+
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime                       // now + APPROVAL_TIMEOUT
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("order_approvals")
+}
+
+// =============================================
+// 승인 이벤트 감사 로그 (Phase 4.5)
+// - 모든 승인 전이(created/approved/rejected/timeout/supplier_ordered) 추적
+// - supplierOrderId: 공급처 발주 ID (추적용)
+// =============================================
+model ApprovalEvent {
+  id              String    @id @default(cuid())
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id])
+
+  action          String    // 'created' | 'approved' | 'rejected' | 'timeout' | 'supplier_ordered'
+  supplierOrderId String?   // 공급처 발주 ID (승인 후 발주 성공 시)
+  metadata        Json?     // 추가 데이터
+
+  createdAt       DateTime  @default(now())
+
+  @@index([orderId])
+  @@index([action])
+  @@map("approval_events")
+}
+
+// =============================================
+// 도매처 자동 주문 로그 (Phase 6)
+// - 도매처 주문 시도/성공/실패 이력 추적
+// - 비유: 택배 발송 일지 — 언제, 어디로, 어떤 결과로 발송했는지 기록
+// =============================================
+model WholesaleOrderLog {
+  id               String    @id @default(cuid())
+  orderId          String
+  order            Order     @relation(fields: [orderId], references: [id])
+  source           String    // 'domaegguk' | 'ownerclan'
+  wholesaleOrderId String?
+  status           String    // 'pending' | 'ordered' | 'failed'
+  errorMessage     String?
+  screenshotPath   String?
+  responseTimeMs   Int?
+  createdAt        DateTime  @default(now())
+
+  @@index([orderId])
+  @@map("wholesale_order_logs")
+}
+
+// =============================================
+// 재고 변동 이벤트 로그
+// - 모든 재고 변동(동기화/예약/해제/중지/재개)을 추적
+// - 과판매 원인 추적 및 감사(audit) 용도
+// =============================================
+model InventoryEvent {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+
+  type          String   // 'sync' | 'reserve' | 'release' | 'pause' | 'resume' | 'order_decrement'
+  previousStock Int      // 변경 전 cachedStock
+  newStock      Int      // 변경 후 cachedStock
+  reservedDelta Int      @default(0)  // reservedStock 변경량 (+예약 / -해제)
+  reason        String?               // 사유 (예: "주문 #xxx", "공급처 동기화")
+
+  createdAt     DateTime @default(now())
+
+  @@index([productId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("inventory_events")
+}
+
+// =============================================
+// 톡톡 대화 로그 (Phase 4.1)
+// - 고객 메시지 수신 + 분석 결과 + 자동 응답 기록
+// - 비유: 고객센터 상담 일지 — 누가, 무엇을, 어떻게 처리했는지 기록
+// =============================================
+model TalkTalkConversation {
+  id                String    @id @default(cuid())
+  channelId         String
+  customerId        String
+  customerName      String?
+  message           String
+  messageType       String    // 'TEXT' | 'IMAGE' | 'FILE'
+
+  // 분석 결과
+  category          String?   // 'ORDER' | 'PRODUCT' | 'DELIVERY' | 'REFUND' | 'OTHER'
+  sentiment         String?   // 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE'
+  urgency           String?   // 'HIGH' | 'MEDIUM' | 'LOW'
+
+  // 자동 응답
+  autoReplySent     Boolean   @default(false)
+  autoReplyMessage  String?
+  matchedTemplateId String?
+
+  // 메타
+  jobId             String?
+  accountId         String    @default("default")
+  createdAt         DateTime  @default(now())
+
+  @@index([channelId])
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("talktalk_conversations")
+}

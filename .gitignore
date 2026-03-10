@@ -74,3 +74,6 @@ packages/db/prisma/*.db-journal
 
 # Cache
 .cache/
+
+# Screenshots (dev reference only)
+dashboard-*.png

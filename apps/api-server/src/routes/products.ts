@@ -205,6 +205,42 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
     return reply.send({ message: '등록 큐에 추가되었습니다', productId: id })
   })
 
+  // POST /products/bulk-register - 일괄 등록 큐에 추가
+  fastify.post('/bulk-register', {
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
+    const { productIds } = request.body as { productIds: string[] }
+
+    if (!Array.isArray(productIds) || productIds.length === 0) {
+      return reply.code(400).send({ error: '상품 ID 목록이 필요합니다' })
+    }
+
+    if (productIds.length > 50) {
+      return reply.code(400).send({ error: '한번에 최대 50개까지 가능합니다' })
+    }
+
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds }, status: 'pending' },
+      select: { id: true },
+    })
+
+    const jobs = products.map(p => ({
+      name: 'register-product',
+      data: { productId: p.id },
+      opts: { priority: 2 },
+    }))
+
+    if (jobs.length > 0) {
+      await registrationQueue.addBulk(jobs)
+    }
+
+    return reply.send({
+      message: `${jobs.length}개 상품이 등록 큐에 추가되었습니다`,
+      queued: jobs.length,
+      skipped: productIds.length - jobs.length,
+    })
+  })
+
   // GET /products/:id/price-simulation - 가격 시뮬레이션
   fastify.get('/:id/price-simulation', async (request, reply) => {
     const { id } = request.params as { id: string }

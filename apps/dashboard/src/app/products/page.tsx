@@ -93,6 +93,8 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('createdAt_desc')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [blogData, setBlogData] = useState<BlogData | null>(null)
   const [blogLoading, setBlogLoading] = useState(false)
@@ -140,6 +142,39 @@ export default function ProductsPage() {
   const handleSortChange = (newSort: string) => {
     setSortBy(newSort)
     fetchProducts(1, statusFilter, searchQuery, newSort)
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === products.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(products.map(p => p.id)))
+    }
+  }
+
+  const handleBulkRegister = async () => {
+    if (selectedIds.size === 0) return
+    setBulkLoading(true)
+    try {
+      await apiCall('/products/bulk-register', 'POST', {
+        productIds: Array.from(selectedIds),
+      })
+      setSelectedIds(new Set())
+      fetchProducts(pagination.page, statusFilter, searchQuery, sortBy)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '일괄 등록 실패')
+    } finally {
+      setBulkLoading(false)
+    }
   }
 
   return (
@@ -225,11 +260,41 @@ export default function ProductsPage() {
         </div>
       ) : (
         <>
+          {/* 일괄 액션 바 */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+              <span className="text-sm font-medium text-blue-700">
+                {selectedIds.size}개 선택됨
+              </span>
+              <button
+                onClick={handleBulkRegister}
+                disabled={bulkLoading}
+                className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+              >
+                {bulkLoading ? '처리 중...' : '일괄 등록'}
+              </button>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="px-3 py-1.5 bg-white text-gray-600 border border-gray-300 rounded text-sm hover:bg-gray-50"
+              >
+                선택 해제
+              </button>
+            </div>
+          )}
+
           {/* 테이블 */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="w-10 px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={products.length > 0 && selectedIds.size === products.length}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300"
+                    />
+                  </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">상품명</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">소스</th>
                   <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">상태</th>
@@ -242,7 +307,7 @@ export default function ProductsPage() {
               <tbody className="divide-y divide-gray-100">
                 {products.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
+                    <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
                       상품이 없습니다
                     </td>
                   </tr>
@@ -253,6 +318,14 @@ export default function ProductsPage() {
                       onClick={() => setSelectedProduct(product)}
                       className="hover:bg-gray-50 cursor-pointer transition-colors"
                     >
+                      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(product.id)}
+                          onChange={() => toggleSelect(product.id)}
+                          className="rounded border-gray-300"
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <span className="font-medium text-gray-900 line-clamp-1">
                           {product.name}

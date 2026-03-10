@@ -129,6 +129,8 @@ jest.mock('@smartstore/core', () => ({
   shouldRetry: jest.fn().mockReturnValue(false),
   calculateRetryPrice: jest.fn().mockReturnValue(null),
   getMaxRetryCount: jest.fn().mockReturnValue(0),
+  shouldShowDiscount: jest.fn().mockReturnValue(false),
+  calculateDiscountDisplay: jest.fn().mockReturnValue({ originalPrice: 15000, salePrice: 15000, discountAmount: 0, discountRate: 0, hasDiscount: false }),
 }))
 
 jest.mock('@smartstore/integrations', () => ({

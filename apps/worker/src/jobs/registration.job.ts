@@ -39,6 +39,8 @@ import {
   calculateRetryPrice,
   getMaxRetryCount,
   type RejectionReason,
+  shouldShowDiscount,
+  calculateDiscountDisplay,
 } from '@smartstore/core'
 import { naverShoppingCrawler } from '@smartstore/crawlers'
 import { fetchCompetitorCountLimited } from './competitor-limiter'
@@ -572,6 +574,29 @@ export function createRegistrationWorker(): Worker {
           })
         }
 
+        // 3-5. 할인 표시 계산 (재시도 상품만)
+        const retryCount = job.data.retryCount ?? 0
+        const showDiscount = shouldShowDiscount({
+          retryCount,
+          originalPrice: rawPriceResult.salePrice,
+          adjustedPrice: priceResult.salePrice,
+        })
+        const discountInfo = showDiscount
+          ? (() => {
+              const dd = calculateDiscountDisplay({
+                originalPrice: rawPriceResult.salePrice,
+                adjustedPrice: priceResult.salePrice,
+              })
+              logger.info('discount_display_applied', {
+                productId,
+                originalPrice: dd.originalPrice,
+                salePrice: dd.salePrice,
+                discountRate: `${dd.discountRate}%`,
+              })
+              return { originalPrice: dd.originalPrice, discountRate: dd.discountRate }
+            })()
+          : undefined
+
         // 4. 네이버 상품 등록 (내부에서 1초 sleep 자동 적용)
         const registrationResult = await registerProductToNaver({
           name: optimizedName || product.name,
@@ -594,6 +619,7 @@ export function createRegistrationWorker(): Worker {
             deliveryFee: product.shippingFee,
             deliveryType: product.shippingFee === 0 ? 'FREE' : 'PAID',
           },
+          discountInfo,
         })
 
         if (!registrationResult.success) {

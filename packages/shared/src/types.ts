@@ -49,6 +49,11 @@ export interface NaverProduct {
   options?: NaverProductOption[]
   stockQuantity: number
   deliveryInfo: DeliveryInfo
+  /** 할인 표시 (재시도 상품: 정가 대비 할인가 표시) */
+  discountInfo?: {
+    originalPrice: number   // 정가 (할인 전)
+    discountRate: number    // 할인율 (정수%)
+  }
 }
 
 /** 네이버 카테고리 */

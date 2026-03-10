@@ -172,6 +172,18 @@ function buildRegisterRequest(product: NaverProduct): NaverProductRegisterReques
     // 상세 설명 (HTML)
     detailContent: product.description,
 
+    // 할인 혜택 (재시도 상품)
+    customerBenefitInfo: product.discountInfo
+      ? {
+          immediateDiscountPolicy: {
+            discountMethod: {
+              value: product.discountInfo.discountRate,
+              unitType: 'PERCENT' as const,
+            },
+          },
+        }
+      : undefined,
+
     // 옵션 (있을 때만)
     optionInfo: product.options && product.options.length > 0
       ? {

@@ -52,6 +52,9 @@ export interface NaverProductRegisterRequest {
 
   // 옵션
   optionInfo?: NaverProductOptionInfo
+
+  // 할인 혜택 (재시도 상품에 할인 표시)
+  customerBenefitInfo?: NaverCustomerBenefitInfo
 }
 
 /** 상품 옵션 정보 */
@@ -70,6 +73,17 @@ export interface NaverProductOptionInfo {
     price: number
     sellerManagerCode?: string
   }>
+}
+
+/** 고객 혜택 정보 (즉시 할인) */
+export interface NaverCustomerBenefitInfo {
+  immediateDiscountPolicy?: {
+    /** 할인 방식: PERCENT(%) 또는 WON(원) */
+    discountMethod: {
+      value: number
+      unitType: 'PERCENT' | 'WON'
+    }
+  }
 }
 
 /** 상품 등록 응답 */

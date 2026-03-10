@@ -11,8 +11,11 @@ import {
   analyzeRejections,
   isNicheProduct,
   calculateNicheScore,
+  classifyNicheCategory,
   optimizeProductTitle,
   generateSearchTags,
+  buildBlogPostFromTemplate,
+  NICHE_CATEGORIES,
 } from '@smartstore/core'
 
 /**
@@ -120,5 +123,64 @@ export const analyticsRouter: FastifyPluginAsync = async (fastify) => {
 
     const preview = getSeoPreview(name, category)
     return reply.send(preview)
+  })
+
+  // GET /analytics/blog-preview?name=...&price=...&category=...
+  fastify.get('/blog-preview', async (request, reply) => {
+    const { name, price, category, description } = request.query as {
+      name?: string
+      price?: string
+      category?: string
+      description?: string
+    }
+
+    if (!name || !price) {
+      return reply.code(400).send({ error: 'name, price 파라미터 필수' })
+    }
+
+    const salePrice = parseInt(price, 10)
+    if (isNaN(salePrice) || salePrice < 0) {
+      return reply.code(400).send({ error: 'price는 0 이상 정수' })
+    }
+
+    const nicheCategory = classifyNicheCategory(name)
+    const blogPost = buildBlogPostFromTemplate({
+      productName: name,
+      category: category ?? nicheCategory,
+      salePrice,
+      description,
+    })
+
+    return reply.send({
+      nicheCategory,
+      ...blogPost,
+    })
+  })
+
+  // GET /analytics/categories — 사용 가능한 니치 카테고리 목록
+  fastify.get('/categories', async (request, reply) => {
+    const categories = NICHE_CATEGORIES.map((c) => ({
+      name: c.name,
+      keywords: c.keywords,
+    }))
+
+    // DB에서 카테고리별 상품 수
+    const counts = await prisma.product.groupBy({
+      by: ['nicheCategory'],
+      _count: { id: true },
+      where: { nicheCategory: { not: null } },
+    })
+
+    const countMap = new Map(counts.map((c) => [c.nicheCategory, c._count.id]))
+
+    return reply.send({
+      categories: [
+        ...categories.map((c) => ({
+          ...c,
+          productCount: countMap.get(c.name) ?? 0,
+        })),
+        { name: '기타', keywords: [], productCount: countMap.get('기타') ?? 0 },
+      ],
+    })
   })
 }

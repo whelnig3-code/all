@@ -31,6 +31,7 @@ import {
   isNicheProduct,
   calculateNicheScore,
   getOriginMarginAdjustment,
+  classifyNicheCategory,
 } from '@smartstore/core'
 import { naverShoppingCrawler } from '@smartstore/crawlers'
 import { fetchCompetitorCountLimited } from './competitor-limiter'
@@ -467,6 +468,7 @@ export function createRegistrationWorker(): Worker {
               naverProductId: String(registrationResult.originProductNo),
               salePrice: priceResult.salePrice,
               productType,
+              nicheCategory: classifyNicheCategory(product.name),
               registeredAt: new Date(),
               ...(origin ? { origin } : {}),
             },

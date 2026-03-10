@@ -77,6 +77,9 @@ model Product {
   blogPostUrl             String?   // 블로그 포스트 URL (중복 포스팅 방지)
   blogPostedAt            DateTime? // 블로그 포스트 게시 시각
 
+  // 내부 관리용 니치 카테고리 (Phase C — classifyNicheCategory 자동 분류)
+  nicheCategory   String?       // '드릴비트' | '그라인더 디스크' | ... | '기타'
+
   // SEO 최적화 (Phase C — seo-optimizer 결과 저장)
   optimizedName   String?       // SEO 최적화된 상품명
   searchTags      String[]      // 검색 태그 배열
@@ -105,6 +108,7 @@ model Product {
   @@index([accountId, productType])
   @@index([status])
   @@index([naverProductId])
+  @@index([nicheCategory])           // 카테고리별 필터링 최적화
   @@index([descriptionGeneratedAt]) // 콘텐츠 미생성 상품 조회 최적화
   @@index([blogPostedAt])           // 일일 포스팅 한도 조회 최적화
   @@map("products")

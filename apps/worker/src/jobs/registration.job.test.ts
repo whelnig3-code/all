@@ -122,6 +122,7 @@ jest.mock('@smartstore/core', () => ({
   isNicheProduct: jest.fn().mockReturnValue(false),
   calculateNicheScore: jest.fn().mockReturnValue(0),
   getOriginMarginAdjustment: jest.fn().mockReturnValue(0),
+  classifyNicheCategory: jest.fn().mockReturnValue('기타'),
 }))
 
 jest.mock('@smartstore/integrations', () => ({

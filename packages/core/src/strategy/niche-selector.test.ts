@@ -7,6 +7,7 @@
 import {
   isNicheProduct,
   calculateNicheScore,
+  classifyNicheCategory,
   NICHE_CATEGORIES,
 } from './niche-selector'
 
@@ -110,5 +111,47 @@ describe('calculateNicheScore', () => {
       category: '공구',
     })
     expect(withSpec).toBeGreaterThan(noSpec)
+  })
+})
+
+describe('classifyNicheCategory', () => {
+  it('드릴비트 상품 → "드릴비트" 카테고리', () => {
+    expect(classifyNicheCategory('HSS 드릴비트 세트 13본')).toBe('드릴비트')
+  })
+
+  it('절단석 → "그라인더 디스크" 카테고리', () => {
+    expect(classifyNicheCategory('4인치 절단석 10매')).toBe('그라인더 디스크')
+  })
+
+  it('톱날 → "절단날" 카테고리', () => {
+    expect(classifyNicheCategory('원형톱날 185mm 40T')).toBe('절단날')
+  })
+
+  it('사포 → "샌딩/연마" 카테고리', () => {
+    expect(classifyNicheCategory('사포 #120 10매')).toBe('샌딩/연마')
+  })
+
+  it('충전배터리 → "충전배터리" 카테고리', () => {
+    expect(classifyNicheCategory('마끼다 호환배터리 18V')).toBe('충전배터리')
+  })
+
+  it('줄자 → "측정도구" 카테고리', () => {
+    expect(classifyNicheCategory('줄자 5m 스틸')).toBe('측정도구')
+  })
+
+  it('작업장갑 → "안전장비" 카테고리', () => {
+    expect(classifyNicheCategory('작업장갑 코팅 10켤레')).toBe('안전장비')
+  })
+
+  it('공구함 → "공구함/정리" 카테고리', () => {
+    expect(classifyNicheCategory('공구함 3단 접이식')).toBe('공구함/정리')
+  })
+
+  it('니치 아닌 상품 → "기타" 카테고리', () => {
+    expect(classifyNicheCategory('캠핑 텐트 4인용')).toBe('기타')
+  })
+
+  it('빈 문자열 → "기타"', () => {
+    expect(classifyNicheCategory('')).toBe('기타')
   })
 })

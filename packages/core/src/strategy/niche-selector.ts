@@ -76,6 +76,21 @@ const CONSUMABLE_KEYWORDS = ['매입', '매', '세트', '본', '개입', 'pcs', 
 const SPEC_KEYWORDS = ['mm', 'cm', 'HSS', '코발트', '초경', 'SDS', '인치', 'T', 'V', 'W', '#']
 
 /**
+ * 상품명으로 니치 카테고리 분류
+ * 매칭되는 카테고리명 반환, 없으면 "기타"
+ */
+export function classifyNicheCategory(productName: string): string {
+  if (!productName.trim()) return '기타'
+
+  const lower = productName.toLowerCase()
+  const matched = NICHE_CATEGORIES.find((cat) =>
+    cat.keywords.some((kw) => lower.includes(kw.toLowerCase())),
+  )
+
+  return matched?.name ?? '기타'
+}
+
+/**
  * 상품이 니치 카테고리에 해당하는지 판별
  */
 export function isNicheProduct(productName: string): boolean {

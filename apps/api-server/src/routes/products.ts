@@ -11,8 +11,9 @@ import { createProductSchema } from '../schemas'
 export const productsRouter: FastifyPluginAsync = async (fastify) => {
   // GET /products - 상품 목록 조회
   fastify.get('/', async (request, reply) => {
-    const { status, page = '1', limit = '20' } = request.query as {
+    const { status, nicheCategory, page = '1', limit = '20' } = request.query as {
       status?: string
+      nicheCategory?: string
       page?: string
       limit?: string
     }
@@ -21,9 +22,14 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
     const limitNum = Math.min(parseInt(limit, 10), 100)
     const skip = (pageNum - 1) * limitNum
 
+    const where = {
+      ...(status ? { status } : {}),
+      ...(nicheCategory ? { nicheCategory } : {}),
+    }
+
     const [products, total] = await Promise.all([
       prisma.product.findMany({
-        where: status ? { status } : undefined,
+        where: Object.keys(where).length > 0 ? where : undefined,
         skip,
         take: limitNum,
         orderBy: { createdAt: 'desc' },
@@ -36,11 +42,12 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
           wholesalePrice: true,
           naverProductId: true,
           stockQuantity: true,
+          nicheCategory: true,
           registeredAt: true,
           createdAt: true,
         },
       }),
-      prisma.product.count({ where: status ? { status } : undefined }),
+      prisma.product.count({ where: Object.keys(where).length > 0 ? where : undefined }),
     ])
 
     return reply.send({

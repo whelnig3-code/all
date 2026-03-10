@@ -35,11 +35,15 @@ jest.mock('@smartstore/adapters', () => ({
 }))
 
 import { prisma } from '@smartstore/db'
+import { prisma } from '@smartstore/db'
 import {
   getRejectionAnalysis,
   getNicheAnalysis,
   getSeoPreview,
 } from '../analytics'
+
+// blog-preview와 categories 테스트용
+import { classifyNicheCategory, buildBlogPostFromTemplate, NICHE_CATEGORIES } from '@smartstore/core'
 
 describe('getRejectionAnalysis', () => {
   beforeEach(() => {
@@ -107,5 +111,54 @@ describe('getSeoPreview', () => {
 
     expect(result.optimizedName).toBe('')
     expect(result.searchTags).toHaveLength(0)
+  })
+})
+
+describe('classifyNicheCategory (API integration)', () => {
+  it('should classify drill bit product', () => {
+    expect(classifyNicheCategory('HSS 드릴비트 13본 세트')).toBe('드릴비트')
+  })
+
+  it('should classify non-niche as 기타', () => {
+    expect(classifyNicheCategory('캠핑 텐트')).toBe('기타')
+  })
+})
+
+describe('buildBlogPostFromTemplate (blog preview)', () => {
+  it('should generate blog post with title, body, tags', () => {
+    const post = buildBlogPostFromTemplate({
+      productName: 'HSS 드릴비트 13본 세트',
+      category: '드릴비트',
+      salePrice: 15000,
+    })
+
+    expect(post.title).toContain('드릴비트')
+    expect(post.body).toContain('드릴비트')
+    expect(post.body).toContain('15,000원')
+    expect(post.tags.length).toBeGreaterThan(0)
+  })
+
+  it('should include description when provided', () => {
+    const post = buildBlogPostFromTemplate({
+      productName: '4인치 절단석',
+      category: '그라인더 디스크',
+      salePrice: 5000,
+      description: '고속 절단용 디스크',
+    })
+
+    expect(post.body).toContain('고속 절단용 디스크')
+  })
+})
+
+describe('NICHE_CATEGORIES', () => {
+  it('should have 8 categories defined', () => {
+    expect(NICHE_CATEGORIES.length).toBe(8)
+  })
+
+  it('each category should have name and keywords', () => {
+    for (const cat of NICHE_CATEGORIES) {
+      expect(cat.name).toBeTruthy()
+      expect(cat.keywords.length).toBeGreaterThan(0)
+    }
   })
 })

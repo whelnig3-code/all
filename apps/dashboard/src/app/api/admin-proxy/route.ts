@@ -88,6 +88,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     '/report',
     '/analytics',
     '/monitoring',
+    '/promotions',
   ]
   if (!ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix))) {
     return NextResponse.json({ error: 'forbidden path' }, { status: 403 })

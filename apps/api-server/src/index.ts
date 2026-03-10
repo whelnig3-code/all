@@ -16,6 +16,7 @@ import { reportRouter } from './routes/report'
 import { credentialsRouter } from './routes/credentials'
 import { inventoryRouter } from './routes/inventory'
 import { analyticsRouter } from './routes/analytics'
+import { promotionsRouter } from './routes/promotions'
 import { startBotPolling } from '@smartstore/adapters'
 import { validateAdminPassword } from './env-guard'
 
@@ -59,6 +60,7 @@ async function main() {
   await fastify.register(credentialsRouter, { prefix: '/admin/credentials' }) // 자격증명 관리
   await fastify.register(inventoryRouter, { prefix: '/inventory' }) // 재고 관리
   await fastify.register(analyticsRouter, { prefix: '/analytics' }) // Phase C: 분석
+  await fastify.register(promotionsRouter, { prefix: '/promotions' }) // 프로모션 관리
 
   // 글로벌 에러 핸들러 — 예상치 못한 에러를 로그하고 안전한 응답 반환
   fastify.setErrorHandler((error, request, reply) => {

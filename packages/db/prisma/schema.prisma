@@ -505,3 +505,40 @@ model TalkTalkConversation {
   @@index([createdAt])
   @@map("talktalk_conversations")
 }
+
+// =============================================
+// 프로모션 (쿠폰·할인) 테이블 (Phase 6)
+// - 상품 또는 전체 대상 할인/쿠폰 관리
+// =============================================
+model Promotion {
+  id              String    @id @default(cuid())
+
+  // 프로모션 정보
+  name            String    // 프로모션명 (e.g. "봄맞이 10% 할인")
+  type            String    // 'percentage' | 'fixed_amount' | 'free_shipping'
+  value           Int       // 할인값 (percentage: 10 = 10%, fixed_amount: 1000 = 1000원)
+  minOrderAmount  Int       @default(0)  // 최소 주문 금액
+
+  // 적용 대상
+  scope           String    @default("all") // 'all' | 'category' | 'product'
+  targetIds       String[]  // scope가 category/product일 때 대상 ID 목록
+
+  // 기간
+  startDate       DateTime
+  endDate         DateTime
+
+  // 상태
+  isActive        Boolean   @default(true)
+  usageLimit      Int?      // 총 사용 제한 (null = 무제한)
+  usageCount      Int       @default(0) // 현재 사용 횟수
+
+  // 계정
+  accountId       String    @default("default")
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([accountId])
+  @@map("promotions")
+}

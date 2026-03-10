@@ -135,6 +135,45 @@ const SERVICE_META: Record<ServiceType, ServiceMeta> = {
       },
     ],
   },
+  naver_talktalk: {
+    label: '네이버 톡톡',
+    description: '고객 문의 자동 응답에 필요합니다.',
+    required: false,
+    fields: [
+      { key: 'accountId', label: '톡톡 계정 ID', type: 'text', hint: '셀러센터 > 톡톡 설정에서 확인' },
+    ],
+    setupGuide: [
+      {
+        title: '1. 스마트스토어 톡톡 활성화',
+        description: '셀러센터 > 톡톡 > 톡톡 관리에서 톡톡 기능을 활성화합니다.',
+      },
+      {
+        title: '2. 톡톡 계정 ID 확인',
+        description: '톡톡 관리 페이지에서 계정 ID를 확인하여 입력합니다.',
+      },
+    ],
+  },
+  onchannel: {
+    label: '온채널',
+    description: '온채널 상품 크롤링에 필요합니다.',
+    required: false,
+    fields: [
+      { key: 'username', label: '아이디', type: 'text', hint: '온채널 로그인 아이디' },
+      { key: 'password', label: '비밀번호', type: 'password', hint: '온채널 로그인 비밀번호' },
+    ],
+    setupGuide: [
+      {
+        title: '1. 온채널 회원가입',
+        description: '온채널 사이트에서 회원가입을 합니다. 이미 계정이 있다면 2단계로 넘어가세요.',
+        link: 'https://onchannel.co.kr',
+        linkLabel: '온채널 바로가기',
+      },
+      {
+        title: '2. 로그인 정보 입력',
+        description: '온채널에 로그인할 때 사용하는 아이디와 비밀번호를 그대로 입력하면 됩니다.',
+      },
+    ],
+  },
   telegram: {
     label: '텔레그램 알림',
     description: '실시간 알림 발송에 필요합니다.',
@@ -169,8 +208,10 @@ const SERVICE_META: Record<ServiceType, ServiceMeta> = {
 const ALL_SERVICES: ServiceType[] = [
   'naver_commerce',
   'naver_blog',
+  'naver_talktalk',
   'domaegguk',
   'ownerclan',
+  'onchannel',
   'telegram',
 ]
 

@@ -13,6 +13,12 @@
 // =============================================
 
 import { useState, useEffect, useCallback } from 'react'
+import {
+  fetchCategoryPerformance,
+  fetchRejectionAnalysis,
+  type CategoryPerformanceResponse,
+  type RejectionAnalysisResponse,
+} from '../../lib/api'
 
 // =============================================
 // 타입 정의
@@ -92,18 +98,28 @@ async function fetchReport(days: number): Promise<RevenueReport | null> {
 export default function ReportPage() {
   const [days, setDays] = useState(30)
   const [report, setReport] = useState<RevenueReport | null>(null)
+  const [categoryPerf, setCategoryPerf] = useState<CategoryPerformanceResponse | null>(null)
+  const [rejections, setRejections] = useState<RejectionAnalysisResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const data = await fetchReport(days)
-    if (data) {
-      setReport(data)
+
+    const [revenueData, catData, rejData] = await Promise.all([
+      fetchReport(days),
+      fetchCategoryPerformance(days).catch(() => null),
+      fetchRejectionAnalysis(days).catch(() => null),
+    ])
+
+    if (revenueData) {
+      setReport(revenueData)
     } else {
       setError('리포트 데이터를 불러오지 못했습니다.')
     }
+    setCategoryPerf(catData)
+    setRejections(rejData)
     setLoading(false)
   }, [days])
 
@@ -270,6 +286,94 @@ export default function ReportPage() {
                 </tbody>
               </table>
             )}
+          </div>
+          {/* 5. 카테고리 성과 + 거절 분석 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* 카테고리 성과 */}
+            <div className="bg-white rounded-lg shadow p-5">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">카테고리별 성과</h2>
+              {!categoryPerf || categoryPerf.categories.length === 0 ? (
+                <p className="text-gray-400 text-sm">데이터 없음</p>
+              ) : (
+                <>
+                  <div className="flex gap-4 mb-3 text-xs text-gray-500">
+                    <span>총 {categoryPerf.summary.totalCategories}개 카테고리</span>
+                    <span>1위: {categoryPerf.summary.topCategory}</span>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-gray-500">
+                        <th className="text-left py-2">카테고리</th>
+                        <th className="text-right py-2">상품수</th>
+                        <th className="text-right py-2">매출</th>
+                        <th className="text-right py-2">주문수</th>
+                        <th className="text-right py-2 hidden md:table-cell">상품당 매출</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categoryPerf.categories.map((cat) => (
+                        <tr key={cat.category} className="border-b hover:bg-gray-50">
+                          <td className="py-2 font-medium text-gray-700">{cat.category}</td>
+                          <td className="py-2 text-right text-gray-500">{cat.productCount}개</td>
+                          <td className="py-2 text-right text-blue-600 font-medium">{won(cat.totalRevenue)}</td>
+                          <td className="py-2 text-right text-gray-500">{cat.totalOrders}건</td>
+                          <td className="py-2 text-right text-gray-400 hidden md:table-cell">{won(cat.revenuePerProduct)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+            </div>
+
+            {/* 거절 분석 */}
+            <div className="bg-white rounded-lg shadow p-5">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">등록 거절 분석</h2>
+              {!rejections || rejections.totalRejections === 0 ? (
+                <p className="text-gray-400 text-sm">거절 내역 없음</p>
+              ) : (
+                <>
+                  <div className="flex gap-4 mb-3">
+                    <div className="bg-red-50 border border-red-200 rounded px-3 py-2">
+                      <p className="text-xs text-red-500">총 거절</p>
+                      <p className="text-lg font-bold text-red-600">{rejections.totalRejections}건</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded px-3 py-2">
+                      <p className="text-xs text-green-500">재시도 성공률</p>
+                      <p className="text-lg font-bold text-green-600">{rejections.retrySuccessRate}%</p>
+                    </div>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-gray-500">
+                        <th className="text-left py-2">거절 사유</th>
+                        <th className="text-right py-2">건수</th>
+                        <th className="text-right py-2">비율</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rejections.reasons.map((r) => (
+                        <tr key={r.reason} className="border-b hover:bg-gray-50">
+                          <td className="py-2 text-gray-700">{r.reason}</td>
+                          <td className="py-2 text-right text-gray-600">{r.count}건</td>
+                          <td className="py-2 text-right">
+                            <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                              r.percentage > 30
+                                ? 'bg-red-100 text-red-700'
+                                : r.percentage > 15
+                                  ? 'bg-yellow-100 text-yellow-700'
+                                  : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {r.percentage.toFixed(1)}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+            </div>
           </div>
         </>
       ) : null}

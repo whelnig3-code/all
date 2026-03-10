@@ -453,6 +453,40 @@ export class NaverCommerceApiClient {
   }
 
   // =============================
+  // 상품 정보 조회
+  // =============================
+
+  /**
+   * 상품 리뷰 수 조회
+   *
+   * 비유: 네이버에 전화해서 "이 상품 리뷰 몇 개야?" 물어보는 것.
+   * v2 API의 originProduct 조회 → reviewCount 필드 반환.
+   *
+   * @param originProductNo 네이버 상품 번호
+   * @returns reviewCount (실패 시 null)
+   */
+  async getProductReviewCount(originProductNo: number): Promise<number | null> {
+    try {
+      const response = await this.client.get<{
+        originProduct: {
+          statusType: string
+          reviewCount?: number
+          purchaseReviewCount?: number
+        }
+      }>(`/external/v2/products/${originProductNo}`)
+
+      const product = response.data?.originProduct
+      if (!product) return null
+
+      // purchaseReviewCount (구매 확인 리뷰)가 더 정확, 없으면 reviewCount 사용
+      return product.purchaseReviewCount ?? product.reviewCount ?? 0
+    } catch (error) {
+      logger.warn('리뷰 수 조회 실패', { originProductNo, error: String(error) })
+      return null
+    }
+  }
+
+  // =============================
   // 유틸리티
   // =============================
 

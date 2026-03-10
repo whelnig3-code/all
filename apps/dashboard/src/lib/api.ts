@@ -156,8 +156,10 @@ export async function fetchAlerts(): Promise<{ alerts: AlertItem[] }> {
 export type ServiceType =
   | 'naver_commerce'
   | 'naver_blog'
+  | 'naver_talktalk'
   | 'domaegguk'
   | 'ownerclan'
+  | 'onchannel'
   | 'telegram'
 
 export type CredentialStatus = 'configured' | 'not_configured' | 'test_failed'
@@ -211,5 +213,64 @@ export async function testServiceConnection(
   return adminProxy<CredentialTestResult>(
     `/admin/credentials/${service}/test`,
     'POST',
+  )
+}
+
+// =============================================
+// Analytics API
+// =============================================
+
+/** 카테고리 성과 데이터 */
+export interface CategoryPerformance {
+  category: string
+  productCount: number
+  totalRevenue: number
+  totalOrders: number
+  avgPrice: number
+  revenuePerProduct: number
+}
+
+export interface CategoryPerformanceResponse {
+  days: number
+  categories: CategoryPerformance[]
+  summary: {
+    totalCategories: number
+    totalRevenue: number
+    totalOrders: number
+    topCategory: string
+  }
+}
+
+/** 거절 분석 데이터 */
+export interface RejectionReason {
+  reason: string
+  count: number
+  percentage: number
+}
+
+export interface RejectionAnalysisResponse {
+  days: number
+  totalRejections: number
+  reasons: RejectionReason[]
+  retrySuccessRate: number
+}
+
+/** 카테고리 성과 조회 (GET /analytics/category-performance) */
+export async function fetchCategoryPerformance(
+  days: number = 30,
+): Promise<CategoryPerformanceResponse> {
+  return adminProxy<CategoryPerformanceResponse>(
+    `/analytics/category-performance?days=${days}`,
+    'GET',
+  )
+}
+
+/** 거절 분석 조회 (GET /analytics/rejections) */
+export async function fetchRejectionAnalysis(
+  days: number = 7,
+): Promise<RejectionAnalysisResponse> {
+  return adminProxy<RejectionAnalysisResponse>(
+    `/analytics/rejections?days=${days}`,
+    'GET',
   )
 }

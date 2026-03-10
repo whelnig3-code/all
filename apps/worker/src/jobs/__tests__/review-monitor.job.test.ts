@@ -37,6 +37,12 @@ jest.mock('@smartstore/adapters', () => ({
   },
 }))
 
+jest.mock('@smartstore/integrations', () => ({
+  naverCommerceApi: {
+    getProductReviewCount: jest.fn().mockResolvedValue(null),
+  },
+}))
+
 jest.mock('../../settings-cache', () => ({
   getSetting: jest.fn().mockReturnValue('true'),
 }))

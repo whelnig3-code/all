@@ -11,6 +11,7 @@
 import { Worker, Job } from 'bullmq'
 import { createLogger } from '@smartstore/shared'
 import { notificationAdapter } from '@smartstore/adapters'
+import { naverCommerceApi } from '@smartstore/integrations'
 import { prisma } from '@smartstore/db'
 import { QUEUE_NAMES, redisConnection, type ReviewMonitorJobData } from '../queues'
 import { checkCredentialGate, gateSkipResult } from '../credential-gate'
@@ -73,8 +74,25 @@ export function createReviewMonitorWorker(): Worker {
           return { skipped: true, reason: 'product_not_found' }
         }
 
-        // TODO: 네이버 API에서 실제 리뷰 수 크롤링 (현재는 DB 값 기반)
-        const reviewCount = product.reviewCount
+        // 네이버 API에서 실제 리뷰 수 조회 → DB 동기화
+        const naverReviewCount = await naverCommerceApi.getProductReviewCount(
+          parseInt(naverProductId, 10),
+        )
+
+        // API 성공 시 DB 업데이트, 실패 시 DB 캐시값 사용
+        const reviewCount = naverReviewCount ?? product.reviewCount
+
+        if (naverReviewCount !== null && naverReviewCount !== product.reviewCount) {
+          await prisma.product.update({
+            where: { id: productId },
+            data: { reviewCount: naverReviewCount },
+          })
+          logger.info('리뷰 수 동기화', {
+            productId,
+            before: product.reviewCount,
+            after: naverReviewCount,
+          })
+        }
 
         // 부스트 모드 전환 판단
         if (shouldActivateBoost(reviewCount, product.boostModeActivated)) {

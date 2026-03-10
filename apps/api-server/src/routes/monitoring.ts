@@ -174,4 +174,53 @@ export const monitoringRouter: FastifyPluginAsync = async (fastify) => {
       generatedAt: new Date().toISOString(),
     })
   })
+
+  // GET /monitoring/alerts - 최근 알림 (실패/경고)
+  fastify.get('/alerts', { onRequest: requireAuth }, async (request, reply) => {
+    const { since } = request.query as { since?: string }
+    const sinceDate = since ? new Date(since) : new Date(Date.now() - 24 * 60 * 60 * 1000)
+
+    const [failedJobs, suspendedProducts] = await Promise.all([
+      prisma.jobLog.findMany({
+        where: {
+          status: 'failed',
+          startedAt: { gte: sinceDate },
+        },
+        orderBy: { startedAt: 'desc' },
+        take: 20,
+        select: {
+          id: true,
+          jobType: true,
+          error: true,
+          startedAt: true,
+        },
+      }),
+      prisma.product.count({
+        where: {
+          status: 'suspended',
+          updatedAt: { gte: sinceDate },
+        },
+      }),
+    ])
+
+    const alerts: Array<{ id: string; type: string; severity: string; message: string; timestamp: string }> = failedJobs.map(job => ({
+      id: job.id,
+      type: 'job_failed',
+      severity: 'error',
+      message: `${job.jobType} 작업 실패`,
+      timestamp: job.startedAt?.toISOString() ?? new Date().toISOString(),
+    }))
+
+    if (suspendedProducts > 0) {
+      alerts.unshift({
+        id: 'suspended-alert',
+        type: 'product_suspended',
+        severity: 'warning',
+        message: `${suspendedProducts}개 상품 일시정지됨`,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    return reply.send({ alerts, total: alerts.length })
+  })
 }

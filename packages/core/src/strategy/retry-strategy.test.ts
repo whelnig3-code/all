@@ -121,16 +121,16 @@ describe('calculateRetryPrice', () => {
     })
   })
 
-  describe('가격 반올림 (10원 단위)', () => {
-    it('조정 가격이 10원 단위로 반올림됨', () => {
+  describe('가격 반올림 (1원 단위)', () => {
+    it('조정 가격이 정수로 반올림됨', () => {
       const input: RetryPriceInput = {
         reason: 'exposure_blocked',
         currentPrice: 9999,
         attemptNumber: 1,
       }
       const result = calculateRetryPrice(input)
-      // 9999 * 0.95 = 9499.05 → 9500 (10원 단위 반올림)
-      expect(result!.adjustedPrice % 10).toBe(0)
+      // 9999 * 0.95 = 9499.05 → 9499 (1원 단위 반올림)
+      expect(Number.isInteger(result!.adjustedPrice)).toBe(true)
     })
   })
 })

@@ -105,11 +105,6 @@ export function getMaxRetryCount(reason: RejectionReason): number {
 
 // --- 내부 함수 ---
 
-/** 10원 단위 반올림 */
-function roundToTen(price: number): number {
-  return Math.round(price / 10) * 10
-}
-
 /**
  * exposure_blocked: 시도 횟수에 따라 5~10% 선형 인하
  * 1차: 5%, 2차: 7.5%, 3차: 10%
@@ -118,7 +113,7 @@ function calculateExposureRetryPrice(input: RetryPriceInput): RetryPriceResult {
   const maxRetry = MAX_RETRY_COUNTS.exposure_blocked
   const ratio = (input.attemptNumber - 1) / (maxRetry - 1)
   const discountRate = EXPOSURE_MIN_DISCOUNT + (EXPOSURE_MAX_DISCOUNT - EXPOSURE_MIN_DISCOUNT) * ratio
-  const adjustedPrice = roundToTen(input.currentPrice * (1 - discountRate))
+  const adjustedPrice = Math.round(input.currentPrice * (1 - discountRate))
 
   return { adjustedPrice, discountRate }
 }
@@ -128,14 +123,14 @@ function calculateExposureRetryPrice(input: RetryPriceInput): RetryPriceResult {
  */
 function calculateCompetitiveRetryPrice(input: RetryPriceInput): RetryPriceResult {
   if (input.competitorPrice != null) {
-    const adjustedPrice = roundToTen(input.competitorPrice - UNDERCUT_AMOUNT)
+    const adjustedPrice = Math.round(input.competitorPrice - UNDERCUT_AMOUNT)
     const discountRate = (input.currentPrice - adjustedPrice) / input.currentPrice
 
     return { adjustedPrice, discountRate }
   }
 
   // 경쟁가 없으면 현재가 5% 인하
-  const adjustedPrice = roundToTen(input.currentPrice * (1 - FALLBACK_DISCOUNT))
+  const adjustedPrice = Math.round(input.currentPrice * (1 - FALLBACK_DISCOUNT))
   const discountRate = FALLBACK_DISCOUNT
 
   return { adjustedPrice, discountRate }

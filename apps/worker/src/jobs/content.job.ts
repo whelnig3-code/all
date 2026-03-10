@@ -115,7 +115,7 @@ export function createContentWorker(): Worker {
             descriptionGeneratedAt: new Date(),
             descriptionModel: descriptionResult.generatedBy,
             ...(optimizedName !== product.name ? { optimizedName } : {}),
-            ...(searchTags.length > 0 ? { searchTags: JSON.stringify(searchTags) } : {}),
+            ...(searchTags.length > 0 ? { searchTags } : {}),
           },
         })
 

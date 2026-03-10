@@ -159,9 +159,9 @@ export function createPriceMonitorWorker(): Worker {
         const recentChanges = await prisma.priceHistory.findMany({
           where: {
             productId,
-            createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+            changedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
           },
-          select: { createdAt: true },
+          select: { changedAt: true },
         })
 
         const priceGuard = isPriceChangeAllowed({

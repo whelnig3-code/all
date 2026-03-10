@@ -32,6 +32,7 @@ import {
   calculateNicheScore,
   getOriginMarginAdjustment,
   classifyNicheCategory,
+  isProductAllowedForAccount,
 } from '@smartstore/core'
 import { naverShoppingCrawler } from '@smartstore/crawlers'
 import { fetchCompetitorCountLimited } from './competitor-limiter'
@@ -304,6 +305,35 @@ export function createRegistrationWorker(): Worker {
         } else {
           // 타임아웃 또는 크롤링 오류 → fail-open (등록 진행)
           logger.warn('exposure_check_skipped (timeout/error) — fail-open', { productId })
+        }
+
+        // 2-3-0. 계정별 카테고리 그룹 가드 (상품명 기반 자동 분류)
+        const accountCategoryCheck = isProductAllowedForAccount({
+          accountId,
+          productName: product.name,
+        })
+        if (!accountCategoryCheck.allowed) {
+          logger.info('account_category_blocked', {
+            productId,
+            accountId,
+            category: accountCategoryCheck.category,
+            group: accountCategoryCheck.group,
+            reason: accountCategoryCheck.reason,
+          })
+          await prisma.jobLog.update({
+            where: { id: jobLog.id },
+            data: {
+              status: 'completed',
+              result: {
+                skipped: true,
+                reason: 'account_category_blocked',
+                category: accountCategoryCheck.category,
+                group: accountCategoryCheck.group,
+              },
+              completedAt: new Date(),
+            },
+          })
+          return { skipped: true, reason: 'account_category_blocked' }
         }
 
         // 2-3. 카테고리 가드 (계정별 허용 카테고리 검사)

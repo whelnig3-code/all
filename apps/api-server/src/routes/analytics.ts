@@ -16,6 +16,10 @@ import {
   generateSearchTags,
   buildBlogPostFromTemplate,
   NICHE_CATEGORIES,
+  CATEGORY_GROUPS,
+  getAccountCategories,
+  setAccountCategories,
+  isProductAllowedForAccount,
 } from '@smartstore/core'
 
 /**
@@ -182,5 +186,56 @@ export const analyticsRouter: FastifyPluginAsync = async (fastify) => {
         { name: '기타', keywords: [], productCount: countMap.get('기타') ?? 0 },
       ],
     })
+  })
+
+  // GET /analytics/account-categories/:accountId — 계정별 허용 카테고리 조회
+  fastify.get('/account-categories/:accountId', async (request, reply) => {
+    const { accountId } = request.params as { accountId: string }
+    const groups = getAccountCategories(accountId)
+
+    return reply.send({
+      accountId,
+      allowedGroups: groups,
+      allGroups: CATEGORY_GROUPS,
+      isRestricted: groups.length > 0,
+    })
+  })
+
+  // PUT /analytics/account-categories/:accountId — 계정별 카테고리 설정 변경
+  fastify.put('/account-categories/:accountId', async (request, reply) => {
+    const { accountId } = request.params as { accountId: string }
+    const { groups } = request.body as { groups: string[] }
+
+    if (!Array.isArray(groups)) {
+      return reply.code(400).send({ error: 'groups는 문자열 배열이어야 합니다' })
+    }
+
+    // 유효한 그룹만 필터
+    const validGroups = groups.filter((g) =>
+      (CATEGORY_GROUPS as readonly string[]).includes(g),
+    )
+
+    setAccountCategories(accountId, validGroups as any)
+
+    return reply.send({
+      accountId,
+      allowedGroups: validGroups,
+      isRestricted: validGroups.length > 0,
+    })
+  })
+
+  // POST /analytics/check-product — 상품이 계정에 등록 가능한지 검사
+  fastify.post('/check-product', async (request, reply) => {
+    const { accountId, productName } = request.body as {
+      accountId?: string
+      productName?: string
+    }
+
+    if (!accountId || !productName) {
+      return reply.code(400).send({ error: 'accountId, productName 필수' })
+    }
+
+    const result = isProductAllowedForAccount({ accountId, productName })
+    return reply.send(result)
   })
 }

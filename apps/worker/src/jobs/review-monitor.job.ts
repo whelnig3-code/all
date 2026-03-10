@@ -84,9 +84,12 @@ export function createReviewMonitorWorker(): Worker {
           })
 
           try {
-            await notificationAdapter.send(
-              `🚀 부스트 모드 활성화: ${product.name}\n리뷰 ${reviewCount}개 (목표: ${BOOST_THRESHOLD}개)`,
-            )
+            await notificationAdapter.send({
+              type: 'product_registered',
+              title: '부스트 모드 활성화',
+              message: `${product.name}\n리뷰 ${reviewCount}개 (목표: ${BOOST_THRESHOLD}개)`,
+              data: { productId, reviewCount },
+            })
           } catch { /* 알림 실패 무시 */ }
 
           logger.info(`부스트 모드 활성화: ${productId}`, { reviewCount })
@@ -97,9 +100,12 @@ export function createReviewMonitorWorker(): Worker {
           })
 
           try {
-            await notificationAdapter.send(
-              `✅ 부스트 모드 해제: ${product.name}\n리뷰 ${reviewCount}개 달성!`,
-            )
+            await notificationAdapter.send({
+              type: 'product_registered',
+              title: '부스트 모드 해제',
+              message: `${product.name}\n리뷰 ${reviewCount}개 달성!`,
+              data: { productId, reviewCount },
+            })
           } catch { /* 알림 실패 무시 */ }
 
           logger.info(`부스트 모드 해제: ${productId}`, { reviewCount })

@@ -35,7 +35,6 @@ jest.mock('@smartstore/adapters', () => ({
 }))
 
 import { prisma } from '@smartstore/db'
-import { prisma } from '@smartstore/db'
 import {
   getRejectionAnalysis,
   getNicheAnalysis,
@@ -151,8 +150,8 @@ describe('buildBlogPostFromTemplate (blog preview)', () => {
 })
 
 describe('NICHE_CATEGORIES', () => {
-  it('should have 8 categories defined', () => {
-    expect(NICHE_CATEGORIES.length).toBe(8)
+  it('should have 22 categories defined', () => {
+    expect(NICHE_CATEGORIES.length).toBe(22)
   })
 
   it('each category should have name and keywords', () => {

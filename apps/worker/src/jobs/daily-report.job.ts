@@ -127,7 +127,11 @@ export function createDailyReportWorker(): Worker {
 
         // 텔레그램 알림 발송
         try {
-          await notificationAdapter.send(report.notificationMessage)
+          await notificationAdapter.send({
+            type: 'product_registered',
+            title: '일일 리포트',
+            message: report.notificationMessage,
+          })
         } catch (notifError) {
           logger.warn('일일 리포트 알림 발송 실패', { error: notifError })
         }

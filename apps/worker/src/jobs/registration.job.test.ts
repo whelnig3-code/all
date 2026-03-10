@@ -123,6 +123,7 @@ jest.mock('@smartstore/core', () => ({
   calculateNicheScore: jest.fn().mockReturnValue(0),
   getOriginMarginAdjustment: jest.fn().mockReturnValue(0),
   classifyNicheCategory: jest.fn().mockReturnValue('기타'),
+  isProductAllowedForAccount: jest.fn().mockReturnValue({ allowed: true, category: '드릴비트', group: '전동공구 소모품' }),
 }))
 
 jest.mock('@smartstore/integrations', () => ({

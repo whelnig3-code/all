@@ -20,9 +20,11 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
   })
   // GET /products - 상품 목록 조회
   fastify.get('/', async (request, reply) => {
-    const { status, nicheCategory, page = '1', limit = '20' } = request.query as {
+    const { status, nicheCategory, search, sort, page = '1', limit = '20' } = request.query as {
       status?: string
       nicheCategory?: string
+      search?: string
+      sort?: string
       page?: string
       limit?: string
     }
@@ -34,6 +36,16 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
     const where = {
       ...(status ? { status } : {}),
       ...(nicheCategory ? { nicheCategory } : {}),
+      ...(search ? { name: { contains: search } } : {}),
+    }
+
+    // 정렬: createdAt_desc (기본), salePrice_asc, salePrice_desc, name_asc
+    let orderBy: Record<string, string> = { createdAt: 'desc' }
+    if (sort) {
+      const [field, dir] = sort.split('_')
+      if (field && dir && ['createdAt', 'salePrice', 'name', 'wholesalePrice'].includes(field)) {
+        orderBy = { [field]: dir === 'asc' ? 'asc' : 'desc' }
+      }
     }
 
     const [products, total] = await Promise.all([
@@ -41,7 +53,7 @@ export const productsRouter: FastifyPluginAsync = async (fastify) => {
         where: Object.keys(where).length > 0 ? where : undefined,
         skip,
         take: limitNum,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         select: {
           id: true,
           name: true,

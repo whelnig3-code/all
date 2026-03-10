@@ -45,6 +45,7 @@ interface Product {
   wholesalePrice: number | null
   naverProductId: string | null
   stockQuantity: number | null
+  nicheCategory: string | null
   registeredAt: string | null
   createdAt: string
 }
@@ -88,13 +89,15 @@ export default function ProductsPage() {
     page: 1, limit: 20, total: 0, totalPages: 0,
   })
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('createdAt_desc')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [blogData, setBlogData] = useState<BlogData | null>(null)
   const [blogLoading, setBlogLoading] = useState(false)
 
-  const fetchProducts = useCallback(async (page: number, status: StatusFilter) => {
+  const fetchProducts = useCallback(async (page: number, status: StatusFilter, search?: string, sort?: string) => {
     setLoading(true)
     setError(null)
     try {
@@ -103,6 +106,8 @@ export default function ProductsPage() {
         limit: '20',
       })
       if (status) params.set('status', status)
+      if (search) params.set('search', search)
+      if (sort && sort !== 'createdAt_desc') params.set('sort', sort)
 
       const data = await apiCall<ProductsResponse>(`/products?${params}`)
       setProducts(data.data)
@@ -115,17 +120,26 @@ export default function ProductsPage() {
   }, [])
 
   useEffect(() => {
-    fetchProducts(pagination.page, statusFilter)
+    fetchProducts(pagination.page, statusFilter, searchQuery, sortBy)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, page: newPage }))
-    fetchProducts(newPage, statusFilter)
+    fetchProducts(newPage, statusFilter, searchQuery, sortBy)
   }
 
   const handleStatusChange = (status: StatusFilter) => {
     setStatusFilter(status)
-    fetchProducts(1, status)
+    fetchProducts(1, status, searchQuery, sortBy)
+  }
+
+  const handleSearch = () => {
+    fetchProducts(1, statusFilter, searchQuery, sortBy)
+  }
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort)
+    fetchProducts(1, statusFilter, searchQuery, newSort)
   }
 
   return (
@@ -138,21 +152,62 @@ export default function ProductsPage() {
         </span>
       </div>
 
-      {/* 필터 */}
-      <div className="flex gap-2">
-        {STATUS_OPTIONS.map(opt => (
+      {/* 검색 + 필터 */}
+      <div className="space-y-3">
+        {/* 검색 바 */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSearch()}
+            placeholder="상품명 검색..."
+            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
           <button
-            key={opt.value}
-            onClick={() => handleStatusChange(opt.value)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              statusFilter === opt.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-            }`}
+            onClick={handleSearch}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
           >
-            {opt.label}
+            검색
           </button>
-        ))}
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(''); fetchProducts(1, statusFilter, '', sortBy) }}
+              className="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-300"
+            >
+              초기화
+            </button>
+          )}
+          {/* 정렬 */}
+          <select
+            value={sortBy}
+            onChange={e => handleSortChange(e.target.value)}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+          >
+            <option value="createdAt_desc">최신순</option>
+            <option value="createdAt_asc">오래된순</option>
+            <option value="salePrice_desc">가격 높은순</option>
+            <option value="salePrice_asc">가격 낮은순</option>
+            <option value="name_asc">이름순</option>
+          </select>
+        </div>
+
+        {/* 상태 필터 */}
+        <div className="flex gap-2">
+          {STATUS_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => handleStatusChange(opt.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === opt.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 에러 */}

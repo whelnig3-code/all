@@ -5,13 +5,14 @@
 import { config, createLogger } from '@smartstore/shared'
 import type { NotificationAdapter } from './interface'
 import { TelegramNotificationAdapter } from './telegram'
+import { SmsNotificationAdapter } from './sms'
 
 const logger = createLogger('notification-factory')
 
 /**
  * 환경변수 NOTIFICATION_ADAPTER에 따라 어댑터 선택
  * - telegram (기본): 무료
- * - sms: 유료 (SOLAPI 등)
+ * - sms: 유료 (SOLAPI)
  */
 export function createNotificationAdapter(): NotificationAdapter {
   const adapterType = config.notification.adapter
@@ -22,10 +23,8 @@ export function createNotificationAdapter(): NotificationAdapter {
       return new TelegramNotificationAdapter()
 
     case 'sms':
-      // SMS 어댑터 (SOLAPI 등) 구현 예정 — 현재는 Telegram으로 폴백
-
-      logger.warn('SMS 어댑터 미구현, Telegram으로 폴백')
-      return new TelegramNotificationAdapter()
+      logger.info('알림 어댑터: SMS (SOLAPI)')
+      return new SmsNotificationAdapter()
 
     default:
       logger.warn(`알 수 없는 어댑터 타입: ${adapterType}, Telegram 기본값 사용`)

@@ -249,8 +249,9 @@ describe('buildDetailHtml', () => {
     expect(html.indexOf('img1.jpg')).toBeLessThan(html.indexOf('기존 설명'))
   })
 
-  it('이미지 없음 → 원본 설명 반환', () => {
+  it('이미지 없음 → 원본 설명 + 반품 안내 포함', () => {
     const html = buildDetailHtml([], '<p>기존 설명</p>')
-    expect(html).toBe('<p>기존 설명</p>')
+    expect(html).toContain('<p>기존 설명</p>')
+    expect(html).toContain('교환/반품 안내')
   })
 })

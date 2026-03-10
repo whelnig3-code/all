@@ -115,7 +115,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json(data, { status: upstream.status })
   } catch (err) {
     return NextResponse.json(
-      { error: 'Upstream request failed', detail: String(err) },
+      { error: 'Upstream request failed' },
       { status: 502 }
     )
   }

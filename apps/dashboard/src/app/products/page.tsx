@@ -427,7 +427,7 @@ function BlogCopyModal({ data, onClose }: { data: BlogData; onClose: () => void 
                   꼭지 {idx + 1}
                 </span>
                 <CopyButton
-                  text={`${section.heading}\n\n${section.content.replace(/<[^>]*>/g, '').replace(/\n\s*\n/g, '\n').trim()}`}
+                  text={`${section.heading}\n\n${section.content.replace(/<li>/g, '- ').replace(/<[^>]*>/g, '').replace(/\n\s*\n/g, '\n').trim()}`}
                   label="복사"
                   copyKey={`section-${idx}`}
                 />

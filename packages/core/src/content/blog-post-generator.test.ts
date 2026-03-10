@@ -5,6 +5,7 @@
 import {
   generateBlogPost,
   buildBlogPostFromTemplate,
+  buildBlogPostWithSections,
   buildTagsForCategory,
   type BlogPostInput,
 } from './blog-post-generator'
@@ -143,6 +144,65 @@ describe('buildBlogPostFromTemplate', () => {
     const result = buildBlogPostFromTemplate(input)
     expect(result.body).not.toContain('<img')
     expect(result.body).toContain('&gt;')
+  })
+})
+
+// =============================================
+// buildBlogPostWithSections
+// =============================================
+
+describe('buildBlogPostWithSections', () => {
+  const baseInput: BlogPostInput = {
+    productName: '스테인리스 렌치 세트',
+    category: '공구/DIY',
+    salePrice: 18000,
+  }
+
+  it('sections 배열이 비어있지 않음', () => {
+    const result = buildBlogPostWithSections(baseInput)
+    expect(result.sections.length).toBeGreaterThan(0)
+  })
+
+  it('각 section에 heading과 content가 있음', () => {
+    const result = buildBlogPostWithSections(baseInput)
+    for (const section of result.sections) {
+      expect(section.heading.length).toBeGreaterThan(0)
+      expect(section.content.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('plainText에 bullet(- ) 형식이 포함됨', () => {
+    const result = buildBlogPostWithSections(baseInput)
+    expect(result.plainText).toContain('- ')
+  })
+
+  it('plainText에 HTML 태그가 없음', () => {
+    const result = buildBlogPostWithSections(baseInput)
+    expect(result.plainText).not.toMatch(/<[^>]+>/)
+  })
+
+  it('plainText에 판매가가 포함됨', () => {
+    const result = buildBlogPostWithSections(baseInput)
+    expect(result.plainText).toContain('18,000')
+  })
+
+  it('description 제공 시 상품 특징 섹션 추가', () => {
+    const input = { ...baseInput, description: '크롬 바나듐 소재' }
+    const result = buildBlogPostWithSections(input)
+    const hasFeatureSection = result.sections.some((s) => s.heading === '상품 특징')
+    expect(hasFeatureSection).toBe(true)
+  })
+
+  it('description 없으면 상품 특징 섹션 없음', () => {
+    const result = buildBlogPostWithSections(baseInput)
+    const hasFeatureSection = result.sections.some((s) => s.heading === '상품 특징')
+    expect(hasFeatureSection).toBe(false)
+  })
+
+  it('3만원 이상이면 무료배송 표시', () => {
+    const input = { ...baseInput, salePrice: 35000 }
+    const result = buildBlogPostWithSections(input)
+    expect(result.body).toContain('무료배송')
   })
 })
 
